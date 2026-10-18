@@ -3,20 +3,21 @@
 import { useState } from "react";
 import { useRole } from "@/components/shell/RoleContext";
 import { StatusBadge } from "@/components/ui/Badge";
-import { QueueTable, type QueueColumn } from "@/components/ui/QueueTable";
+import { TableCard, type Column } from "@/components/ui/Table";
 import { WorkQueueFrame } from "@/components/review/WorkQueueFrame";
 import { BlockerModal } from "@/components/review/BlockerModal";
 import { AgeText } from "@/components/review/cells";
 import { rowAction } from "@/components/review/rowAction";
 import { transactionKpis, transactionRows, type BlockerId, type TransactionRow } from "@/data/director-general/work-queue";
 
-const columns: QueueColumn<TransactionRow>[] = [
-  { header: "Reference", width: 145, tone: "link", cell: (r) => r.reference },
-  { header: "Service", width: 269, cell: (r) => r.service },
-  { header: "Applicant", width: 170, cell: (r) => r.applicant },
-  { header: "Subject", width: 180, tone: "muted", cell: (r) => r.subject },
-  { header: "Status", width: 160, cell: (r) => <StatusBadge status={r.status} /> },
-  { header: "Age / SLA", width: 110, cell: (r) => <AgeText age={r.age} /> },
+// Widths are % of the row (design standard §A5a.0 rule 5).
+const columns: Column<TransactionRow>[] = [
+  { header: "Reference", width: 13, tone: "link", cell: (r) => r.reference },
+  { header: "Service", width: 18, cell: (r) => r.service },
+  { header: "Applicant", width: 19, cell: (r) => r.applicant },
+  { header: "Subject", width: 21, tone: "muted", cell: (r) => r.subject },
+  { header: "Status", width: 17, cell: (r) => <StatusBadge status={r.status} /> },
+  { header: "Age / SLA", width: 12, cell: (r) => <AgeText age={r.age} /> },
 ];
 
 export default function TransactionQueue() {
@@ -24,7 +25,7 @@ export default function TransactionQueue() {
   const [blocker, setBlocker] = useState<BlockerId | null>(null);
   return (
     <WorkQueueFrame title="Work Queue — Transaction" subtitle="Review and decide submitted applications." kpis={transactionKpis}>
-      <QueueTable
+      <TableCard
         title="All Applications"
         filters={["Service", "Status", "Age / SLA state", "Channel"]}
         columns={columns}

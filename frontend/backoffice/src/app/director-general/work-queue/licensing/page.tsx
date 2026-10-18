@@ -2,26 +2,27 @@
 
 import { useRole } from "@/components/shell/RoleContext";
 import { StatusBadge } from "@/components/ui/Badge";
-import { QueueTable, type QueueColumn } from "@/components/ui/QueueTable";
+import { TableCard, type Column } from "@/components/ui/Table";
 import { WorkQueueFrame } from "@/components/review/WorkQueueFrame";
 import { rowAction } from "@/components/review/rowAction";
 import { licensingKpis, licensingRows, type LicensingRow } from "@/data/director-general/work-queue";
 
-const columns: QueueColumn<LicensingRow>[] = [
-  { header: "REFERENCE", width: 130, tone: "link", cell: (r) => r.reference },
-  { header: "APPLICANT", width: 215, cell: (r) => r.applicant },
-  { header: "SERVICE", width: 240, cell: (r) => r.service },
-  { header: "STATUS", width: 145, cell: (r) => <StatusBadge status={r.status} /> },
-  { header: "SUBMITTED", width: 88, cell: (r) => r.submitted },
-  { header: "AT STAGE", width: 88, cell: (r) => r.atStage },
-  { header: "CLAIMED BY", width: 116, cell: (r) => r.claimedBy ?? <span className="text-n400">—</span> },
+// Widths are % of the row (design standard §A5a.0 rule 5).
+const columns: Column<LicensingRow>[] = [
+  { header: "Reference", width: 13, tone: "link", cell: (r) => r.reference },
+  { header: "Applicant", width: 22, cell: (r) => r.applicant },
+  { header: "Service", width: 21, cell: (r) => r.service },
+  { header: "Status", width: 12, cell: (r) => <StatusBadge status={r.status} /> },
+  { header: "Submitted", width: 10, cell: (r) => r.submitted },
+  { header: "At Stage", width: 8, cell: (r) => r.atStage },
+  { header: "Claimed By", width: 14, cell: (r) => r.claimedBy ?? <span className="text-n400">—</span> },
 ];
 
 export default function LicensingQueue() {
   const role = useRole();
   return (
     <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={licensingKpis}>
-      <QueueTable
+      <TableCard
         title="Applications Awaiting Final Sign-off"
         filters={["Service", "Status", "Category"]}
         columns={columns}
@@ -30,7 +31,6 @@ export default function LicensingQueue() {
         rowAction={(r) => rowAction(role, r.opens, () => {})}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.service} ${r.claimedBy ?? ""}`}
         pages={3}
-        uppercaseHeaders
       />
     </WorkQueueFrame>
   );
