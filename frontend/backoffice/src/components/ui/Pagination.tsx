@@ -9,7 +9,8 @@ import { Icon } from "@/components/shell/Icon";
  *  - Left label is a real count, never "Page x of y":
  *      one page        → "8 applications — all shown"
  *      several pages   → "23 applications — showing 11–20"
- *      while searching → "2 of 8 applications — filtered"
+ *      while searching or filtering → "2 of 24 applications — filtered"
+ *      (24 = everything in the queue, including items a filter hides by default)
  *  - Only ONE page? Show just the count — no number buttons, no arrows.
  *    A lone "1" with two greyed-out arrows is clutter that says nothing.
  *  - Several pages: exactly one number button per page (current page blue).
@@ -27,6 +28,7 @@ export function Pagination({
   page,
   total,
   allTotal,
+  filtered,
   noun,
   onPage,
 }: {
@@ -34,13 +36,15 @@ export function Pagination({
   page: number;
   /** Rows after any search. */
   total: number;
-  /** Rows before search — differs from `total` only while a search is active. */
+  /** All rows in the table, before any search or filter. */
   allTotal: number;
+  /** True while a search or filter is narrowing the rows. */
+  filtered: boolean;
   noun: Noun;
   onPage: (p: number) => void;
 }) {
   const pages = pageCount(total);
-  const label = paginationLabel(page, total, allTotal, noun);
+  const label = paginationLabel(page, total, allTotal, noun, filtered);
 
   return (
     // min-h-16 keeps the bar the same height whether or not the buttons show.
@@ -92,9 +96,9 @@ function Step({ label, icon, disabled, onClick }: { label: string; icon: string;
 export const pageCount = (total: number) => Math.max(1, Math.ceil(total / PAGE_SIZE));
 
 /** The left-hand count text (see the rules at the top of this file). */
-export function paginationLabel(page: number, total: number, allTotal: number, noun: Noun): string {
+export function paginationLabel(page: number, total: number, allTotal: number, noun: Noun, filtered: boolean): string {
   const word = (n: number) => (n === 1 ? noun.one : noun.many);
-  if (total !== allTotal) return `${total} of ${allTotal} ${word(allTotal)} — filtered`;
+  if (filtered) return `${total} of ${allTotal} ${word(allTotal)} — filtered`;
   if (pageCount(total) === 1) return `${total} ${word(total)} — all shown`;
   return `${total} ${word(total)} — showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)}`;
 }
