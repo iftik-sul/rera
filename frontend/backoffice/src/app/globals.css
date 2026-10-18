@@ -17,6 +17,13 @@
 
   /* Foundation / Blue — the RA accent (buttons, active nav, links) */
   --color-blue-600: #006fe8;
+  --color-blue-500: #007aff; /* "Contact Support" link on sign-in */
+
+  /* Foundation / Red */
+  --color-red-600: #d33128; /* required-field asterisk, errors */
+
+  /* Backgrounds */
+  --color-bg-blue: #f2f3fa; /* sign-in page background */
 }
 
 html,

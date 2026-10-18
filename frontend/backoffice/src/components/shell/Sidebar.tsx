@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "@/lib/auth";
 import { href } from "@/config/roles";
 import { Icon } from "./Icon";
 import { useRole } from "./RoleContext";
@@ -10,6 +11,7 @@ import { useRole } from "./RoleContext";
 export function Sidebar() {
   const role = useRole();
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col border-r border-n40 bg-white">
@@ -50,13 +52,17 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="shrink-0 border-t border-n40 px-3 pt-3 pb-5">
-        <Link
-          href="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] leading-5 font-medium text-n400 hover:bg-n20"
+        <button
+          type="button"
+          onClick={() => {
+            signOut();
+            router.replace("/");
+          }}
+          className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] leading-5 font-medium text-n400 hover:bg-n20"
         >
           <Icon name="log-out" />
           Sign Out
-        </Link>
+        </button>
       </div>
     </aside>
   );
