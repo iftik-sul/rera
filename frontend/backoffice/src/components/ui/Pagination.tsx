@@ -10,9 +10,13 @@ import { Icon } from "@/components/shell/Icon";
  *      one page        → "8 applications — all shown"
  *      several pages   → "23 applications — showing 11–20"
  *      while searching → "2 of 8 applications — filtered"
- *  - Exactly one number button per page (current page blue). From 8 pages up,
- *    the middle collapses to "…" so the bar stays short.
+ *  - Only ONE page? Show just the count — no number buttons, no arrows.
+ *    A lone "1" with two greyed-out arrows is clutter that says nothing.
+ *  - Several pages: exactly one number button per page (current page blue).
+ *    From 8 pages up, the middle collapses to "…" so the bar stays short.
  *  - ‹ and › step a page; each is greyed out when there's nowhere to go.
+ *  - The page number is kept in the web address (?page=3), so Back from an
+ *    opened row returns to the same page (handled by TableCard).
  *  - Lined up with the table: 20px from the card edge on both sides.
  */
 export const PAGE_SIZE = 10;
@@ -39,31 +43,34 @@ export function Pagination({
   const label = paginationLabel(page, total, allTotal, noun);
 
   return (
-    <nav aria-label="Pagination" className="flex items-center justify-between px-5 py-4">
+    // min-h-16 keeps the bar the same height whether or not the buttons show.
+    <nav aria-label="Pagination" className="flex min-h-16 items-center justify-between px-5 py-4">
       <p className="text-xs leading-[18px] text-n400">{label}</p>
-      <div className="flex items-center gap-1">
-        <Step label="Previous page" icon="chevron-left" disabled={page <= 1} onClick={() => onPage(page - 1)} />
-        {pageList(page, pages).map((p, i) =>
-          p === "…" ? (
-            <span key={`gap${i}`} className="flex size-8 items-center justify-center text-[13px] text-n400">
-              …
-            </span>
-          ) : (
-            <button
-              key={p}
-              type="button"
-              onClick={() => onPage(p)}
-              aria-current={p === page ? "page" : undefined}
-              className={`flex size-8 cursor-pointer items-center justify-center rounded-lg text-[13px] font-medium ${
-                p === page ? "bg-blue-600 text-white" : "bg-white text-n400 hover:bg-n20"
-              }`}
-            >
-              {p}
-            </button>
-          ),
-        )}
-        <Step label="Next page" icon="chevron-right" disabled={page >= pages} onClick={() => onPage(page + 1)} />
-      </div>
+      {pages > 1 && (
+        <div className="flex items-center gap-1">
+          <Step label="Previous page" icon="chevron-left" disabled={page <= 1} onClick={() => onPage(page - 1)} />
+          {pageList(page, pages).map((p, i) =>
+            p === "…" ? (
+              <span key={`gap${i}`} className="flex size-8 items-center justify-center text-[13px] text-n400">
+                …
+              </span>
+            ) : (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onPage(p)}
+                aria-current={p === page ? "page" : undefined}
+                className={`flex size-8 cursor-pointer items-center justify-center rounded-lg text-[13px] font-medium ${
+                  p === page ? "bg-blue-600 text-white" : "bg-white text-n400 hover:bg-n20"
+                }`}
+              >
+                {p}
+              </button>
+            ),
+          )}
+          <Step label="Next page" icon="chevron-right" disabled={page >= pages} onClick={() => onPage(page + 1)} />
+        </div>
+      )}
     </nav>
   );
 }
