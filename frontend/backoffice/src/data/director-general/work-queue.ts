@@ -7,8 +7,10 @@
  * Rows without `opens` aren't linked in Figma, so they aren't clickable yet.
  *
  * Row counts: page 1 (the first 10 rows) is exactly the Figma frame. Every
- * queue carries exactly 20 sample rows — two full pages of 10 — so pagination
+ * queue carries exactly 20 open sample rows — two full pages of 10 — so pagination
  * can be used and every page looks the same (project-lead rule, 2026-10-18).
+ * Each queue also holds a few DECIDED items, hidden until the Status filter
+ * picks "Decided" (Work Queue spec §4c — the DG is the only role that sees them).
  * Rows after Figma's are marked below.
  */
 import type { Status } from "@/components/ui/Badge";
@@ -24,6 +26,17 @@ const AR: Status = { label: "Awaiting Review", tone: "info" };
 const IR: Status = { label: "Information Requested", tone: "warning" };
 const RET: Status = { label: "Returned", tone: "warning" };
 const SLA: Status = { label: "Breaching SLA", tone: "error" };
+// Decided items: listed for the DG only, hidden until the Status filter picks "Decided" (spec §4c).
+const APPROVED: Status = { label: "Approved", tone: "success" };
+const REJECTED: Status = { label: "Rejected", tone: "error" };
+
+/** Status filter value: Approved / Rejected group under "Decided"; everything else is its own label. */
+export const statusFilterValue = (s: Status) => (s.label === "Approved" || s.label === "Rejected" ? "Decided" : s.label);
+export const STATUS_ORDER = ["Awaiting Review", "Under Review", "Information Requested", "Returned", "Breaching SLA", "Decided"];
+
+/** Age / SLA state filter value, from the colour the age is shown in. */
+export const ageState = (a: Age) => (a.tone === "breach" ? "Breaching SLA" : a.tone === "warning" ? "Ageing" : "Within SLA");
+export const AGE_ORDER = ["Within SLA", "Ageing", "Breaching SLA"];
 
 // ── Transaction ─────────────────────────────────────────────
 export const transactionKpis: Kpi[] = [
@@ -46,7 +59,8 @@ export type TransactionRow = {
 
 export const transactionRows: TransactionRow[] = [
   { reference: "TRX-2024-0891", service: "Register Initial Sale", applicant: "Adron Homes & Properties", subject: "Victoria Island Plot A-12", status: UR, age: { text: "3 days", tone: "normal" }, opens: "review:trx-undecided" },
-  { reference: "TRX-2024-0887", service: "Register Resale", applicant: "Mixta Nigeria Ltd", subject: "Eko Atlantic Tower Unit 2304", status: IR, age: { text: "7 days", tone: "warning" }, opens: "review:trx-decided" },
+  { reference: "TRX-2024-0887", service: "Register Resale", applicant: "Mixta Nigeria Ltd", subject: "Eko Atlantic Tower Unit 2304", status: APPROVED, age: { text: "Decided day 4", tone: "normal" }, opens: "review:trx-decided" }, // was "Information Requested" in Figma, but it opens the decided-item screen
+
   { reference: "TRX-2024-0882", service: "Register Initial Sale", applicant: "Brains & Hammers Ltd", subject: "Banana Island Plot C-05", status: UR, age: { text: "5 days", tone: "normal" }, opens: "blocker:not-decided" },
   { reference: "TRX-2024-0878", service: "Register Mortgage", applicant: "Lekki Gardens Estate Ltd", subject: "Lekki Phase 1 Villa 18", status: RET, age: { text: "12 days", tone: "warning" }, opens: "blocker:already-overturned" },
   { reference: "TRX-2024-0871", service: "Register Resale", applicant: "RevolutionPlus Property", subject: "Ikoyi Crescent Unit 801", status: UR, age: { text: "9 days", tone: "normal" }, opens: "blocker:not-an-application" },
@@ -66,6 +80,11 @@ export const transactionRows: TransactionRow[] = [
   { reference: "TRX-2024-0818", service: "Register Initial Sale", applicant: "Abuja Prime Estates", subject: "Katampe Extension Plot 63", status: IR, age: { text: "9 days", tone: "warning" } },
   { reference: "TRX-2024-0814", service: "Register Resale", applicant: "Ocean Crest Realty", subject: "Oniru Waterfront Unit 7A", status: UR, age: { text: "5 days", tone: "normal" } },
   { reference: "TRX-2024-0811", service: "Register Mortgage", applicant: "Deluxe Homes Ibadan", subject: "Bodija Estate House 22", status: SLA, age: { text: "19 days", tone: "breach" } },
+  { reference: "TRX-2024-0807", service: "Register Initial Sale", applicant: "Kano Heritage Developers", subject: "Nassarawa GRA Plot 15", status: AR, age: { text: "2 days", tone: "normal" } },
+  // ── Decided items (hidden until Status → Decided) ──
+  { reference: "TRX-2024-0796", service: "Register Initial Sale", applicant: "Victoria Crest Homes", subject: "Chevron Drive Terrace 12", status: APPROVED, age: { text: "Decided day 2", tone: "normal" } },
+  { reference: "TRX-2024-0792", service: "Register Mortgage", applicant: "Enugu Royal Estates", subject: "Independence Layout Villa 9", status: REJECTED, age: { text: "Decided day 5", tone: "normal" } },
+  { reference: "TRX-2024-0788", service: "Register Resale", applicant: "Atlantic Shores Ltd", subject: "Lekki Phase 2 Unit 14C", status: APPROVED, age: { text: "Decided day 3", tone: "normal" } },
 ];
 
 // ── Escrow ──────────────────────────────────────────────────
@@ -112,6 +131,9 @@ export const escrowRows: EscrowRow[] = [
   { reference: "REF-ESC-1018", escrowFlag: RECEIVED, applicant: "Chapel Hill Denham Trustees", subject: "Fund Release — Unit 9, Victoria Garden City", status: UR, age: { text: "4 days", tone: "normal" } },
   { reference: "REF-ESC-1019", escrowFlag: AWAIT_TRUSTEE, applicant: "Norrenberger Trustees", subject: "Escrow Setup — Phase 4, Lekki Gardens", status: AR, age: { text: "1 day", tone: "normal" } },
   { reference: "REF-ESC-1020", escrowFlag: RECEIVED, applicant: "Lotus Capital Trustees", subject: "Escrow Closure — Plot 18, Wuye", status: IR, age: { text: "11 days", tone: "warning" } },
+  // ── Decided items (hidden until Status → Decided) ──
+  { reference: "REF-ESC-0994", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 2, Lekki Phase 1", status: APPROVED, age: { text: "Decided day 3", tone: "normal" } },
+  { reference: "REF-ESC-0991", escrowFlag: RECEIVED, applicant: "Zenith Trust Services", subject: "Escrow Closure — Block E, Banana Island", status: REJECTED, age: { text: "Decided day 4", tone: "normal" } },
 ];
 
 // ── Licensing (stage 3 of 3) ────────────────────────────────
@@ -131,11 +153,19 @@ export type LicensingRow = {
   atStage: string;
   /** null = unclaimed (shown as a grey dash) */
   claimedBy: string | null;
+  /** Filter only, never a column (Work Queue spec §3b). Derived from the service. */
+  category: LicensingCategory;
   opens?: Opens;
 };
 
-const lic = (reference: string, applicant: string, service: string, submitted: string, atStage: string, claimedBy: string | null, opens?: Opens): LicensingRow => ({
-  reference, applicant, service, status: UR, submitted, atStage, claimedBy, opens,
+/** The three licensing categories and which service belongs to which (licensing-categories.md §2). */
+export type LicensingCategory = "Company Licensing & Permits" | "Individual Practitioner Credentials" | "Institutional Accreditation";
+export const CATEGORY_ORDER: LicensingCategory[] = ["Company Licensing & Permits", "Individual Practitioner Credentials", "Institutional Accreditation"];
+const categoryOf = (service: string): LicensingCategory =>
+  /Practice Card/.test(service) ? "Individual Practitioner Credentials" : /Accreditation/.test(service) ? "Institutional Accreditation" : "Company Licensing & Permits";
+
+const lic = (reference: string, applicant: string, service: string, submitted: string, atStage: string, claimedBy: string | null, opens?: Opens, status: Status = UR): LicensingRow => ({
+  reference, applicant, service, status, submitted, atStage, claimedBy, category: categoryOf(service), opens,
 });
 
 export const licensingRows: LicensingRow[] = [
@@ -160,4 +190,8 @@ export const licensingRows: LicensingRow[] = [
   lic("LIC-2026-00333", "Musa Ibrahim", "Issue Professional Practice Card", "7 days ago", "2 days", null),
   lic("LIC-2026-00329", "Eastgate Property Developers", "Real Estate Permit Application", "3 days ago", "1 day", null),
   lic("LIC-2026-00326", "Kemi Adeyinka", "Cancel Professional Practice Card", "9 days ago", "4 hours", null),
+  // ── Decided items (hidden until Status → Decided) ──
+  lic("LIC-2026-00298", "Greenfield Developers Ltd", "Real Estate Licensing Application", "26 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00291", "Yemi Olatunji", "Issue Professional Practice Card", "27 days ago", "—", null, undefined, REJECTED),
+  lic("LIC-2026-00286", "Lagos School of Valuation", "Accreditation of Training Entities", "29 days ago", "—", null, undefined, APPROVED),
 ];
