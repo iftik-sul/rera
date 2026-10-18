@@ -7,6 +7,7 @@ import { href } from "@/config/roles";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Breadcrumb, Card, FieldGroup } from "@/components/ui/Cards";
 import { Button } from "@/components/ui/Button";
+import { TableCard, type Column } from "@/components/ui/Table";
 import type { Application, Doc } from "@/data/director-general/applications";
 import { DecisionPanel } from "./DecisionPanel";
 import { OverridePanel } from "./OverridePanel";
@@ -115,37 +116,15 @@ export function ApplicationReview({ app }: { app: Application }) {
 }
 
 /** Supporting Documents table. "Review" opens a document viewer that isn't designed for the DG yet. */
+// Widths are % of the row (design standard §A5a.0 rule 5). Row count = the documents the service requires (rule 7 exception).
+const docColumns: Column<Doc>[] = [
+  { header: "Document", width: 44, cell: (d) => <span className="font-semibold">{d.name}</span> },
+  { header: "Type", width: 11, tone: "muted", cell: (d) => d.type },
+  { header: "Uploaded", width: 14, tone: "muted", cell: (d) => d.uploaded },
+  { header: "Status", width: 17, cell: (d) => <StatusBadge status={d.status} /> },
+  { header: "Action", width: 14, cell: () => <Button variant="link">Review</Button> },
+];
+
 function Documents({ docs }: { docs: Doc[] }) {
-  const cols = [330, 70, 90, 78, 70];
-  return (
-    <Card title="Supporting Documents" gap="gap-0">
-      <div className="h-4" />
-      <div className="flex gap-4 border-b border-n40 py-2 text-[11px] font-medium tracking-[0.5px] text-n400">
-        {["DOCUMENT", "TYPE", "UPLOADED", "STATUS", "ACTION"].map((h, i) => (
-          <span key={h} style={{ width: cols[i] }} className="shrink-0">
-            {h}
-          </span>
-        ))}
-      </div>
-      {docs.map((d) => (
-        <div key={d.name} className="flex items-center gap-4 border-b border-n40 py-2.5 text-[13px]">
-          <span style={{ width: cols[0] }} className="shrink-0 truncate font-semibold text-n900">
-            {d.name}
-          </span>
-          <span style={{ width: cols[1] }} className="shrink-0 text-n400">
-            {d.type}
-          </span>
-          <span style={{ width: cols[2] }} className="shrink-0 text-n400">
-            {d.uploaded}
-          </span>
-          <span style={{ width: cols[3] }} className="shrink-0">
-            <StatusBadge status={d.status} />
-          </span>
-          <span style={{ width: cols[4] }} className="shrink-0">
-            <Button variant="link">Review</Button>
-          </span>
-        </div>
-      ))}
-    </Card>
-  );
+  return <TableCard title="Supporting Documents" titleSize="md" columns={docColumns} rows={docs} rowKey={(d) => d.name} />;
 }

@@ -1,17 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { Page } from "@/components/shell/Page";
 import { KpiCard, KpiRow } from "@/components/ui/KpiCard";
-import { Panel } from "@/components/ui/Panel";
-import { DataTable, type Column } from "@/components/ui/DataTable";
+import { TableCard, type Column } from "@/components/ui/Table";
 import { directorGeneral, href } from "@/config/roles";
 import { kpis, oldestPendingSignOffs, type PendingSignOff } from "@/data/director-general/dashboard";
 
+// Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<PendingSignOff>[] = [
-  { header: "REFERENCE", width: 150, tone: "link", cell: (r) => r.reference },
-  { header: "ITEM", cell: (r) => r.item },
-  { header: "ORIGIN", width: 160, tone: "strong", cell: (r) => r.origin },
-  { header: "WAITING", width: 100, align: "right", cell: (r) => r.waiting },
+  { header: "Reference", width: 17, tone: "link", cell: (r) => r.reference },
+  { header: "Item", width: 51, tone: "muted", cell: (r) => r.item },
+  { header: "Origin", width: 18, cell: (r) => r.origin },
+  { header: "Waiting", width: 14, tone: "muted", align: "right", cell: (r) => r.waiting },
 ];
 
 export default function Dashboard() {
@@ -23,9 +24,19 @@ export default function Dashboard() {
         ))}
       </KpiRow>
 
-      <Panel title="Oldest pending sign-offs" action={{ label: "See All", href: href(directorGeneral, "sign-off-queue") }}>
-        <DataTable columns={columns} rows={oldestPendingSignOffs} rowKey={(r) => r.reference} />
-      </Panel>
+      {/* Embedded table: "See All" instead of pagination (design standard §A5a.0 rule 6). */}
+      <TableCard
+        title="Oldest pending sign-offs"
+        titleSize="md"
+        action={
+          <Link href={href(directorGeneral, "sign-off-queue")} className="text-[13px] leading-5 font-medium text-blue-600 hover:underline">
+            See All
+          </Link>
+        }
+        columns={columns}
+        rows={oldestPendingSignOffs}
+        rowKey={(r) => r.reference}
+      />
     </Page>
   );
 }

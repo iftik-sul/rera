@@ -1,5 +1,5 @@
 import { href, type Role } from "@/config/roles";
-import type { RowAction } from "@/components/ui/QueueTable";
+import type { RowAction } from "@/components/ui/Table";
 import type { BlockerId, Opens } from "@/data/director-general/work-queue";
 
 /** Turns a row's `opens` value into what clicking it does. */
