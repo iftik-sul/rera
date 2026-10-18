@@ -33,7 +33,7 @@ export default function TransactionQueue() {
         rowKey={(r) => r.reference}
         rowAction={(r) => rowAction(role, r.opens, setBlocker)}
         searchText={(r) => `${r.reference} ${r.service} ${r.applicant} ${r.subject}`}
-        pages={1}
+        paginate={{ one: "application", many: "applications" }}
       />
       <BlockerModal id={blocker} onClose={() => setBlocker(null)} />
     </WorkQueueFrame>

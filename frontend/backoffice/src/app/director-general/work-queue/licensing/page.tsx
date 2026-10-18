@@ -30,7 +30,7 @@ export default function LicensingQueue() {
         rowKey={(r) => r.reference}
         rowAction={(r) => rowAction(role, r.opens, () => {})}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.service} ${r.claimedBy ?? ""}`}
-        pages={3}
+        paginate={{ one: "application", many: "applications" }}
       />
     </WorkQueueFrame>
   );
