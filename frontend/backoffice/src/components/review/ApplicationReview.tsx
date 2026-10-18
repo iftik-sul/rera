@@ -27,7 +27,6 @@ export function ApplicationReview({ app }: { app: Application }) {
       title={app.title}
       subtitle={app.subtitle}
       bodyClassName="gap-4 px-8 py-5"
-      footer={app.decide && <DecisionPanel app={app} actions={app.decide} />}
     >
       <Breadcrumb items={[{ label: "Work Queue", href: href(role, "work-queue/transaction") }, { label: "Application Review" }]} />
 
@@ -110,6 +109,8 @@ export function ApplicationReview({ app }: { app: Application }) {
         </Card>
       </div>
 
+      {/* Decision / override panels close the page — never pinned (KB application-review.md §6). */}
+      {app.decide && <DecisionPanel app={app} actions={app.decide} />}
       {app.override && <OverridePanel app={app} actions={app.override} />}
     </Page>
   );

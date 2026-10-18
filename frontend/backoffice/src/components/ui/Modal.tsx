@@ -60,17 +60,20 @@ export function Modal({
   );
 }
 
-/** Required free-text reason inside a dialog (Figma "Reason"). */
+/** Free-text reason inside a dialog (Figma "Reason"). Required unless `optional`. */
 export function ReasonField({
   label,
   placeholder,
   value,
   onChange,
+  optional = false,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
+  /** Recommended but not required (e.g. a note on Authorise sign-off). */
+  optional?: boolean;
 }) {
   const id = useId();
   return (
@@ -86,7 +89,7 @@ export function ReasonField({
         placeholder={placeholder}
         className="resize-none rounded-lg border border-n40 bg-white px-3 py-2.5 text-[13px] leading-5 text-n900 outline-none placeholder:text-n400 focus:border-blue-600"
       />
-      <p className="text-xs text-n400">Required. Recorded against this item in the audit trail.</p>
+      <p className="text-xs text-n400">{optional ? "Recommended." : "Required."} Recorded against this item in the audit trail.</p>
     </div>
   );
 }

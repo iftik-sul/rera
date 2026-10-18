@@ -10,16 +10,17 @@ type PageProps = {
   children: React.ReactNode;
   /** Override the workspace spacing (default: 24px top/bottom, 32px sides, 24px gaps). */
   bodyClassName?: string;
-  /** Bar pinned to the bottom of the workspace while it scrolls (e.g. decision buttons). */
-  footer?: React.ReactNode;
 };
+// Note: there is deliberately no "pinned footer". Decision panels sit at the END of the
+// content and are never sticky (project-lead decision 2026-09-30; KB application-review.md §6),
+// so a weighty decision is never one click away from content the officer hasn't read.
 
 /**
  * One back-office page: the 78px top bar (Figma: Background+HorizontalBorder)
  * plus the Workspace underneath. Only the Workspace scrolls — the top bar and
  * sidebar stay put, exactly like the Figma screens.
  */
-export function Page({ title, subtitle, children, bodyClassName = "gap-6 px-8 py-6", footer }: PageProps) {
+export function Page({ title, subtitle, children, bodyClassName = "gap-6 px-8 py-6" }: PageProps) {
   const role = useRole();
 
   return (
@@ -55,8 +56,6 @@ export function Page({ title, subtitle, children, bodyClassName = "gap-6 px-8 py
       */}
       <main className={`flex min-h-0 flex-1 flex-col overflow-y-auto bg-n20 [scrollbar-gutter:stable] [&>*]:shrink-0 ${bodyClassName}`}>
         {children}
-        {/* Sticky to the very bottom edge; the pb-5 strip covers the workspace padding so nothing shows beneath. */}
-        {footer && <div className="sticky -bottom-5 z-10 -mb-5 bg-n20 pt-1 pb-5">{footer}</div>}
       </main>
     </div>
   );
