@@ -1,5 +1,6 @@
-import { NotBuiltYet } from "@/components/ui/NotBuiltYet";
+import { redirect } from "next/navigation";
 
-export default function Placeholder() {
-  return <NotBuiltYet title="Work Queue" />;
+/** The Work Queue opens on its Transaction tab. */
+export default function WorkQueueHome() {
+  redirect("/director-general/work-queue/transaction/");
 }

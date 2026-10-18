@@ -22,6 +22,8 @@ export type NavItem = {
   /** Path inside the role, e.g. "dashboard" → /director-general/dashboard/ */
   path: string;
   icon: IconName;
+  /** Other sections that keep this item highlighted (e.g. Application Review under Work Queue). */
+  alsoActiveOn?: string[];
 };
 
 export type Role = {
@@ -38,7 +40,7 @@ export const directorGeneral: Role = {
   user: { name: "Adaeze Nwosu", avatar: "/brand/avatar.png" },
   nav: [
     { label: "Dashboard", path: "dashboard", icon: "eye-tracking" },
-    { label: "Work Queue", path: "work-queue", icon: "file-check-02" },
+    { label: "Work Queue", path: "work-queue/transaction", icon: "file-check-02", alsoActiveOn: ["application-review"] },
     { label: "Practitioner", path: "practitioner-register", icon: "user-check-01" },
     { label: "Sign-off Queue", path: "sign-off-queue", icon: "file-check-02" },
     { label: "Admin Console", path: "admin-console", icon: "settings-01" },

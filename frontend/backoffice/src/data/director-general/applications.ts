@@ -1,0 +1,320 @@
+/**
+ * Sample applications for the DG Application Review page, copied from Figma:
+ *   trx-undecided → "Application Review — Undecided (Perform)"
+ *   trx-decided   → "Application Review — Decided item (Override)"
+ *   lic-stage3    → "Application Review — Licensing (Stage 3, Perform)"
+ * Pop-up wording comes from the matching M-DEC / M-GOV frames.
+ * `toast` lines are not in Figma — they're the confirmation shown after
+ * the action (Figma "Toast" component), written to match each outcome.
+ */
+import type { Status } from "@/components/ui/Badge";
+
+export type Field = { label: string; value: string };
+export type Doc = { name: string; type: string; uploaded: string; status: Status };
+type Toast = { title: string; body: string };
+
+type ReasonDialog = { title: string; body: string[]; label: string; placeholder: string; confirm: string; toast: Toast };
+
+export type DecideActions = {
+  /** Label on the request button: "Request Info" (transaction) or "Request Additional Information" (licensing). */
+  requestLabel: string;
+  approve: { title: string; body: string[]; callout: string; toast: Toast };
+  request: ReasonDialog;
+  return: ReasonDialog;
+  reject: ReasonDialog & { callout: string };
+};
+
+export type OverrideActions = {
+  recorded: { outcome: Status; decidedBy: string; role: string; recordedAt: string; reason: string };
+  issued: Field[];
+  bannerTitle: string;
+  banner: string;
+  footnote: string;
+  overturn: { title: string; body: string; callout: string; label: string; placeholder: string; acknowledge: string };
+  revoke: { title: string; body: string; callout: string; confirm: string; toast: Toast };
+};
+
+export type Application = {
+  id: string;
+  /** Top bar */
+  title: string;
+  subtitle: string;
+  /** "Application Metadata" card */
+  status: Status;
+  metaSubtitle: string;
+  meta: [Field, Field];
+  claim?: { held: string; detail: string };
+  /** Licensing only: "Review chain" card */
+  chain?: {
+    stages: { name: string; outcome: Status; recorded: string; reason: string }[];
+    path: string;
+    noticeTitle: string;
+    notice: string;
+  };
+  summary: { title: string; fields: Field[] }[];
+  documents: Doc[];
+  checksTitle: string;
+  checks: string[];
+  decide?: DecideActions;
+  override?: OverrideActions;
+};
+
+const verified: Status = { label: "Verified", tone: "success" };
+const pending: Status = { label: "Pending", tone: "warning" };
+const underReview: Status = { label: "Under Review", tone: "info" };
+const approved: Status = { label: "Approved", tone: "success" };
+
+// Shared by the two Grandeur (transaction) screens
+const grandeurSummary: Application["summary"] = [
+  {
+    title: "Applicant Information",
+    fields: [
+      { label: "Entity name", value: "Grandeur Properties Ltd" },
+      { label: "License number", value: "RC-20198" },
+      { label: "Contact", value: "info@grandeurng.com" },
+    ],
+  },
+  {
+    title: "Property / Project Information",
+    fields: [
+      { label: "Developer", value: "Grandeur Developments Plc" },
+      { label: "Project", value: "Ajah Lekki Phase 3" },
+      { label: "Unit / Plot", value: "Plot 42" },
+      { label: "Type", value: "Villa" },
+    ],
+  },
+  {
+    title: "Transaction Details",
+    fields: [
+      { label: "Transaction type", value: "Initial Sale" },
+      { label: "Sale price", value: "₦485,000,000" },
+      { label: "Fee payable", value: "₦19,400,000" },
+    ],
+  },
+];
+
+const grandeurDocs: Doc[] = [
+  { name: "Title Deed Copy", type: "PDF", uploaded: "Sep 14", status: verified },
+  { name: "Sale & Purchase Agreement", type: "PDF", uploaded: "Sep 14", status: verified },
+  { name: "Consent from Developer", type: "PDF", uploaded: "Sep 15", status: pending },
+  { name: "Passport / NIN Card", type: "Image", uploaded: "Sep 14", status: verified },
+];
+
+const grandeurChecks = ["Developer registration", "Project registration", "Unit/plot registration", "Title deed status", "Applicant validity"];
+
+export const applications: Application[] = [
+  {
+    id: "trx-undecided",
+    title: "TRX-2024-00891 — Register Initial Sale",
+    subtitle: "Grandeur Properties Ltd",
+    status: underReview,
+    metaSubtitle: "Review details and current status",
+    meta: [
+      { label: "Output", value: "Title Deed" },
+      { label: "SLA", value: "Day 3 of 5" },
+    ],
+    summary: grandeurSummary,
+    documents: grandeurDocs,
+    checksTitle: "Registry Checks",
+    checks: grandeurChecks,
+    decide: {
+      requestLabel: "Request Info",
+      approve: {
+        title: "Approve and issue the Title Deed?",
+        body: ["This issues the e-Title Deed to Grandeur Properties Ltd immediately. Issuance is instant and final."],
+        callout: "There is no undo. The Title Deed is issued the moment you approve.",
+        toast: { title: "Title Deed issued", body: "TRX-2024-00891 approved — the e-Title Deed has been sent to Grandeur Properties Ltd." },
+      },
+      request: {
+        title: "Request additional information?",
+        body: ["TRX-2024-00891 returns to Grandeur Properties Ltd and comes back to your queue when they respond."],
+        label: "What does the applicant need to supply?",
+        placeholder: "Name the document or detail that is missing.",
+        confirm: "Send Request",
+        toast: { title: "Information requested", body: "TRX-2024-00891 has been sent back to Grandeur Properties Ltd." },
+      },
+      return: {
+        title: "Return for correction?",
+        body: ["TRX-2024-00891 goes back to Grandeur Properties Ltd for correction, and returns to your queue when resubmitted."],
+        label: "What needs correcting?",
+        placeholder: "Describe what the applicant must change before resubmitting.",
+        confirm: "Return Application",
+        toast: { title: "Application returned", body: "TRX-2024-00891 has gone back to Grandeur Properties Ltd for correction." },
+      },
+      reject: {
+        title: "Reject this application?",
+        body: ["Grandeur Properties Ltd is refused and no Title Deed is issued. The applicant is told the outcome and your reason."],
+        callout: "This decision is terminal, and it is appealable. It carries the same weight as an approval.",
+        label: "Why is this application refused?",
+        placeholder: "State the registry rule or check the application fails, in terms the applicant can act on.",
+        confirm: "Reject Application",
+        toast: { title: "Application rejected", body: "TRX-2024-00891 — Grandeur Properties Ltd has been told the outcome and your reason." },
+      },
+    },
+  },
+  {
+    id: "trx-decided",
+    title: "TRX-2024-00891 — Register Initial Sale",
+    subtitle: "Grandeur Properties Ltd",
+    status: approved,
+    metaSubtitle: "Review details and current status",
+    meta: [
+      { label: "Output", value: "Title Deed" },
+      { label: "SLA", value: "Met — decided day 4 of 5" },
+    ],
+    summary: grandeurSummary,
+    documents: grandeurDocs,
+    checksTitle: "Registry Checks",
+    checks: grandeurChecks,
+    override: {
+      recorded: {
+        outcome: approved,
+        decidedBy: "Chukwuemeka Obi",
+        role: "Compliance & Escrow Auditor",
+        recordedAt: "2 Oct 2026, 11:42",
+        reason:
+          "Registry checks returned clear on all five points; developer consent and the title deed copy were verified against the register. Approved for title deed issuance.",
+      },
+      issued: [
+        { label: "Artefact", value: "e-Title Deed" },
+        { label: "Reference", value: "RERA/TD/2026/04418" },
+        { label: "Issued", value: "2 Oct 2026" },
+        { label: "Delivered to", value: "Grandeur Properties Ltd" },
+      ],
+      bannerTitle: "What an overturn will do to this item",
+      banner:
+        "The replacement outcome available here is Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and writes a revocation entry against it. The recorded decision above is not deleted — the item keeps both, in order, and from then on reads Overturned · Rejected. Overturned is terminal: no undo, and no second overturn.",
+      footnote:
+        "Requires re-authentication. The audit entry records the Director-General / Registrar with action type override — never the officer whose decision it replaces.",
+      overturn: {
+        title: "Overturn this decision?",
+        body: "On record: TRX-2024-00891 — Register Initial Sale, filed by Grandeur Properties Ltd. Approved by Chukwuemeka Obi (Compliance & Escrow Auditor) on 2 Oct 2026.",
+        callout:
+          "Replacement outcome: Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and issues the rejection dated today. The item will then read Overturned · Rejected — final, with no undo and no second overturn.",
+        label: "Why was this decision wrong?",
+        placeholder: "Explain why the decision should not have been made — not simply that you would have decided differently.",
+        acknowledge: "I understand this is final, that I'll re-authenticate to confirm, and that it's recorded against me as Director-General / Registrar.",
+      },
+      revoke: {
+        title: "Revoke the issued Title Deed?",
+        body: "This follows the rejection you just confirmed. The output issued under the original approval must now be revoked.",
+        callout:
+          "e-Title Deed RERA/TD/2026/04418, issued to Grandeur Properties Ltd on 2 Oct 2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
+        confirm: "Revoke Title Deed",
+        toast: { title: "Decision overturned", body: "TRX-2024-00891 now reads Overturned · Rejected. e-Title Deed RERA/TD/2026/04418 has been revoked." },
+      },
+    },
+  },
+  {
+    id: "lic-stage3",
+    title: "LIC-2026-00412 — Real Estate Licensing Application",
+    subtitle: "Stage 3 of 3 — your decision issues the licence.",
+    status: underReview,
+    metaSubtitle: "Sahara Estates Development Co · Company Licensing & Permits",
+    meta: [
+      { label: "Expected output", value: "Real Estate Developer Licence" },
+      { label: "Review stage", value: "Stage 3 of 3 — Awaiting Final Sign-off" },
+    ],
+    claim: { held: "Claimed by you", detail: "· since 11:46 today · lapses after 30 minutes of inactivity" },
+    chain: {
+      stages: [
+        {
+          name: "Stage 1 · Reviewer",
+          outcome: { label: "Recommended Approval", tone: "success" },
+          recorded: "Adaeze Nwosu recorded this on 30 September 2026 at 09:42.",
+          reason: "Reason given: none required for a recommendation to approve. All five register checks passed.",
+        },
+        {
+          name: "Stage 2 · Authorizer",
+          outcome: { label: "Endorsed", tone: "success" },
+          recorded: "Emeka Nwankwo recorded this on 30 September 2026 at 11:18.",
+          reason: "Reason given: none required for an endorsement. Reviewer's checks confirmed against the CAC record.",
+        },
+      ],
+      path: "Stage 1 Reviewer ✓  →  Stage 2 Authorizer ✓  →  Stage 3 Licensing & Registration Officer (you)",
+      noticeTitle: "Approving issues the licence immediately.",
+      notice: "The register is written at this stage and there is no undo.",
+    },
+    summary: [
+      {
+        title: "Applicant Information",
+        fields: [
+          { label: "Entity name", value: "Sahara Estates Development Co" },
+          { label: "CAC registration (RC)", value: "RC-482910" },
+          { label: "Contact", value: "licensing@saharaestates.ng" },
+        ],
+      },
+      {
+        title: "Licence Details",
+        fields: [
+          { label: "Credential sought", value: "Developer Licence" },
+          { label: "Application reference", value: "LIC-2026-00412" },
+          { label: "Submitted", value: "28 Sep 2026" },
+          { label: "Category", value: "Company Licensing" },
+        ],
+      },
+      {
+        title: "Company Standing",
+        fields: [
+          { label: "CAC status", value: "Active" },
+          { label: "Directors verified", value: "3 of 3" },
+          { label: "Last annual filing", value: "30 Jun 2026" },
+        ],
+      },
+    ],
+    documents: [
+      { name: "Certificate of Incorporation (CAC)", type: "PDF", uploaded: "28 Sep", status: verified },
+      { name: "Board Resolution authorising portal use", type: "PDF", uploaded: "28 Sep", status: verified },
+      { name: "Company Letterhead", type: "PDF", uploaded: "28 Sep", status: verified },
+      { name: "Directors' NIN Verification", type: "PDF", uploaded: "28 Sep", status: verified },
+      { name: "Sector Accreditation Certificate", type: "PDF", uploaded: "29 Sep", status: pending },
+    ],
+    checksTitle: "Company Register Check",
+    checks: ["CAC registration valid", "Directors match CAC record", "No existing licence conflict", "No outstanding sanctions", "Tax clearance current"],
+    decide: {
+      requestLabel: "Request Additional Information",
+      approve: {
+        title: "Approve and issue the licence?",
+        body: [
+          "This issues the Real Estate Developer Licence to Sahara Estates Development Co immediately, and writes the entry to the National Practitioner Register.",
+          "Both prior stages recommended approval.",
+        ],
+        callout: "There is no undo. Issuance is immediate and the register is written at this stage.",
+        toast: { title: "Licence issued", body: "LIC-2026-00412 — Real Estate Developer Licence issued to Sahara Estates Development Co." },
+      },
+      request: {
+        title: "Request additional information?",
+        body: [
+          "LIC-2026-00412 returns to Sahara Estates Development Co and re-enters the queue at Stage 1 when they respond.",
+          "The review chain starts again from the Reviewer.",
+        ],
+        label: "What does the applicant need to supply?",
+        placeholder: "Name the document or detail that is missing.",
+        confirm: "Send Request",
+        toast: { title: "Information requested", body: "LIC-2026-00412 has been sent back to Sahara Estates Development Co." },
+      },
+      return: {
+        title: "Return for correction?",
+        body: [
+          "LIC-2026-00412 goes back to Sahara Estates Development Co for correction, and re-enters at Stage 1 when resubmitted.",
+          "The review chain starts again from the Reviewer.",
+        ],
+        label: "What needs correcting?",
+        placeholder: "Describe what the applicant must change before resubmitting.",
+        confirm: "Return Application",
+        toast: { title: "Application returned", body: "LIC-2026-00412 has gone back to Sahara Estates Development Co for correction." },
+      },
+      reject: {
+        title: "Reject this application?",
+        body: ["Sahara Estates Development Co is refused and no licence is issued. The applicant is told the outcome and your reason."],
+        callout: "This decision is terminal, and it is appealable. It carries the same weight as an approval.",
+        label: "Why is this application refused?",
+        placeholder: "State the eligibility rule the application fails, in terms the applicant can act on.",
+        confirm: "Reject Application",
+        toast: { title: "Application rejected", body: "LIC-2026-00412 — Sahara Estates Development Co has been told the outcome and your reason." },
+      },
+    },
+  },
+];
+
+export const findApplication = (id: string) => applications.find((a) => a.id === id);

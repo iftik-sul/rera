@@ -33,7 +33,9 @@ export function Sidebar() {
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-6">
         {role.nav.map((item) => {
           const target = href(role, item.path);
-          const active = pathname === target || pathname.startsWith(target);
+          // Highlight by section, so Work Queue stays active on its tabs and on Application Review.
+          const sections = [item.path.split("/")[0], ...(item.alsoActiveOn ?? [])];
+          const active = sections.some((s) => pathname.startsWith(`/${role.slug}/${s}/`));
           return (
             <Link
               key={item.path}

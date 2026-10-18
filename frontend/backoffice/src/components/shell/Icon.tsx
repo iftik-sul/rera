@@ -1,11 +1,10 @@
-import type { IconName } from "@/config/roles";
-
 /**
  * Renders a Figma icon file (public/icons/*.svg) as a mask, so the icon takes
  * the colour of the surrounding text. That lets one file serve both the grey
  * inactive nav item and the white active one, without editing the SVGs.
+ * `name` is the file name in public/icons without ".svg".
  */
-export function Icon({ name, size = 16, className = "" }: { name: IconName | "notification-bell" | "mail" | "lock" | "eye" | "arrow-right" | "check-circle"; size?: number; className?: string }) {
+export function Icon({ name, size = 16, className = "" }: { name: string; size?: number; className?: string }) {
   const url = `url(/icons/${name}.svg)`;
   return (
     <span
