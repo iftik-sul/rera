@@ -24,6 +24,27 @@
 
   /* Backgrounds */
   --color-bg-blue: #f2f3fa; /* sign-in page background */
+
+  /* Buttons (Figma "_Button base") */
+  --color-btn-border: #dfe2e5; /* secondary button border */
+  --color-btn-text: #404040; /* secondary button text (Neutral/700) */
+  --color-danger: #dc2626; /* Reject / destructive buttons */
+
+  /* Badges (Figma "_Badge base") — background / text pairs */
+  --color-info-bg: #eff6ff;
+  --color-info-text: #1d4ed8;
+  --color-warning-bg: #fefce8;
+  --color-warning-text: #a16207;
+  --color-success-bg: #f0fdf4;
+  --color-success-text: #15803d;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #b91c1c;
+  --color-neutral-bg: #f2f4f7;
+  --color-neutral-text: #344054;
+
+  /* Inline status text */
+  --color-valid: #258d3f; /* "Valid" register checks, toast tick */
+  --color-age-warning: #b56a00; /* ageing item, banner heading */
 }
 
 html,
