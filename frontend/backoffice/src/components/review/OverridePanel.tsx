@@ -9,17 +9,19 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Cards";
 import { Acknowledge, Modal, ReasonField } from "@/components/ui/Modal";
+import { StepUpModal } from "@/components/ui/StepUpModal";
 import type { Application, OverrideActions } from "@/data/director-general/applications";
 
 /**
  * Override panel on a decided item, and its two-step flow:
- *   Overturn decision (Figma M-GOV-03) → Revoke the issued output (M-GOV-04) → Dashboard.
+ *   Overturn decision (Figma M-GOV-03) → step-up re-authentication (M-SYS-02, required by
+ *   KB modals.md §9) → Revoke the issued output (M-GOV-04) → Dashboard.
  * Overturn needs a reason and the tick box before it can be confirmed.
  */
 export function OverridePanel({ app, actions }: { app: Application; actions: OverrideActions }) {
   const role = useRole();
   const router = useRouter();
-  const [step, setStep] = useState<"overturn" | "revoke" | null>(null);
+  const [step, setStep] = useState<"overturn" | "stepup" | "revoke" | null>(null);
   const [reason, setReason] = useState("");
   const [ack, setAck] = useState(false);
   const { recorded } = actions;
@@ -78,7 +80,7 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="danger" disabled={!reason.trim() || !ack} onClick={() => setStep("revoke")}>
+            <Button variant="danger" disabled={!reason.trim() || !ack} onClick={() => setStep("stepup")}>
               Overturn decision
             </Button>
           </>
@@ -90,6 +92,8 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
           {actions.overturn.acknowledge}
         </Acknowledge>
       </Modal>
+
+      <StepUpModal open={step === "stepup"} action="Overturning a decision" onCancel={close} onConfirmed={() => setStep("revoke")} />
 
       <Modal
         open={step === "revoke"}

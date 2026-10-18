@@ -36,6 +36,7 @@ export default function Dashboard() {
         columns={columns}
         rows={oldestPendingSignOffs}
         rowKey={(r) => r.reference}
+        rowAction={(r) => (r.detail ? { href: href(directorGeneral, `sign-off-queue/${r.detail}`) } : null)}
       />
     </Page>
   );
