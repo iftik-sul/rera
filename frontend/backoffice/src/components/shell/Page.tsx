@@ -48,8 +48,12 @@ export function Page({ title, subtitle, children, bodyClassName = "gap-6 px-8 py
         [&>*]:shrink-0 — nothing inside the workspace may be squeezed to fit the window.
         Without it, a card taller than the screen gets compressed and crops its own
         bottom (the table's last rows and pagination). With it, the workspace scrolls.
+
+        [scrollbar-gutter:stable] — always keep the scroll bar's space reserved. Otherwise,
+        on Windows, the content jumps ~15px sideways whenever the page switches between
+        needing a scroll bar and not (e.g. when a filter makes the list short).
       */}
-      <main className={`flex min-h-0 flex-1 flex-col overflow-y-auto bg-n20 [&>*]:shrink-0 ${bodyClassName}`}>
+      <main className={`flex min-h-0 flex-1 flex-col overflow-y-auto bg-n20 [scrollbar-gutter:stable] [&>*]:shrink-0 ${bodyClassName}`}>
         {children}
         {/* Sticky to the very bottom edge; the pb-5 strip covers the workspace padding so nothing shows beneath. */}
         {footer && <div className="sticky -bottom-5 z-10 -mb-5 bg-n20 pt-1 pb-5">{footer}</div>}
