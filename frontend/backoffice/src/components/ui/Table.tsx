@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FilterDropdown, SearchBox } from "./Filters";
-import { Pagination, PAGE_SIZE, type Noun } from "./Pagination";
+import { Pagination, PAGE_SIZE, pageCount, type Noun } from "./Pagination";
 
 /**
  * THE table for the whole back office — every table uses this, so they all
@@ -128,10 +128,36 @@ export function TableCard<T>({
   const [page, setPage] = useState(1);
   const q = query.trim().toLowerCase();
   const matched = q && searchText ? table.rows.filter((r) => searchText(r).toLowerCase().includes(q)) : table.rows;
-  const rows = paginate ? matched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : matched;
+  // Never sit on a page that no longer exists (e.g. ?page=9 on a 3-page table).
+  const current = Math.min(page, pageCount(matched.length));
+  const rows = paginate ? matched.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE) : matched;
+
+  // The page number lives in the web address (…/?page=3), so opening a row and
+  // pressing Back returns to the same page instead of page 1.
+  useEffect(() => {
+    if (!paginate) return;
+    const fromUrl = Number(new URLSearchParams(window.location.search).get("page"));
+    if (Number.isInteger(fromUrl) && fromUrl > 1) setPage(fromUrl);
+  }, [paginate]);
+
+  const goTo = (p: number) => {
+    setPage(p);
+    const url = new URL(window.location.href);
+    if (p > 1) url.searchParams.set("page", String(p));
+    else url.searchParams.delete("page");
+    // replaceState: changing page shouldn't add a Back step of its own.
+    window.history.replaceState(window.history.state, "", url);
+  };
+
+  // If the address asked for a page that doesn't exist, correct the address to the page shown.
+  useEffect(() => {
+    if (paginate && page !== current) goTo(current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- goTo is stable in behaviour; re-run only when the numbers change
+  }, [paginate, page, current]);
+
   const search = (v: string) => {
     setQuery(v);
-    setPage(1); // a new search always starts from the first page
+    goTo(1); // a new search always starts from the first page
   };
 
   return (
@@ -153,7 +179,7 @@ export function TableCard<T>({
 
       <Table {...table} rows={rows} empty={q ? `No rows match “${query}”.` : table.empty} />
 
-      {paginate && <Pagination page={page} total={matched.length} allTotal={table.rows.length} noun={paginate} onPage={setPage} />}
+      {paginate && <Pagination page={current} total={matched.length} allTotal={table.rows.length} noun={paginate} onPage={goTo} />}
     </section>
   );
 }
