@@ -19,3 +19,15 @@ Static Next.js site built from the Regulatory Authority Figma screens.
 - Static export only (`output: "export"`) — no server functions.
 - Colours come from the tokens in `globals.css`; don't hard-code new hex values.
 - Screen text matches Figma exactly. No internal codes (service numbers, modal IDs, C1/C2/C3) in the UI.
+
+## Signing in (demo)
+
+The start page is a sign-in screen. Each email opens that role's portal.
+This is a demo check only, kept in `src/config/accounts.ts` — not real
+security. It's replaced by server sign-in (with MFA) when the backend exists.
+
+| Role | Email |
+| :-- | :-- |
+| Director-General / Registrar | director-general@rera.com |
+
+Passwords are shared with the team separately.
