@@ -30,7 +30,7 @@ export default function EscrowQueue() {
         rowKey={(r) => r.reference}
         rowAction={(r) => rowAction(role, r.opens, () => {})}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.subject}`}
-        pages={1}
+        paginate={{ one: "application", many: "applications" }}
       />
     </WorkQueueFrame>
   );

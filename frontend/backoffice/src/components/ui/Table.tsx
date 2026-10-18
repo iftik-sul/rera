@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { FilterDropdown, Pagination, SearchBox } from "./Filters";
+import { FilterDropdown, SearchBox } from "./Filters";
+import { Pagination, PAGE_SIZE, type Noun } from "./Pagination";
 
 /**
  * THE table for the whole back office — every table uses this, so they all
@@ -96,7 +97,8 @@ export function Table<T>({
 /**
  * White card holding a table (design standard Types A/B/C/E): title row,
  * optional title link (e.g. "See All"), optional search + filters, the table
- * edge to edge, optional pagination (only for a screen's main table).
+ * edge to edge, and pagination when it is the screen's main table
+ * (rules in Pagination.tsx).
  */
 export function TableCard<T>({
   title,
@@ -104,7 +106,7 @@ export function TableCard<T>({
   action,
   filters,
   searchText,
-  pages,
+  paginate,
   ...table
 }: {
   title: string;
@@ -115,12 +117,22 @@ export function TableCard<T>({
   filters?: string[];
   /** The words the search box matches for each row. */
   searchText?: (r: T) => string;
-  /** Number of pages → shows pagination. Leave out for embedded tables. */
-  pages?: number;
+  /**
+   * Give this for a screen's main table: 10 rows per page plus the pagination bar.
+   * `one` / `many` name the rows in the count, e.g. "1 application" / "8 applications".
+   * Leave it out for an embedded table (it shows every row and has no pagination).
+   */
+  paginate?: Noun;
 } & Parameters<typeof Table<T>>[0]) {
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
   const q = query.trim().toLowerCase();
-  const rows = q && searchText ? table.rows.filter((r) => searchText(r).toLowerCase().includes(q)) : table.rows;
+  const matched = q && searchText ? table.rows.filter((r) => searchText(r).toLowerCase().includes(q)) : table.rows;
+  const rows = paginate ? matched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : matched;
+  const search = (v: string) => {
+    setQuery(v);
+    setPage(1); // a new search always starts from the first page
+  };
 
   return (
     <section className="flex w-full flex-col overflow-hidden rounded-xl border border-n30 bg-white">
@@ -131,7 +143,7 @@ export function TableCard<T>({
         </div>
         {filters && (
           <div className="flex items-center gap-3">
-            <SearchBox value={query} onChange={setQuery} />
+            <SearchBox value={query} onChange={search} />
             {filters.map((f) => (
               <FilterDropdown key={f} label={f} />
             ))}
@@ -141,7 +153,7 @@ export function TableCard<T>({
 
       <Table {...table} rows={rows} empty={q ? `No rows match “${query}”.` : table.empty} />
 
-      {pages !== undefined && <Pagination pages={pages} />}
+      {paginate && <Pagination page={page} total={matched.length} allTotal={table.rows.length} noun={paginate} onPage={setPage} />}
     </section>
   );
 }
