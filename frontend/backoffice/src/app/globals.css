@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — copied from the Figma "Foundation" styles so code and
+ * design use the same names. Change a colour here and every screen follows.
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-brand: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Foundation / Neutral */
+  --color-n900: #091e42; /* primary text */
+  --color-n400: #505f79; /* secondary text, inactive nav */
+  --color-n40: #dfe2e6; /* dividers, borders */
+  --color-n30: #ebedf0; /* card borders */
+  --color-n20: #f5f6f7; /* page background */
+
+  /* Foundation / Blue — the RA accent (buttons, active nav, links) */
+  --color-blue-600: #006fe8;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-n20);
+  color: var(--color-n900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
