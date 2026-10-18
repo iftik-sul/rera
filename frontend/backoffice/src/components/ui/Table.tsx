@@ -27,7 +27,7 @@ export type Column<T> = {
 };
 
 /** What clicking a row does: open a page, open a pop-up, or nothing. */
-export type RowAction = { href: string } | { onClick: () => void } | null;
+export type RowAction = { href: string; onClick?: () => void } | { onClick: () => void } | null;
 
 const toneClass = {
   link: "font-semibold text-blue-600",
@@ -72,7 +72,7 @@ export function Table<T>({
         const action = rowAction(r);
         if (action && "href" in action)
           return (
-            <Link role="row" key={rowKey(r)} href={action.href} className={`${cls} hover:bg-n20`} style={grid}>
+            <Link role="row" key={rowKey(r)} href={action.href} onClick={action.onClick} className={`${cls} hover:bg-n20`} style={grid}>
               {cells}
             </Link>
           );
@@ -127,6 +127,7 @@ export function TableCard<T>({
   filters,
   searchText,
   paginate,
+  note,
   ...table
 }: {
   title: string;
@@ -143,6 +144,8 @@ export function TableCard<T>({
    * Leave it out for an embedded table (it shows every row and has no pagination).
    */
   paginate?: Noun;
+  /** Small grey note under the table (e.g. a report's totals line). */
+  note?: React.ReactNode;
 } & Parameters<typeof Table<T>>[0]) {
   const defs = filters ?? [];
   const [query, setQuery] = useState("");
@@ -281,6 +284,7 @@ export function TableCard<T>({
         {paginate && (
           <Pagination page={current} total={matched.length} allTotal={table.rows.length} filtered={filtered} noun={paginate} onPage={goTo} />
         )}
+        {note && <p className="px-5 py-4 text-xs text-n400">{note}</p>}
       </div>
     </section>
   );
