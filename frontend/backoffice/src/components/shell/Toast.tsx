@@ -7,10 +7,16 @@ import { Icon } from "./Icon";
 /**
  * Confirmation message after an action (Figma component "Toast").
  * A page calls showToastOnNextPage() just before navigating; the next page
- * shows it top-right for a few seconds.
+ * shows it top-right for a few seconds. showToast() shows one on the current page.
  */
 type ToastMsg = { title: string; body: string };
 const KEY = "reran.toast";
+const EVENT = "reran:toast";
+
+/** Show a toast now, without leaving the page (e.g. after suspending an account). */
+export function showToast(msg: ToastMsg) {
+  window.dispatchEvent(new CustomEvent<ToastMsg>(EVENT, { detail: msg }));
+}
 
 export function showToastOnNextPage(msg: ToastMsg) {
   try {
@@ -34,6 +40,12 @@ export function ToastHost() {
       /* nothing to show */
     }
   }, [pathname]);
+
+  useEffect(() => {
+    const onToast = (e: Event) => setMsg((e as CustomEvent<ToastMsg>).detail);
+    window.addEventListener(EVENT, onToast);
+    return () => window.removeEventListener(EVENT, onToast);
+  }, []);
 
   useEffect(() => {
     if (!msg) return;

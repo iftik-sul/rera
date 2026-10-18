@@ -1,5 +1,6 @@
-import { NotBuiltYet } from "@/components/ui/NotBuiltYet";
+import { RevenueReports } from "@/components/revenue/RevenueReports";
 
-export default function Placeholder() {
-  return <NotBuiltYet title="Revenue Reports" />;
+/** Revenue Reports — the Director-General's read-only view (no filing card, no Reconciliation links). */
+export default function Page() {
+  return <RevenueReports />;
 }
