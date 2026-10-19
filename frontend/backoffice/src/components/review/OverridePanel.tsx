@@ -41,20 +41,23 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
         <Badge tone="warning">Step-up required</Badge>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-control border border-control p-4">
+      {/* Fields sit on an even four-column grid, so the two cards line up column for column. */}
+      <div className="flex flex-col gap-4 rounded-control border border-control p-5">
         <h3 className="type-group-title text-strong">Recorded decision</h3>
-        <div className="flex gap-6">
+        <div className="grid grid-cols-4 gap-x-6 gap-y-4">
           <Pair label="Outcome" value={<StatusBadge status={recorded.outcome} />} />
           <Pair label="Decided by" value={recorded.decidedBy} />
           <Pair label="Role" value={recorded.role} />
           <Pair label="Recorded" value={recorded.recordedAt} />
+          <div className="col-span-4">
+            <Pair label="Reason recorded" value={recorded.reason} />
+          </div>
         </div>
-        <Pair label="Reason recorded" value={recorded.reason} />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-control border border-control p-4">
+      <div className="flex flex-col gap-4 rounded-control border border-control p-5">
         <h3 className="type-group-title text-strong">Issued output</h3>
-        <div className="flex gap-6">
+        <div className="grid grid-cols-4 gap-x-6 gap-y-4">
           {actions.issued.map((f) => (
             <Pair key={f.label} label={f.label} value={f.value} />
           ))}
@@ -124,7 +127,7 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
 
 function Pair({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex min-w-0 flex-col gap-1">
       <span className="type-caption text-muted">{label}</span>
       <span className="type-body text-strong">{value}</span>
     </div>

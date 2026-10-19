@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SideSwitch } from "@/components/ui/SideSwitch";
 import type { FilterDef } from "@/components/ui/Table";
+import { isRange, parseRange } from "@/components/ui/Filters";
 import { SAMPLE_TODAY } from "@/data/sample-date";
 import { completedRecord, type CompletedRecord } from "@/data/director-general/reviews";
 import { isCompleted, OUTCOME_ORDER, outcomeValue } from "@/data/director-general/work-queue";
@@ -71,7 +72,15 @@ const PERIODS: Record<string, (at: number) => boolean> = {
 
 /** "Decided" date filter — This month · Last 3 months · This year (they overlap, so it uses fixed options). */
 export function decidedPeriodFilter<R>(at: (r: R) => number): FilterDef<R> {
-  return { label: "Decided", key: "decided", value: () => "", options: Object.keys(PERIODS), matches: (r, o) => PERIODS[o](at(r)) };
+  return { label: "Decided", key: "decided", value: () => "", options: Object.keys(PERIODS), matches: (r, o) => inPeriod(at(r), o), dates: true };
+}
+/** A quick period, or a custom "YYYY-MM-DD..YYYY-MM-DD" range (both ends inclusive, either may be open). */
+function inPeriod(at: number, o: string) {
+  if (!isRange(o)) return PERIODS[o]?.(at) ?? true;
+  const { from, to } = parseRange(o);
+  const day = new Date(at);
+  const iso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+  return (!from || iso >= from) && (!to || iso <= to);
 }
 
 /** The filters every Completed side shares, after its own (service / trustee, category). */

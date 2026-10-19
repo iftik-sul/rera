@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
-import { FilterDropdown, SearchBox } from "./Filters";
+import { DateRangeFilter, FilterDropdown, SearchBox } from "./Filters";
 import { Pagination, PAGE_SIZE, pageCount, type Noun } from "./Pagination";
 
 /**
@@ -111,6 +111,8 @@ export type FilterDef<T> = {
    */
   options?: string[];
   matches?: (r: T, option: string) => boolean;
+  /** Show as a date filter — the options as quick periods, plus a custom From – To range ("from..to" goes to `matches`). */
+  dates?: boolean;
 };
 
 /**
@@ -274,7 +276,11 @@ export function TableCard<T>({
             {lead}
             <SearchBox value={query} onChange={search} />
             {defs.map((f) => (
-              <FilterDropdown key={f.key} label={f.label} options={optionsFor(f)} value={chosen[f.key] ?? null} onChange={(v) => choose(f.key, v)} />
+              f.dates ? (
+                <DateRangeFilter key={f.key} label={f.label} options={optionsFor(f)} value={chosen[f.key] ?? null} onChange={(v) => choose(f.key, v)} />
+              ) : (
+                <FilterDropdown key={f.key} label={f.label} options={optionsFor(f)} value={chosen[f.key] ?? null} onChange={(v) => choose(f.key, v)} />
+              )
             ))}
             {filtered && (
               <Button variant="link" onClick={clearAll}>

@@ -58,11 +58,11 @@ export const ageState = (a: Age) => (a.tone === "breach" ? "Breaching SLA" : a.t
 export const AGE_ORDER = ["Within SLA", "Ageing", "Breaching SLA"];
 
 // ── Transaction ─────────────────────────────────────────────
+// "Decided This Month" was dropped 2026-10-19: decided work lives on the Completed side (spec §4d), and §1 excludes it.
 export const transactionKpis: Kpi[] = [
   { label: "Awaiting Review", value: "38", caption: "New submissions" },
   { label: "Under Review", value: "24", caption: "Assigned to reviewers" },
   { label: "Information Requested", value: "11", caption: "Waiting on applicants" },
-  { label: "Decided This Month", value: "83", caption: "64 approved · 19 closed" },
   { label: "Breaching SLA", value: "7", caption: "Needs immediate attention" },
 ];
 
@@ -126,7 +126,6 @@ export const escrowKpis: Kpi[] = [
   { label: "Awaiting Review", value: "9", caption: "New submissions" },
   { label: "Under Review", value: "6", caption: "Assigned to reviewers" },
   { label: "Information Requested", value: "2", caption: "Waiting on applicants" },
-  { label: "Decided This Month", value: "14", caption: "11 approved · 3 closed" }, // Figma copied the Transaction caption
   { label: "Breaching SLA", value: "1", caption: "Needs immediate attention" },
 ];
 
