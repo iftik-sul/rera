@@ -34,6 +34,8 @@ import { freeCredential, registerEntries } from "./register";
 import {
   escrowRows,
   licensingRows,
+  DISSENT,
+  FINAL_SIGNOFF,
   claimSince,
   reviewId,
   transactionRows,
@@ -70,7 +72,6 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]/g, "");
 const ageDays = (a: Age) => parseInt(a.text.replace(/\D/g, ""), 10) || 1;
 
-const UR: Status = { label: "Under Review", tone: "info" };
 const APPROVED: Status = { label: "Approved", tone: "success" };
 const REJECTED: Status = { label: "Rejected", tone: "error" };
 const isDecided = (s: Status) => !s.overturned && (s.label === "Approved" || s.label === "Rejected");
@@ -693,11 +694,12 @@ function licensingReview(row: LicensingRow, i: number): Application {
       : claimedByOther
         ? `Stage 3 of 3 — claimed by ${row.claimedBy}`
         : "Stage 3 of 3 — your decision issues the outcome.",
-    status: decided ? row.status : UR,
+    // In the chain the Review Stage badge takes the status's place (status-badges.md §6).
+    status: decided ? row.status : dissent ? DISSENT : FINAL_SIGNOFF,
     metaSubtitle: `${who} · ${row.category}`,
     meta: [
       { label: "Expected output", value: shape.output.artefact },
-      { label: "Review stage", value: decided ? "Decided — Stage 3" : "Stage 3 of 3 — Awaiting Final Sign-off" },
+      { label: "Review stage", value: decided ? "Decided — Stage 3" : "Stage 3 of 3 — Licensing & Registration Officer" },
     ],
     claim: decided
       ? undefined

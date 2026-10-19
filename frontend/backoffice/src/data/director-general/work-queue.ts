@@ -28,6 +28,11 @@ const linked = <T extends { reference: string; opens?: Opens }>(rows: T[]): T[] 
   rows.map((r) => ({ ...r, opens: r.opens ?? (`review:${reviewId(r.reference)}` as Opens) }));
 
 const UR: Status = { label: "Under Review", tone: "info" };
+// Licensing Review Stage (KB status-badges.md §6): shown IN PLACE of the decision status while an
+// item is in the chain. The DG's queue is stage 3, so its open rows read Under Final Sign-off —
+// or Dissent Recorded, where the Authorizer dissented (the exception wins).
+export const FINAL_SIGNOFF: Status = { label: "Under Final Sign-off", tone: "purple" };
+export const DISSENT: Status = { label: "Dissent Recorded", tone: "orange" };
 const AR: Status = { label: "Awaiting Review", tone: "info" };
 const IR: Status = { label: "Information Requested", tone: "warning" };
 const RET: Status = { label: "Returned", tone: "warning" };
@@ -165,6 +170,8 @@ export type LicensingRow = {
 
 /** The three licensing categories and which service belongs to which (licensing-categories.md §2). */
 export type LicensingCategory = "Company Licensing & Permits" | "Individual Practitioner Credentials" | "Institutional Accreditation";
+/** Status filter order on the licensing queue: the stage badges, then decided items. */
+export const LICENSING_STATUS_ORDER = ["Under Final Sign-off", "Dissent Recorded", "Decided"];
 export const CATEGORY_ORDER: LicensingCategory[] = ["Company Licensing & Permits", "Individual Practitioner Credentials", "Institutional Accreditation"];
 const categoryOf = (service: string): LicensingCategory =>
   /Practice Card/.test(service) ? "Individual Practitioner Credentials" : /Accreditation/.test(service) ? "Institutional Accreditation" : "Company Licensing & Permits";
@@ -175,7 +182,7 @@ export const claimSince = (r: Pick<LicensingRow, "reference">) => {
   return `${String(8 + (n % 3)).padStart(2, "0")}:${String((n * 7) % 60).padStart(2, "0")} today`;
 };
 
-const lic = (reference: string, applicant: string, service: string, submitted: string, atStage: string, claimedBy: string | null, opens?: Opens, status: Status = UR): LicensingRow => ({
+const lic = (reference: string, applicant: string, service: string, submitted: string, atStage: string, claimedBy: string | null, opens?: Opens, status: Status = FINAL_SIGNOFF): LicensingRow => ({
   reference, applicant, service, status, submitted, atStage, claimedBy, category: categoryOf(service), opens,
 });
 
@@ -183,7 +190,7 @@ export const licensingRows: LicensingRow[] = linked([
   // Submitted 28 Sep (its review chain); claimed by the DG, as its Application Review says. Figma had "2 days ago" and unclaimed.
   lic("LIC-2026-00412", "Sahara Estates Development Co", "Real Estate Licensing Application", "13 days ago", "4 hours", "Adaeze Nwosu", "review:lic-stage3"),
   lic("LIC-2026-00369", "Zenith Realty Partners Ltd", "Real Estate Permit Application", "14 days ago", "1 day", "Funke Adeyemi"),
-  lic("LIC-2026-00394", "Mainland Realty Consulting Ltd", "Real Estate Licensing Application", "9 days ago", "2 days", null),
+  lic("LIC-2026-00394", "Mainland Realty Consulting Ltd", "Real Estate Licensing Application", "9 days ago", "2 days", null, undefined, DISSENT),
   lic("LIC-2026-00398", "Lagos Institute of Property Studies", "Accreditation of Training Entities", "8 days ago", "1 day", "Funke Adeyemi"),
   lic("LIC-2026-00387", "Heritage Valuations & Surveyors", "Cancel Professional Practice Card", "12 days ago", "6 hours", null),
   lic("LIC-2026-00376", "Okafor & Sons Properties Ltd", "Issue Professional Practice Card", "4 days ago", "1 day", null),
@@ -214,7 +221,7 @@ const openLic = licensingRows.filter((r) => statusFilterValue(r.status) !== "Dec
 const daysOf = (r: LicensingRow) => parseInt(r.submitted, 10);
 const longest = [...openLic].sort((a, b) => daysOf(b) - daysOf(a))[0];
 export const licensingKpis: Kpi[] = [
-  { label: "Dissents to resolve", value: "1", caption: "Authorizer disagreed" },
+  { label: "Dissents to resolve", value: String(openLic.filter((r) => r.status.label === DISSENT.label).length), caption: "Authorizer disagreed" },
   { label: "Longest waiting", value: `${daysOf(longest)} days`, caption: longest.reference },
   { label: "Waiting to be picked up", value: String(openLic.filter((r) => !r.claimedBy).length), caption: "Unclaimed at your stage" },
   { label: "My open items", value: String(openLic.filter((r) => r.claimedBy === "Adaeze Nwosu").length), caption: "Claimed by you" },
