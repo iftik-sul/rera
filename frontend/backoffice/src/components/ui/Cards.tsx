@@ -113,11 +113,11 @@ export function DetailHeader({
 }
 
 /** Full-width status banner (e.g. a report period's state). */
-export function Banner({ tone, children }: { tone: "success" | "warning" | "neutral"; children: React.ReactNode }) {
+export function Banner({ tone, icon = "check-circle", children }: { tone: "success" | "warning" | "neutral"; icon?: "check-circle" | "x-circle"; children: React.ReactNode }) {
   const fill = tone === "success" ? "bg-success-bg" : tone === "warning" ? "bg-warning-bg" : "bg-neutral-bg";
   return (
     <div role="status" className={`flex items-center gap-3 rounded-card px-4 py-3 type-body-strong text-strong ${fill}`}>
-      <Icon name="check-circle" size={20} className={tone === "success" ? "text-valid" : tone === "warning" ? "text-ageing" : "text-muted"} />
+      <Icon name={icon} size={20} className={tone === "success" ? "text-valid" : tone === "warning" ? "text-ageing" : "text-muted"} />
       {children}
     </div>
   );

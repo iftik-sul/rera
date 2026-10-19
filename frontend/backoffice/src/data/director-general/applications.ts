@@ -18,7 +18,7 @@ type ReasonDialog = { title: string; body: string[]; label: string; placeholder:
 export type DecideActions = {
   /** Label on the request button: "Request Info" (transaction) or "Request additional information" (licensing). */
   requestLabel: string;
-  approve: { title: string; body: string[]; callout: string; toast: Toast };
+  approve: { title: string; body: string[]; callout: string; toast: Toast; /** Confirm button; default "Approve and issue". */ confirm?: string };
   request: ReasonDialog;
   return: ReasonDialog;
   reject: ReasonDialog & { callout: string };
@@ -31,11 +31,22 @@ export type OverrideActions = {
   banner: string;
   footnote: string;
   overturn: { title: string; body: string; callout: string; label: string; placeholder: string; acknowledge: string };
-  revoke: { title: string; body: string; callout: string; confirm: string; toast: Toast };
+  /** The step after re-authentication: revoke the output (Approved → Rejected) or issue it fresh (Rejected → Approved). */
+  revoke: { title: string; body: string; callout: string; confirm: string; toast: Toast; variant?: "danger" | "primary" };
 };
+
+/** Why the decision bar is replaced by a notice (the item is with the applicant, or another officer holds it). */
+export type Held = { tone: "warning" | "neutral"; title: string; body: string };
+
+/** A guard on Approve / Reject (e.g. M-BLK-02: escrow item with no trustee assessment). */
+export type DecideBlock = { title: string; body: string; helpTitle: string; help: string };
+
+export type Queue = "transaction" | "escrow" | "licensing";
 
 export type Application = {
   id: string;
+  /** Which Work Queue tab the item belongs to (breadcrumb target). */
+  queue: Queue;
   /** Top bar */
   title: string;
   subtitle: string;
@@ -43,7 +54,8 @@ export type Application = {
   status: Status;
   metaSubtitle: string;
   meta: [Field, Field];
-  claim?: { held: string; detail: string };
+  /** Claim strip. `mine` = held by the DG (Release item shows); otherwise it is read-only for the DG. */
+  claim?: { held: string; detail: string; mine?: boolean };
   /** Licensing only: "Review chain" card */
   chain?: {
     stages: { name: string; outcome: Status; recorded: string; reason: string }[];
@@ -55,18 +67,24 @@ export type Application = {
   documents: Doc[];
   checksTitle: string;
   checks: string[];
+  /** Checks still waiting (shown as "Awaiting", and the card reads Attention instead of All Clear). */
+  checksPending?: string[];
+  /** Escrow items only (application-review.md §5). */
+  escrow?: { trustee: { received: boolean; summary: string; fields: Field[] }; account: Field[] };
   decide?: DecideActions;
+  decideBlock?: DecideBlock;
+  held?: Held;
   override?: OverrideActions;
 };
 
-const verified: Status = { label: "Verified", tone: "success" };
-const pending: Status = { label: "Pending", tone: "warning" };
-const underReview: Status = { label: "Under Review", tone: "info" };
-const approved: Status = { label: "Approved", tone: "success" };
+export const verified: Status = { label: "Verified", tone: "success" };
+export const pending: Status = { label: "Pending", tone: "warning" };
+export const underReview: Status = { label: "Under Review", tone: "info" };
+export const approved: Status = { label: "Approved", tone: "success" };
 
 // Two transaction screens, one per Work Queue row that opens them (Figma reused one
 // "Grandeur Properties / TRX-2024-00891" frame for both rows — corrected 2026-10-19).
-const summaryFor = (o: { entity: string; rc: string; contact: string; developer: string; project: string; unit: string; type: string; txn: string; price: string; fee: string }): Application["summary"] => [
+export const summaryFor = (o: { entity: string; rc: string; contact: string; developer: string; project: string; unit: string; type: string; txn: string; price: string; fee: string }): Application["summary"] => [
   {
     title: "Applicant information",
     fields: [
@@ -113,11 +131,13 @@ const grandeurDocs: Doc[] = [
 ];
 const decidedDocs: Doc[] = grandeurDocs.map((d) => ({ ...d, uploaded: d.uploaded.replace("Sep 1", "Sep 2"), status: verified }));
 
-const grandeurChecks = ["Developer registration", "Project registration", "Unit/plot registration", "Title deed status", "Applicant validity"];
+export const grandeurChecks = ["Developer registration", "Project registration", "Unit/plot registration", "Title deed status", "Applicant validity"];
 
-export const applications: Application[] = [
+/** The three hand-drawn reviews from Figma. Every other queue row gets a review built in reviews.ts. */
+export const featuredApplications: Application[] = [
   {
     id: "trx-undecided",
+    queue: "transaction",
     title: "TRX-2024-0891 — Register Initial Sale",
     subtitle: "Adron Homes & Properties",
     status: underReview,
@@ -167,6 +187,7 @@ export const applications: Application[] = [
   },
   {
     id: "trx-decided",
+    queue: "transaction",
     title: "TRX-2024-0887 — Register Resale",
     subtitle: "Mixta Nigeria Ltd",
     status: approved,
@@ -220,6 +241,7 @@ export const applications: Application[] = [
   },
   {
     id: "lic-stage3",
+    queue: "licensing",
     title: "LIC-2026-00412 — Real Estate Licensing Application",
     subtitle: "Stage 3 of 3 — your decision issues the licence.",
     status: underReview,
@@ -228,7 +250,7 @@ export const applications: Application[] = [
       { label: "Expected output", value: "Real Estate Developer Licence" },
       { label: "Review stage", value: "Stage 3 of 3 — Awaiting Final Sign-off" },
     ],
-    claim: { held: "Claimed by you", detail: "· since 11:46 today · lapses after 30 minutes of inactivity" },
+    claim: { held: "Claimed by you", detail: "· since 11:46 today · lapses after 30 minutes of inactivity", mine: true },
     chain: {
       stages: [
         {
@@ -330,4 +352,3 @@ export const applications: Application[] = [
   },
 ];
 
-export const findApplication = (id: string) => applications.find((a) => a.id === id);

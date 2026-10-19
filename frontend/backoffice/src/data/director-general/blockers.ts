@@ -14,7 +14,7 @@ export const blockers: Record<BlockerId, { title: string; body: string; helpTitl
   },
   "already-overturned": {
     title: "This item is already overturned",
-    body: "This decision was overturned by Ngozi Eze (Director-General / Registrar) on 5 Oct 2026. Overturned is final — a decision can't be reversed twice, or the record could never say what it currently stands at.",
+    body: "This decision was overturned by Adaeze Nwosu (Director-General / Registrar) on 5 Oct 2026. Overturned is final — a decision can't be reversed twice, or the record could never say what it currently stands at.",
     helpTitle: "What happens instead",
     help: "There is no second overturn. If the applicant disputes the outcome, they submit a fresh application.",
   },

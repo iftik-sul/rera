@@ -7,16 +7,18 @@ import { showToastOnNextPage } from "@/components/shell/Toast";
 import { href } from "@/config/roles";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Cards";
-import { Modal, ReasonField } from "@/components/ui/Modal";
+import { HelpBox, Modal, ReasonField } from "@/components/ui/Modal";
 import type { Application, DecideActions } from "@/data/director-general/applications";
 
-type Which = "approve" | "request" | "return" | "reject" | null;
+type Which = "approve" | "request" | "return" | "reject" | "blocked" | null;
 
 /**
  * Decision bar pinned to the bottom of Application Review, plus its four
  * pop-ups (Figma M-DEC-01 … M-DEC-04). Confirming goes to the Dashboard
  * (as in the Figma prototype) and shows a confirmation toast there.
  * Request / Return / Reject need a reason before they can be confirmed.
+ * A guard on the item (app.decideBlock — e.g. M-BLK-02, no trustee assessment) makes
+ * Approve and Reject explain why instead of acting; Request and Return still work.
  */
 export function DecisionPanel({ app, actions }: { app: Application; actions: DecideActions }) {
   const role = useRole();
@@ -26,7 +28,7 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
 
   const show = (w: Which) => {
     setReason("");
-    setOpen(w);
+    setOpen(app.decideBlock && (w === "approve" || w === "reject") ? "blocked" : w);
   };
   const close = () => setOpen(null);
   const done = (toast: { title: string; body: string }) => {
@@ -60,13 +62,25 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
           <>
             <Button onClick={close}>Cancel</Button>
             <Button variant="primary" onClick={() => done(actions.approve.toast)}>
-              Approve and issue
+              {actions.approve.confirm ?? "Approve and issue"}
             </Button>
           </>
         }
       >
         <Notice>{actions.approve.callout}</Notice>
       </Modal>
+
+      {app.decideBlock && (
+        <Modal
+          open={open === "blocked"}
+          onClose={close}
+          title={app.decideBlock.title}
+          description={app.decideBlock.body}
+          actions={<Button onClick={close}>Dismiss</Button>}
+        >
+          <HelpBox title={app.decideBlock.helpTitle}>{app.decideBlock.help}</HelpBox>
+        </Modal>
+      )}
 
       {(["request", "return"] as const).map((w) => {
         const d = actions[w];

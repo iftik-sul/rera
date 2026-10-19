@@ -4,7 +4,8 @@
  * `opens` says what clicking the row does, matching the Figma prototype links:
  *   review:<id>  → Application Review page for that sample application
  *   blocker:<id> → a "you can't overturn this" pop-up on top of the queue
- * Rows without `opens` aren't linked in Figma, so they aren't clickable yet.
+ * Rows Figma didn't link open their own review, built from the row (reviews.ts), so no row is a
+ * dead end. `reviewId` turns a reference into that review's page id.
  *
  * Row counts: page 1 (the first 10 rows) is exactly the Figma frame. Every
  * queue carries exactly 20 open sample rows — two full pages of 10 — so pagination
@@ -20,6 +21,11 @@ export type Kpi = { label: string; value: string; caption: string };
 export type Age = { text: string; tone: "normal" | "warning" | "breach" };
 export type Opens = `review:${string}` | `blocker:${BlockerId}`;
 export type BlockerId = "not-decided" | "already-overturned" | "not-an-application";
+
+/** Page id of the review built for a row: "TRX-2024-0865" → "trx-2024-0865". */
+export const reviewId = (reference: string) => reference.toLowerCase();
+const linked = <T extends { reference: string; opens?: Opens }>(rows: T[]): T[] =>
+  rows.map((r) => ({ ...r, opens: r.opens ?? (`review:${reviewId(r.reference)}` as Opens) }));
 
 const UR: Status = { label: "Under Review", tone: "info" };
 const AR: Status = { label: "Awaiting Review", tone: "info" };
@@ -57,7 +63,7 @@ export type TransactionRow = {
   opens?: Opens;
 };
 
-export const transactionRows: TransactionRow[] = [
+export const transactionRows: TransactionRow[] = linked([
   { reference: "TRX-2024-0891", service: "Register Initial Sale", applicant: "Adron Homes & Properties", subject: "Victoria Island Plot A-12", status: UR, age: { text: "3 days", tone: "normal" }, opens: "review:trx-undecided" },
   { reference: "TRX-2024-0887", service: "Register Resale", applicant: "Mixta Nigeria Ltd", subject: "Eko Atlantic Tower Unit 2304", status: APPROVED, age: { text: "Decided day 4", tone: "normal" }, opens: "review:trx-decided" }, // was "Information Requested" in Figma, but it opens the decided-item screen
 
@@ -85,7 +91,7 @@ export const transactionRows: TransactionRow[] = [
   { reference: "TRX-2024-0796", service: "Register Initial Sale", applicant: "Victoria Crest Homes", subject: "Chevron Drive Terrace 12", status: APPROVED, age: { text: "Decided day 2", tone: "normal" } },
   { reference: "TRX-2024-0792", service: "Register Mortgage", applicant: "Enugu Royal Estates", subject: "Independence Layout Villa 9", status: REJECTED, age: { text: "Decided day 5", tone: "normal" } },
   { reference: "TRX-2024-0788", service: "Register Resale", applicant: "Atlantic Shores Ltd", subject: "Lekki Phase 2 Unit 14C", status: APPROVED, age: { text: "Decided day 3", tone: "normal" } },
-];
+]);
 
 // ── Escrow ──────────────────────────────────────────────────
 export const escrowKpis: Kpi[] = [
@@ -109,8 +115,8 @@ export type EscrowRow = {
 const RECEIVED: Status = { label: "Received", tone: "success" };
 const AWAIT_TRUSTEE: Status = { label: "Awaiting Trustee", tone: "warning" };
 
-export const escrowRows: EscrowRow[] = [
-  { reference: "REF-ESC-1001", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 7, Lekki Phase 1", status: UR, age: { text: "3 days", tone: "normal" } }, // Figma linked this to the TRANSACTION review; no escrow review is designed for the DG yet, so it opens nothing
+export const escrowRows: EscrowRow[] = linked([
+  { reference: "REF-ESC-1001", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 7, Lekki Phase 1", status: UR, age: { text: "3 days", tone: "normal" } }, // Figma linked this to the TRANSACTION review; it opens its own escrow review
   { reference: "REF-ESC-1002", escrowFlag: AWAIT_TRUSTEE, applicant: "Zenith Trust Services", subject: "New Escrow Account — Block A, Banana Island", status: AR, age: { text: "7 days", tone: "normal" } },
   { reference: "REF-ESC-1003", escrowFlag: RECEIVED, applicant: "GTBank Trustee Division", subject: "Escrow Amendment — Tower B, Victoria Island", status: IR, age: { text: "12 days", tone: "warning" } },
   { reference: "REF-ESC-1004", escrowFlag: RECEIVED, applicant: "First Bank Trust Co", subject: "Escrow Closure — Villa 12, Maitama", status: UR, age: { text: "1 day", tone: "normal" } },
@@ -134,7 +140,7 @@ export const escrowRows: EscrowRow[] = [
   // ── Decided items (hidden until Status → Decided) ──
   { reference: "REF-ESC-0994", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 2, Lekki Phase 1", status: APPROVED, age: { text: "Decided day 3", tone: "normal" } },
   { reference: "REF-ESC-0991", escrowFlag: RECEIVED, applicant: "Zenith Trust Services", subject: "Escrow Closure — Block E, Banana Island", status: REJECTED, age: { text: "Decided day 4", tone: "normal" } },
-];
+]);
 
 // ── Licensing (stage 3 of 3) ────────────────────────────────
 
@@ -162,7 +168,7 @@ const lic = (reference: string, applicant: string, service: string, submitted: s
   reference, applicant, service, status, submitted, atStage, claimedBy, category: categoryOf(service), opens,
 });
 
-export const licensingRows: LicensingRow[] = [
+export const licensingRows: LicensingRow[] = linked([
   // Submitted 28 Sep (its review chain); claimed by the DG, as its Application Review says. Figma had "2 days ago" and unclaimed.
   lic("LIC-2026-00412", "Sahara Estates Development Co", "Real Estate Licensing Application", "13 days ago", "4 hours", "Adaeze Nwosu", "review:lic-stage3"),
   lic("LIC-2026-00369", "Zenith Realty Partners Ltd", "Real Estate Permit Application", "14 days ago", "1 day", "Funke Adeyemi"),
@@ -189,7 +195,7 @@ export const licensingRows: LicensingRow[] = [
   lic("LIC-2026-00298", "Greenfield Developers Ltd", "Real Estate Licensing Application", "26 days ago", "—", null, undefined, APPROVED),
   lic("LIC-2026-00291", "Yemi Olatunji", "Issue Professional Practice Card", "27 days ago", "—", null, undefined, REJECTED),
   lic("LIC-2026-00286", "Lagos School of Valuation", "Accreditation of Training Entities", "29 days ago", "—", null, undefined, APPROVED),
-];
+]);
 
 // Counted from the rows above, so the cards and the table can't disagree (Figma's said
 // "Longest waiting 12 days" while three of its own rows had waited longer).

@@ -15,7 +15,8 @@ import type { Application, OverrideActions } from "@/data/director-general/appli
 /**
  * Override panel on a decided item, and its two-step flow:
  *   Overturn decision (Figma M-GOV-03) → step-up re-authentication (M-SYS-02, required by
- *   KB modals.md §9) → Revoke the issued output (M-GOV-04) → Dashboard.
+ *   KB modals.md §9) → Revoke the issued output (M-GOV-04, or M-LIC-03 for a credential)
+ *   — or, overturning a rejection, issue the output fresh dated today → Dashboard.
  * Overturn needs a reason and the tick box before it can be confirmed.
  */
 export function OverridePanel({ app, actions }: { app: Application; actions: OverrideActions }) {
@@ -104,7 +105,7 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
           <>
             <Button onClick={close}>Cancel</Button>
             <Button
-              variant="danger"
+              variant={actions.revoke.variant ?? "danger"}
               onClick={() => {
                 showToastOnNextPage(actions.revoke.toast);
                 router.push(href(role, "dashboard"));

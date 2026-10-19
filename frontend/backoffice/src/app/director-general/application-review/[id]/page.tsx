@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { applications, findApplication } from "@/data/director-general/applications";
+import { applications, findApplication } from "@/data/director-general/reviews";
 import { ApplicationReview } from "@/components/review/ApplicationReview";
 
 /** One static page per sample application (the site is pre-built, so the list is fixed). */

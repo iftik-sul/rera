@@ -8,6 +8,9 @@
  */
 import { directorGeneral, href } from "@/config/roles";
 import { staff } from "./staff";
+import { applications } from "./reviews";
+import { entryDetails } from "./register";
+import { signoffDetails } from "./signoff";
 
 export type ActionType = "Decision" | "Config" | "Access" | "Override";
 export const ACTION_TYPE_ORDER: ActionType[] = ["Decision", "Override", "Config", "Access"];
@@ -50,10 +53,10 @@ export const auditEntries: AuditEntry[] = [
   // ── Beyond the Figma frame: sample entries for page 2 ──
   a("aud-0858", "30 Sep 2026, 09:42", "Ibrahim Musa", "Licensing Reviewer", "Recommended approval", "Decision", "Licensing", "LIC-2026-00412", "—"), // matches the review chain on its Application Review
   a("aud-0886", "08 Oct 2026, 09:12", "Adaeze Nwosu", DG, "Revenue report exported", "Access", "Finance", "Sep 2026", "—"),
-  a("aud-0884", "07 Oct 2026, 16:05", "Chukwuemeka Obi", "C&E Auditor", "Information requested", "Decision", "Escrow", "ESC-2024-0312", "Trustee confirmation letter missing"),
+  a("aud-0884", "07 Oct 2026, 16:05", "Chukwuemeka Obi", "C&E Auditor", "Information requested", "Decision", "Escrow", "REF-ESC-1016", "Trustee confirmation letter missing"),
   a("aud-0881", "07 Oct 2026, 10:47", "Amaka Okeke", "Revenue & Finance", "Manual payment recorded", "Config", "Finance", "PAY-2026-01187", "Cash at the Lagos office"),
   a("aud-0879", "06 Oct 2026, 14:18", "Adaeze Nwosu", DG, "Account deactivated", "Access", "Access", "f.adebayo@rera.gov.ng", "Left the authority"),
-  a("aud-0877", "06 Oct 2026, 09:55", "Funke Adeyemi", "Licensing Officer", "Escalated for sign-off", "Decision", "Licensing", "RRA/SO/2026/0218", "Licence lapsed; renewal window closed"),
+  a("aud-0877", "05 Oct 2026, 16:20", "Funke Adeyemi", "Licensing Officer", "Escalated for sign-off", "Decision", "Licensing", "RRA/SO/2026/0218", "Licence lapsed; renewal window closed"),
   a("aud-0874", "05 Oct 2026, 15:31", "Adaeze Nwosu", DG, "Role assigned", "Access", "Access", "g.etim@rera.gov.ng", "Licensing Reviewer — Individual Practitioner Credentials"),
   a("aud-0861", "02 Oct 2026, 11:42", "Chukwuemeka Obi", "C&E Auditor", "Approved", "Decision", "Transaction", "TRX-2024-0887", "Registry checks clear; title deed issued"), // matches the recorded decision on its Application Review
   a("aud-0868", "03 Oct 2026, 16:40", "Amaka Okeke", "Revenue & Finance", "Period marked Filed", "Config", "Finance", "Sep 2026", "VAT return submitted to FIRS"),
@@ -73,15 +76,21 @@ export function dateBucket(timestamp: string): string {
 }
 export const DATE_ORDER = ["Today", "Last 7 days", "Earlier"];
 
-/** Where the subject opens, when that screen exists in the sample. */
+/** Where the subject opens — every application, register entry, sign-off and staff account in the sample has a screen. */
 export function subjectLink(subject: string): string | null {
   const dg = (p: string) => href(directorGeneral, p);
   const member = staff.find((m) => m.email === subject);
   if (member) return dg(`admin-console/${member.id}`);
-  if (subject === "CRED/LIC/23/0044" || subject === "LIC-2023-0044") return dg("practitioner-register/cred-lic-23-0044");
-  if (subject === "RRA/SO/2026/0218") return dg("sign-off-queue/rra-so-2026-0218");
-  if (subject === "TRX-2024-0887") return dg("application-review/trx-decided");
-  if (subject === "LIC-2026-00412") return dg("application-review/lic-stage3");
+  // An issuing decision opens the credential it issued (LIC-2023-0044 → CRED/LIC/23/0044).
+  const issued = subject.match(/^LIC-20(\d\d)-(\d{4})$/);
+  const credential = issued ? entryDetails.find((d) => d.groups.some((g) => g.fields.some((f) => f.label === "Issuing decision" && f.value === subject))) : undefined;
+  if (credential) return dg(`practitioner-register/${credential.id}`);
+  const entry = entryDetails.find((d) => d.title.startsWith(subject + " "));
+  if (entry) return dg(`practitioner-register/${entry.id}`);
+  const matter = signoffDetails.find((d) => d.reference === subject);
+  if (matter) return dg(`sign-off-queue/${matter.id}`);
+  const app = applications.find((a) => a.title.startsWith(subject + " "));
+  if (app) return dg(`application-review/${app.id}`);
   if (subject === "Sep 2026") return dg("revenue-reports") + "?period=2026-09";
   return null;
 }
