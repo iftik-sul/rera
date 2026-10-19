@@ -34,7 +34,7 @@ export default function EscrowQueue() {
         columns={columns}
         rows={escrowRows}
         rowKey={(r) => r.reference}
-        rowAction={(r) => rowAction(role, r.opens, () => {})}
+        rowAction={(r) => rowAction(role, r.opens)}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.subject}`}
         paginate={{ one: "application", many: "applications" }}
       />

@@ -146,6 +146,7 @@ export const featuredApplications: Application[] = [
       { label: "Output", value: "Title Deed" },
       { label: "SLA", value: "Day 3 of 5" },
     ],
+    claim: { held: "Claimed by you", detail: "· since you opened it · lapses after 30 minutes of inactivity", mine: true },
     summary: adronSummary,
     documents: grandeurDocs,
     checksTitle: "Registry checks",

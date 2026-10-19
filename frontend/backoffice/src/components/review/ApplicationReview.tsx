@@ -11,6 +11,7 @@ import { TableCard, type Column } from "@/components/ui/Table";
 import type { Application, Doc } from "@/data/director-general/applications";
 import { DecisionPanel } from "./DecisionPanel";
 import { OverridePanel } from "./OverridePanel";
+import { ClaimStrip, DraftNote } from "./Claim";
 
 /**
  * Application Review (Figma "Application Review — …").
@@ -34,18 +35,7 @@ export function ApplicationReview({ app }: { app: Application }) {
 
       {/* Application metadata */}
       <DetailHeader title="Application metadata" subtitle={app.metaSubtitle} status={app.status} meta={app.meta}>
-        {app.claim && (
-          <>
-            <hr className="border-control" />
-            <div className="flex items-center justify-between gap-2 type-body">
-              <p>
-                <span className="type-body-strong text-strong">{app.claim.held}</span> <span className="text-muted">{app.claim.detail}</span>
-              </p>
-              {/* Release isn't designed for the DG yet (the Licensing roles have a pop-up for it). */}
-              {app.claim.mine !== false && <Button variant="link">Release item</Button>}
-            </div>
-          </>
-        )}
+        {app.claim && <ClaimStrip app={app} />}
       </DetailHeader>
 
       {/* Review chain (licensing only) */}
@@ -120,6 +110,7 @@ export function ApplicationReview({ app }: { app: Application }) {
       </div>
 
       {/* Decision / override panels close the page — never pinned (KB application-review.md §6). */}
+      {app.decide && app.claim?.mine !== false && <DraftNote app={app} />}
       {app.decide && <DecisionPanel app={app} actions={app.decide} />}
       {app.override && <OverridePanel app={app} actions={app.override} />}
       {app.held && (

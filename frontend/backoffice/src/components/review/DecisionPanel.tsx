@@ -7,10 +7,11 @@ import { showToastOnNextPage } from "@/components/shell/Toast";
 import { href } from "@/config/roles";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Cards";
+import { RadioGroup } from "@/components/ui/Form";
 import { HelpBox, Modal, ReasonField } from "@/components/ui/Modal";
 import type { Application, DecideActions } from "@/data/director-general/applications";
 
-type Which = "approve" | "request" | "return" | "reject" | "blocked" | null;
+type Which = "approve" | "request" | "return" | "reject" | "blocked" | "chain" | null;
 
 /**
  * Decision bar pinned to the bottom of Application Review, plus its four
@@ -19,15 +20,22 @@ type Which = "approve" | "request" | "return" | "reject" | "blocked" | null;
  * Request / Return / Reject need a reason before they can be confirmed.
  * A guard on the item (app.decideBlock — e.g. M-BLK-02, no trustee assessment) makes
  * Approve and Reject explain why instead of acting; Request and Return still work.
+ * Licensing items at stage 3 add "Return to stage 1 or 2" (M-CHN-05): back down the chain with a
+ * reason, superseding the positions from that stage on. It is not a decision and nothing is issued.
  */
 export function DecisionPanel({ app, actions }: { app: Application; actions: DecideActions }) {
   const role = useRole();
   const router = useRouter();
   const [open, setOpen] = useState<Which>(null);
   const [reason, setReason] = useState("");
+  const [stage, setStage] = useState<"1" | "2" | null>(null);
+  const licensing = app.queue === "licensing";
+  const ref = app.title.split(" — ")[0];
+  const officer = (i: number) => app.chain?.stages[i]?.recorded.split(" recorded")[0] ?? "";
 
   const show = (w: Which) => {
     setReason("");
+    setStage(null);
     setOpen(app.decideBlock && (w === "approve" || w === "reject") ? "blocked" : w);
   };
   const close = () => setOpen(null);
@@ -47,6 +55,7 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
         </Button>
         <Button onClick={() => show("request")}>{actions.requestLabel}</Button>
         <Button onClick={() => show("return")}>Return</Button>
+        {licensing && <Button onClick={() => show("chain")}>Return to stage 1 or 2</Button>}
         <span className="flex-1" />
         <Button variant="danger" onClick={() => show("reject")}>
           Reject
@@ -79,6 +88,53 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
           actions={<Button onClick={close}>Dismiss</Button>}
         >
           <HelpBox title={app.decideBlock.helpTitle}>{app.decideBlock.help}</HelpBox>
+        </Modal>
+      )}
+
+      {licensing && (
+        <Modal
+          open={open === "chain"}
+          onClose={close}
+          title="Return this item down the chain?"
+          description={
+            <p>
+              {ref} goes back to the stage you choose, with your reason. This isn&apos;t a decision: nothing is issued, and the applicant isn&apos;t told.
+            </p>
+          }
+          actions={
+            <>
+              <Button onClick={close}>Cancel</Button>
+              <Button
+                variant="primary"
+                disabled={!stage || !hasReason}
+                onClick={() =>
+                  done({ title: `Returned to stage ${stage}`, body: `${ref} is back in the stage ${stage} pool with your reason.` })
+                }
+              >
+                Return item
+              </Button>
+            </>
+          }
+        >
+          <RadioGroup
+            name="return-stage"
+            value={stage}
+            onChange={setStage}
+            options={[
+              {
+                value: "1",
+                label: "Stage 1 — Reviewer",
+                hint: `${officer(0)}'s recommendation and ${officer(1)}'s position are both superseded. The chain runs again from the start.`,
+              },
+              { value: "2", label: "Stage 2 — Authorizer", hint: `${officer(1)}'s position is superseded. ${officer(0)}'s recommendation stands.` },
+            ]}
+          />
+          <ReasonField
+            label="What should that stage look at again?"
+            placeholder="Name the check or document the earlier stage should revisit."
+            value={reason}
+            onChange={setReason}
+          />
         </Modal>
       )}
 

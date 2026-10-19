@@ -1,11 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useRole } from "@/components/shell/RoleContext";
+import { href } from "@/config/roles";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { StatusBadge } from "@/components/ui/Badge";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { WorkQueueFrame } from "@/components/review/WorkQueueFrame";
 import { rowAction } from "@/components/review/rowAction";
-import { CATEGORY_ORDER, STATUS_ORDER, licensingKpis, licensingRows, statusFilterValue, type LicensingRow } from "@/data/director-general/work-queue";
+import { CATEGORY_ORDER, STATUS_ORDER, claimSince, licensingKpis, licensingRows, reviewId, statusFilterValue, type LicensingRow } from "@/data/director-general/work-queue";
+
+/** Rows another officer holds: opening one raises "Item already claimed" first (M-QUE-03). */
+const heldByOther = (r: LicensingRow) => !!r.claimedBy && r.claimedBy !== "Adaeze Nwosu" && statusFilterValue(r.status) !== "Decided";
 
 // Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<LicensingRow>[] = [
@@ -27,6 +34,7 @@ const filters: FilterDef<LicensingRow>[] = [
 
 export default function LicensingQueue() {
   const role = useRole();
+  const [held, setHeld] = useState<LicensingRow | null>(null);
   return (
     <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={licensingKpis}>
       <TableCard
@@ -35,9 +43,34 @@ export default function LicensingQueue() {
         columns={columns}
         rows={licensingRows}
         rowKey={(r) => r.reference}
-        rowAction={(r) => rowAction(role, r.opens, () => {})}
+        rowAction={(r) => (heldByOther(r) ? { onClick: () => setHeld(r) } : rowAction(role, r.opens))}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.service} ${r.claimedBy ?? ""}`}
         paginate={{ one: "application", many: "applications" }}
+      />
+
+      <Modal
+        open={!!held}
+        onClose={() => setHeld(null)}
+        width={480}
+        title="This item is already claimed"
+        description={
+          held && (
+            <p>
+              {held.reference} is claimed by {held.claimedBy} (Licensing &amp; Registration Officer), since {held && claimSince(held)}. You can open it read-only.
+              To decide it, wait until they release it or the claim lapses after 30 minutes of inactivity.
+            </p>
+          )
+        }
+        actions={
+          <>
+            <Button onClick={() => setHeld(null)}>Cancel</Button>
+            {held && (
+              <ButtonLink variant="primary" href={href(role, `application-review/${reviewId(held.reference)}`)}>
+                Open read-only
+              </ButtonLink>
+            )}
+          </>
+        }
       />
     </WorkQueueFrame>
   );
