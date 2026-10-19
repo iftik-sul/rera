@@ -10,5 +10,8 @@ export function useStaff(): StaffMember[] {
 }
 
 export function applyStaff(m: StaffMember, c: ReturnType<typeof useDemo>["staff"][string] | undefined): StaffMember {
-  return c ? ({ ...m, ...c } as StaffMember) : m;
+  if (!c) return m;
+  const next = { ...m, ...c } as Record<string, unknown>;
+  for (const k of Object.keys(next)) if (next[k] === null) delete next[k];
+  return next as StaffMember;
 }

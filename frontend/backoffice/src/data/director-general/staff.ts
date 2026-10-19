@@ -70,6 +70,14 @@ export type StaffMember = {
   mfa: Mfa;
   /** The signed-in DG's own account. */
   self?: boolean;
+  /**
+   * Sign-in locked after repeated failed attempts — when it happened. A lock-out is not an account
+   * status: the account stays Active and only sign-in is blocked until an administrator unlocks it
+   * (open-questions A16, proposed 2026-10-19).
+   */
+  lockedOut?: string;
+  /** The officer asked for an MFA reset from the sign-in page — when. Cleared by Reset MFA. */
+  mfaRequest?: string;
 };
 
 const s = (id: string, name: string, email: string, role: RoleName, status: AccountStatus, mfa: Mfa, scope: Category[] = []): StaffMember => ({
@@ -91,11 +99,11 @@ export const staff: StaffMember[] = [
   s("stf-00156", "Sunday Okon", "s.okon@rera.gov.ng", "Compliance & Escrow Auditor", "Suspended", "Enrolled"),
   // ── Beyond the Figma frame: sample staff for page 2 ──
   s("stf-00162", "Halima Garba", "h.garba@rera.gov.ng", "Licensing Reviewer", "Active", "Enrolled", [C3]),
-  s("stf-00168", "Emeka Nwankwo", "e.nwankwo@rera.gov.ng", "Licensing Authorizer", "Active", "Enrolled", [C3]),
+  { ...s("stf-00168", "Emeka Nwankwo", "e.nwankwo@rera.gov.ng", "Licensing Authorizer", "Active", "Enrolled", [C3]), lockedOut: "11 Oct 2026, 09:12" },
   s("stf-00174", "Bola Ogunleye", "b.ogunleye@rera.gov.ng", "Compliance & Escrow Auditor", "Active", "Enrolled"),
   s("stf-00180", "Kelechi Onyema", "k.onyema@rera.gov.ng", "Dispute Adjudication Officer", "Active", "Enrolled"),
   s("stf-00186", "Zainab Lawal", "z.lawal@rera.gov.ng", "Revenue & Finance Officer", "Active", "Enrolled"),
-  s("stf-00188", "Chidi Okafor", "c.okafor@rera.gov.ng", "Inspection & Enforcement Officer", "Active", "Enrolled"),
+  { ...s("stf-00188", "Chidi Okafor", "c.okafor@rera.gov.ng", "Inspection & Enforcement Officer", "Active", "Enrolled"), mfaRequest: "10 Oct 2026, 16:30" },
   s("stf-00193", "Grace Etim", "g.etim@rera.gov.ng", "Licensing Reviewer", "Invited", "Not enrolled", [C2]),
   s("stf-00197", "Musa Danjuma", "m.danjuma@rera.gov.ng", "State Liaison Coordinator", "Active", "Enrolled"),
   s("stf-00142", "Femi Adebayo", "f.adebayo@rera.gov.ng", "Compliance & Escrow Auditor", "Deactivated", "Enrolled"),

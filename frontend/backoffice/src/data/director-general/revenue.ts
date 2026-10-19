@@ -85,17 +85,18 @@ export const months: Month[] = [
   {
     id: "2026-08", label: "August 2026", short: "August", status: "Filed", scale: 1.1, inTransit: 0, failed: 16,
     cost: { absorbed: 0, mismatches: 0, shortfalls: 5_000 }, vatRemitted: true,
-    version: { name: "v2", from: "1 April 2026" }, filedBy: "Amaka Okeke · 04 Sep 2026",
+    version: { name: "v2", from: "1 Apr 2026" }, filedBy: "Amaka Okeke · 04 Sep 2026",
   },
   {
     id: "2026-09", label: "September 2026", short: "September", status: "Filed", scale: 0.9, inTransit: 0, failed: 11,
     cost: { absorbed: 0, mismatches: 1_500, shortfalls: 0 }, vatRemitted: true,
-    version: { name: "v2", from: "1 April 2026" }, filedBy: "Amaka Okeke · 03 Oct 2026",
+    version: { name: "v2", from: "1 Apr 2026" }, filedBy: "Amaka Okeke · 03 Oct 2026",
   },
   {
-    id: "2026-10", label: "October 2026", short: "October", status: "Reconciled", scale: 1, inTransit: 2_372_000, failed: 14,
+    // Open, not Reconciled: on 11 Oct the month is still running (2026-10-19 review).
+    id: "2026-10", label: "October 2026", short: "October", status: "Open", scale: 1, inTransit: 2_372_000, failed: 14,
     cost: { absorbed: 0, mismatches: 2_832.5, shortfalls: 10_000 }, vatRemitted: false,
-    version: { name: "v3", from: "1 October 2026" },
+    version: { name: "v3", from: "1 Oct 2026" },
   },
 ];
 
@@ -143,10 +144,13 @@ function split(n: number): Record<Exclude<Tender, "Cash">, number> {
   return { Card: card, "Bank Transfer": bank, USSD: Math.max(0, n - card - bank) };
 }
 
+const CASH_SWING: Record<string, number> = { "2026-08": 1.5, "2026-09": 0.6, "2026-10": 1 };
+
 export const lines: Line[] = months.flatMap((m) =>
   services.flatMap((s) => {
     const gw = Math.round(s.gateway * m.scale);
-    const cash = s.cash === 0 ? 0 : Math.max(1, Math.round(s.cash * m.scale));
+    // Cash varies by month on its own (it was the same ₦545,625 every month — 2026-10-19 review).
+    const cash = s.cash === 0 ? 0 : Math.max(1, Math.round(s.cash * m.scale * CASH_SWING[m.id]));
     const counts: [Tender, number][] = [...Object.entries(split(gw)), ["Cash", cash]] as [Tender, number][];
     return counts
       .filter(([, c]) => c > 0)

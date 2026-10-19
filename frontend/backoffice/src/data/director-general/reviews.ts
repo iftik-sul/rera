@@ -54,8 +54,6 @@ const SHORT = MONTHS.map((m) => m.slice(0, 3));
 /** A date `days` before the sample "today". */
 const before = (days: number) => new Date(SAMPLE_TODAY.getTime() - days * 86_400_000);
 const dayMonYear = (d: Date) => `${d.getUTCDate()} ${SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-const monDay = (d: Date) => `${SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
-const longDate = (d: Date) => `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 
 /** Digits of a reference, used to vary sample figures deterministically. */
 const seed = (ref: string) => parseInt(ref.replace(/\D/g, "").slice(-4), 10) || 1;
@@ -333,7 +331,7 @@ function transactionReview(row: TransactionRow, i: number): Application {
         ? { ...g, fields: g.fields.map((f) => (f.label === "Sale price" ? { label: "Mortgage amount", value: f.value } : f)) }
         : g,
     ),
-    documents: trxDocs(row.service, monDay(submitted), n),
+    documents: trxDocs(row.service, dayMonYear(submitted), n),
     checksTitle: "Registry checks",
     checks: grandeurChecks,
   };
@@ -443,10 +441,10 @@ function escrowReview(row: EscrowRow, i: number): Application {
       },
     ],
     documents: [
-      { name: "Developer's request letter", type: "PDF", uploaded: monDay(submitted), status: verified },
-      { name: "Escrow account statement", type: "PDF", uploaded: monDay(submitted), status: verified },
-      { name: "Authorised signatories list", type: "PDF", uploaded: monDay(submitted), status: n % 2 ? verified : pending },
-      ...(releasing ? [{ name: "Construction progress certificate", type: "PDF", uploaded: monDay(submitted), status: verified }] : []),
+      { name: "Developer's request letter", type: "PDF", uploaded: dayMonYear(submitted), status: verified },
+      { name: "Escrow account statement", type: "PDF", uploaded: dayMonYear(submitted), status: verified },
+      { name: "Authorised signatories list", type: "PDF", uploaded: dayMonYear(submitted), status: n % 2 ? verified : pending },
+      ...(releasing ? [{ name: "Construction progress certificate", type: "PDF", uploaded: dayMonYear(submitted), status: verified }] : []),
     ],
     checksTitle: "Registry & escrow checks",
     checks: ["Developer registration", "Project registration", "Escrow account registered", "Account-movement audit", "Signatory verification", "Trustee assessment review"],
@@ -658,7 +656,7 @@ function licensingShape(row: LicensingRow) {
   };
 }
 
-const at = (d: Date, h: number, m: number) => `${longDate(d)} at ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+const at = (d: Date, h: number, m: number) => `${dayMonYear(d)}, ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 
 function licensingReview(row: LicensingRow, i: number): Application {
   const ref = row.reference;
@@ -666,9 +664,13 @@ function licensingReview(row: LicensingRow, i: number): Application {
   const n = seed(ref);
   const shape = licensingShape(row);
   const daysIn = parseInt(row.submitted, 10) || 1;
-  const s1 = before(Math.max(1, daysIn - 2));
+  // Stage 2 ended when the item reached stage 3 — the queue's "At stage" figure says how long ago,
+  // so the review's history and the queue agree (2026-10-19 review). Decided items keep the old spacing.
+  const atStage = /hour/.test(row.atStage) ? { days: 0, hour: 12 - (parseInt(row.atStage, 10) || 1) } : /day/.test(row.atStage) ? { days: parseInt(row.atStage, 10) || 1, hour: 11 } : null;
   const known = ENDORSED_AT[ref];
-  const s2 = before(known ? known[0] : Math.max(0, daysIn - 4));
+  const s2days = atStage ? atStage.days : known ? known[0] : Math.max(0, daysIn - 4);
+  const s2 = before(s2days);
+  const s1 = before(Math.min(daysIn, Math.max(s2days + 1, daysIn - 2)));
   const decided = isDecided(row.status);
   const dissent = ref === DISSENT_REF;
   const reviewer = REVIEWER[row.category];
@@ -685,13 +687,13 @@ function licensingReview(row: LicensingRow, i: number): Application {
       ? {
           name: "Stage 2 · Authorizer",
           outcome: { label: "Dissented", tone: "warning" },
-          recorded: `${authorizer} recorded this on ${at(s2, 11, (n * 3) % 60)}.`,
+          recorded: `${authorizer} recorded this on ${at(s2, atStage?.hour ?? 11, (n * 3) % 60)}.`,
           reason: "Reason given: the professional indemnity cover lapses in five weeks; the licence should not issue until it is renewed.",
         }
       : {
           name: "Stage 2 · Authorizer",
           outcome: { label: "Endorsed", tone: "success" },
-          recorded: `${authorizer} recorded this on ${at(s2, known ? known[1] : 11, known ? known[2] : (n * 3) % 60)}.`,
+          recorded: `${authorizer} recorded this on ${at(s2, atStage?.hour ?? (known ? known[1] : 11), known ? known[2] : (n * 3) % 60)}.`,
           reason: "Reason given: none required for an endorsement. Reviewer's checks confirmed against the register.",
         },
   ];
@@ -745,7 +747,7 @@ function licensingReview(row: LicensingRow, i: number): Application {
           : "The register is written at this stage and there is no undo.",
     },
     summary: shape.groups,
-    documents: shape.docs.map((d, k) => ({ name: d, type: "PDF", uploaded: monDay(before(daysIn - (k > 2 ? 1 : 0))), status: k === shape.docs.length - 1 && n % 2 && !decided ? pending : verified })),
+    documents: shape.docs.map((d, k) => ({ name: d, type: "PDF", uploaded: dayMonYear(before(daysIn - (k > 2 ? 1 : 0))), status: k === shape.docs.length - 1 && n % 2 && !decided ? pending : verified })),
     checksTitle: shape.checksTitle,
     checks: shape.checks,
   };

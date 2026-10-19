@@ -268,10 +268,10 @@ const lic = (reference: string, applicant: string, service: string, submitted: s
 
 export const licensingRows: LicensingRow[] = linked([
   // Submitted 28 Sep (its review chain); claimed by the DG, as its Application Review says. Figma had "2 days ago" and unclaimed.
-  lic("LIC-2026-00412", "Sahara Estates Development Co", "Real Estate Licensing Application", "13 days ago", "4 hours", "Adaeze Nwosu", "review:lic-stage3"),
+  lic("LIC-2026-00412", "Sahara Estates Development Co", "Real Estate Licensing Application", "13 days ago", "11 days", "Adaeze Nwosu", "review:lic-stage3"),
   lic("LIC-2026-00369", "Zenith Realty Partners Ltd", "Real Estate Permit Application", "14 days ago", "1 day", "Funke Adeyemi"),
   lic("LIC-2026-00394", "Mainland Realty Consulting Ltd", "Real Estate Licensing Application", "9 days ago", "2 days", null, undefined, DISSENT),
-  lic("LIC-2026-00398", "Lagos Institute of Property Studies", "Accreditation of Training Entities", "8 days ago", "1 day", "Funke Adeyemi"),
+  lic("LIC-2026-00398", "Lagos Institute of Property Studies", "Accreditation of Training Entities", "8 days ago", "2 days", "Funke Adeyemi"),
   lic("LIC-2026-00387", "Halima Danjuma", "Cancel Professional Practice Card", "12 days ago", "6 hours", null),
   lic("LIC-2026-00376", "Ifeoma Nnaji", "Issue Professional Practice Card", "4 days ago", "1 day", null),
   lic("LIC-2026-00381", "Amara Investments Ltd", "Accreditation of Training Entities", "7 days ago", "1 day", null),

@@ -32,7 +32,15 @@ export type AppChange = {
   replaced?: string;
 };
 export type SignoffChange = { status: "Authorised" | "Declined"; on: string; reason?: string };
-export type StaffChange = Partial<{ status: "Invited" | "Active" | "Suspended" | "Deactivated"; mfa: "Enrolled" | "Not enrolled"; roles: string[]; scope: string[] }>;
+export type StaffChange = Partial<{
+  status: "Invited" | "Active" | "Suspended" | "Deactivated";
+  mfa: "Enrolled" | "Not enrolled";
+  roles: string[];
+  scope: string[];
+  /** null = the lock-out / MFA request was dealt with this session (null, not undefined, so it survives JSON). */
+  lockedOut: null;
+  mfaRequest: null;
+}>;
 
 export type Demo = {
   apps: Record<string, AppChange>;

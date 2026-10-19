@@ -125,12 +125,13 @@ const mixtaSummary = summaryFor({
 });
 
 const grandeurDocs: Doc[] = [
-  { name: "Title Deed Copy", type: "PDF", uploaded: "Sep 14", status: verified },
-  { name: "Sale & Purchase Agreement", type: "PDF", uploaded: "Sep 14", status: verified },
-  { name: "Consent from Developer", type: "PDF", uploaded: "Sep 15", status: pending },
-  { name: "Passport / NIN Card", type: "Image", uploaded: "Sep 14", status: verified },
+  { name: "Title Deed Copy", type: "PDF", uploaded: "8 Oct 2026", status: verified },
+  { name: "Sale & Purchase Agreement", type: "PDF", uploaded: "8 Oct 2026", status: verified },
+  { name: "Consent from Developer", type: "PDF", uploaded: "9 Oct 2026", status: pending },
+  { name: "Passport / NIN Card", type: "Image", uploaded: "8 Oct 2026", status: verified },
 ];
-const decidedDocs: Doc[] = grandeurDocs.map((d) => ({ ...d, uploaded: d.uploaded.replace("Sep 1", "Sep 2"), status: verified }));
+/** TRX-2024-0887 was submitted on 28 Sep and decided on 2 Oct. */
+const decidedDocs: Doc[] = grandeurDocs.map((d) => ({ ...d, uploaded: d.uploaded.startsWith("9") ? "29 Sep 2026" : "28 Sep 2026", status: verified }));
 
 export const grandeurChecks = ["Developer registration", "Project registration", "Unit/plot registration", "Title deed status", "Applicant validity"];
 
@@ -258,13 +259,13 @@ export const featuredApplications: Application[] = [
         {
           name: "Stage 1 · Reviewer",
           outcome: { label: "Recommended Approval", tone: "success" },
-          recorded: "Ibrahim Musa recorded this on 30 September 2026 at 09:42.",
+          recorded: "Ibrahim Musa recorded this on 30 Sep 2026, 09:42.",
           reason: "Reason given: none required for a recommendation to approve. All five register checks passed.",
         },
         {
           name: "Stage 2 · Authorizer",
           outcome: { label: "Endorsed", tone: "success" },
-          recorded: "Ngozi Eze recorded this on 30 September 2026 at 11:18.",
+          recorded: "Ngozi Eze recorded this on 30 Sep 2026, 11:18.",
           reason: "Reason given: none required for an endorsement. Reviewer's checks confirmed against the CAC record.",
         },
       ],
@@ -300,11 +301,11 @@ export const featuredApplications: Application[] = [
       },
     ],
     documents: [
-      { name: "Certificate of Incorporation (CAC)", type: "PDF", uploaded: "Sep 28", status: verified },
-      { name: "Board Resolution authorising portal use", type: "PDF", uploaded: "Sep 28", status: verified },
-      { name: "Company Letterhead", type: "PDF", uploaded: "Sep 28", status: verified },
-      { name: "Directors' NIN Verification", type: "PDF", uploaded: "Sep 28", status: verified },
-      { name: "Sector Accreditation Certificate", type: "PDF", uploaded: "Sep 29", status: pending },
+      { name: "Certificate of Incorporation (CAC)", type: "PDF", uploaded: "28 Sep 2026", status: verified },
+      { name: "Board Resolution authorising portal use", type: "PDF", uploaded: "28 Sep 2026", status: verified },
+      { name: "Company Letterhead", type: "PDF", uploaded: "28 Sep 2026", status: verified },
+      { name: "Directors' NIN Verification", type: "PDF", uploaded: "28 Sep 2026", status: verified },
+      { name: "Sector Accreditation Certificate", type: "PDF", uploaded: "29 Sep 2026", status: pending },
     ],
     checksTitle: "Company register check",
     checks: ["CAC registration valid", "Directors match CAC record", "No existing licence conflict", "No outstanding sanctions", "Tax clearance current"],
