@@ -29,6 +29,8 @@ export type SignoffMatter = {
   origin: string;
   /** Detail page id. Every matter has one ("RRA/SO/2026/0224" → "rra-so-2026-0224"). */
   detail?: string;
+  /** Set when the matter was decided in this session (lib/demo.ts). */
+  decidedOn?: string;
 };
 
 export const signoffId = (reference: string) => reference.toLowerCase().replace(/\//g, "-");
@@ -39,35 +41,35 @@ const m = (reference: string, matter: string, recommendation: string, status: St
 
 export const signoffMatters: SignoffMatter[] = [
   m("RRA/SO/2026/0218", "Licence revocation — Eko Realty Ltd", "Recommend revoke — licence lapsed", PENDING, "05 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0224", "Developer suspension — Zenith Estates Plc", "Recommend suspend — unresolved breach", PENDING, "07 Oct 2026", "Abuja"),
-  m("RRA/SO/2026/0229", "Accreditation withdrawal — Delta Valuers", "Recommend withdraw accreditation", PENDING, "08 Oct 2026", "Port Harcourt"),
+  m("RRA/SO/2026/0224", "Permit revocation — Zenith Estates Plc", "Recommend revoke — unresolved breach", PENDING, "07 Oct 2026", "Abuja"),
+  m("RRA/SO/2026/0229", "Accreditation revocation — Delta Valuers", "Recommend revoke accreditation", PENDING, "08 Oct 2026", "Port Harcourt"),
   // Figma: Kano Homes — but Kano Homes' licence was withdrawn by OVERTURN (its register entry), not revocation.
   m("RRA/SO/2026/0231", "Licence revocation — Crestview Property Managers Ltd", "Recommend revoke", AUTHORISED, "02 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0235", "Practitioner de-listing — Adeyemi O.", "Recommend de-list", PENDING, "09 Oct 2026", "Ibadan"),
+  m("RRA/SO/2026/0235", "Practice card revocation — Adeyemi O.", "Recommend revoke", PENDING, "09 Oct 2026", "Ibadan"),
   m("RRA/SO/2026/0209", "Licence revocation — Lagos Prime Ltd", "Recommend revoke", DECLINED, "28 Sep 2026", "Lagos"),
-  m("RRA/SO/2026/0241", "Developer suspension — Suru Group Ltd", "Recommend suspend", PENDING, "10 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0244", "Practitioner de-listing — Bello F.", "Recommend de-list", PENDING, "10 Oct 2026", "Kaduna"),
+  m("RRA/SO/2026/0241", "Permit revocation — Suru Group Ltd", "Recommend revoke", PENDING, "10 Oct 2026", "Lagos"),
+  m("RRA/SO/2026/0244", "Practice card revocation — Bello F.", "Recommend revoke", PENDING, "10 Oct 2026", "Kaduna"),
   m("RRA/SO/2026/0198", "Licence revocation — Mixta Nigeria Ltd", "Recommend revoke", AUTHORISED, "24 Sep 2026", "Lagos"),
-  m("RRA/SO/2026/0251", "Accreditation withdrawal — PGD Institute", "Recommend withdraw", PENDING, "11 Oct 2026", "Abuja"),
+  m("RRA/SO/2026/0251", "Accreditation revocation — PGD Institute", "Recommend revoke", PENDING, "11 Oct 2026", "Abuja"),
   // ── Beyond the Figma frame: sample matters for page 2 ──
   m("RRA/SO/2026/0220", "Licence revocation — Sapphire Realty Consultants", "Recommend revoke — repeated breach", PENDING, "06 Oct 2026", "Abuja"),
-  m("RRA/SO/2026/0226", "Developer suspension — Lakeside Homes Ltd", "Recommend suspend — escrow default", PENDING, "07 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0233", "Practitioner de-listing — Okeke C.", "Recommend de-list — false declaration", PENDING, "08 Oct 2026", "Enugu"),
-  m("RRA/SO/2026/0237", "Accreditation withdrawal — Northern Surveyors Guild", "Recommend withdraw — curriculum lapsed", PENDING, "09 Oct 2026", "Kaduna"),
+  m("RRA/SO/2026/0226", "Permit revocation — Lakeside Homes Ltd", "Recommend revoke — escrow default", PENDING, "07 Oct 2026", "Lagos"),
+  m("RRA/SO/2026/0233", "Practice card revocation — Okeke C.", "Recommend revoke — false declaration", PENDING, "08 Oct 2026", "Enugu"),
+  m("RRA/SO/2026/0237", "Accreditation revocation — Northern Surveyors Guild", "Recommend revoke — curriculum lapsed", PENDING, "09 Oct 2026", "Kaduna"),
   m("RRA/SO/2026/0239", "Licence revocation — Niger Delta Estates Ltd", "Recommend revoke — licence lapsed", PENDING, "09 Oct 2026", "Port Harcourt"),
-  m("RRA/SO/2026/0243", "Developer suspension — Eastgate Property Developers", "Recommend suspend", PENDING, "10 Oct 2026", "Onitsha"),
-  m("RRA/SO/2026/0247", "Practitioner de-listing — Ibrahim K.", "Recommend de-list", PENDING, "11 Oct 2026", "Kano"),
+  m("RRA/SO/2026/0243", "Permit revocation — Eastgate Property Developers", "Recommend revoke", PENDING, "10 Oct 2026", "Onitsha"),
+  m("RRA/SO/2026/0247", "Practice card revocation — Ibrahim K.", "Recommend revoke", PENDING, "11 Oct 2026", "Kano"),
   m("RRA/SO/2026/0249", "Licence revocation — Royal Crest Facility Managers", "Recommend revoke", PENDING, "11 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0187", "Licence revocation — Haven Homes Nigeria Ltd", "Recommend revoke", AUTHORISED, "19 Sep 2026", "Lagos"),
-  m("RRA/SO/2026/0179", "Developer suspension — Garden City Homes Ltd", "Recommend suspend", AUTHORISED, "15 Sep 2026", "Port Harcourt"),
+  m("RRA/SO/2026/0179", "Permit revocation — Garden City Homes Ltd", "Recommend revoke", AUTHORISED, "15 Sep 2026", "Port Harcourt"),
   // Added with the Completed side (2026-10-19) — sign-off history, spread over the year.
-  m("RRA/SO/2026/0171", "Practitioner de-listing — Nwachukwu A.", "Recommend de-list — false declaration", AUTHORISED, "03 Sep 2026", "Enugu"),
-  m("RRA/SO/2026/0164", "Accreditation withdrawal — Coastal Valuers Institute", "Recommend withdraw accreditation", DECLINED, "21 Aug 2026", "Lagos"),
+  m("RRA/SO/2026/0171", "Practice card revocation — Nwachukwu A.", "Recommend revoke — false declaration", AUTHORISED, "03 Sep 2026", "Enugu"),
+  m("RRA/SO/2026/0164", "Accreditation revocation — Coastal Valuers Institute", "Recommend revoke accreditation", DECLINED, "21 Aug 2026", "Lagos"),
   m("RRA/SO/2026/0152", "Licence revocation — Prime Acres Ltd", "Recommend revoke — licence lapsed", AUTHORISED, "29 Jul 2026", "Abuja"),
-  m("RRA/SO/2026/0138", "Developer suspension — Westfield Estates Ltd", "Recommend suspend — escrow default", AUTHORISED, "02 Jul 2026", "Ibadan"),
-  m("RRA/SO/2026/0121", "Practitioner de-listing — Danjuma S.", "Recommend de-list", DECLINED, "11 May 2026", "Kano"),
+  m("RRA/SO/2026/0138", "Permit revocation — Westfield Estates Ltd", "Recommend revoke — escrow default", AUTHORISED, "02 Jul 2026", "Ibadan"),
+  m("RRA/SO/2026/0121", "Practice card revocation — Danjuma S.", "Recommend revoke", DECLINED, "11 May 2026", "Kano"),
   m("RRA/SO/2026/0097", "Licence revocation — Harbour View Realty", "Recommend revoke — repeated breach", AUTHORISED, "16 Feb 2026", "Port Harcourt"),
-  m("RRA/SO/2025/0412", "Developer suspension — Sunrise Homes Ltd", "Recommend suspend", AUTHORISED, "20 Nov 2025", "Lagos"),
+  m("RRA/SO/2025/0412", "Permit revocation — Sunrise Homes Ltd", "Recommend revoke", AUTHORISED, "20 Nov 2025", "Lagos"),
 ];
 
 /** "6 days" / "1 day" / "Today" — how long a matter has waited. */
@@ -91,33 +93,46 @@ const DECIDED_ON: Record<string, { date: string; reason?: string }> = {
   "RRA/SO/2026/0179": { date: "17 Sep 2026" },
   "RRA/SO/2026/0209": { date: "30 Sep 2026", reason: "The renewal application was lodged inside the window; Licensing should decide the renewal before any revocation." },
   "RRA/SO/2026/0171": { date: "05 Sep 2026" },
-  "RRA/SO/2026/0164": { date: "24 Aug 2026", reason: "The institute's curriculum review is still open with Licensing; withdraw only once it concludes." },
+  "RRA/SO/2026/0164": { date: "24 Aug 2026", reason: "The institute's curriculum review is still open with Licensing; revoke only once it concludes." },
   "RRA/SO/2026/0152": { date: "31 Jul 2026" },
   "RRA/SO/2026/0138": { date: "06 Jul 2026" },
-  "RRA/SO/2026/0121": { date: "13 May 2026", reason: "The complaint behind the recommendation was withdrawn; there is no remaining ground to de-list." },
+  "RRA/SO/2026/0121": { date: "13 May 2026", reason: "The complaint behind the recommendation was withdrawn; there is no remaining ground to revoke the card." },
   "RRA/SO/2026/0097": { date: "19 Feb 2026" },
   "RRA/SO/2025/0412": { date: "24 Nov 2025" },
 };
 
 /** When a decided matter was authorised or declined — the Sign-off Queue's Completed side reads it (signoff-queue.md §2a). */
-export const signoffDecided = (s: SignoffMatter) => DECIDED_ON[s.reference]?.date ?? s.escalated;
+export const signoffDecided = (s: SignoffMatter) => s.decidedOn ?? DECIDED_ON[s.reference]?.date ?? s.escalated;
 
-const pending = signoffMatters.filter((s) => s.status === PENDING);
+/** The matters with this session's decisions applied (lib/demo.ts): new status and decided date. */
+export function withSignoffChanges(matters: SignoffMatter[], changes: Record<string, { status: "Authorised" | "Declined"; on: string }>): SignoffMatter[] {
+  return matters.map((m) => {
+    const c = m.detail ? changes[m.detail] : undefined;
+    return c ? { ...m, status: c.status === "Authorised" ? AUTHORISED : DECLINED, decidedOn: c.on } : m;
+  });
+}
+
 /** Decided in the sample month — the KPI cards count the same rows the Completed side lists. */
 const thisMonth = (s: SignoffMatter) => / Oct 2026$/.test(signoffDecided(s));
-const oldest = [...pending].sort((a, b) => daysAgo(b.escalated) - daysAgo(a.escalated))[0];
+const isPending = (s: SignoffMatter) => s.status.label === PENDING.label;
+const byAge = (a: SignoffMatter, b: SignoffMatter) => daysAgo(b.escalated) - daysAgo(a.escalated);
 
-export const signoffKpis = [
-  { label: "Pending sign-off", value: String(pending.length), caption: "Awaiting your authorisation" },
-  { label: "Authorised", value: String(signoffMatters.filter((s) => s.status === AUTHORISED && thisMonth(s)).length), caption: "This month" },
-  { label: "Declined", value: String(signoffMatters.filter((s) => s.status === DECLINED && thisMonth(s)).length), caption: "This month" },
-  { label: "Oldest pending", value: waited(oldest), caption: oldest.reference },
-];
+/** Sign-off Queue cards, counted from the matters on screen (sample data + this session's decisions). */
+export function signoffKpisFor(matters: SignoffMatter[]) {
+  const pending = matters.filter(isPending);
+  const oldest = [...pending].sort(byAge)[0];
+  return [
+    { label: "Pending sign-off", value: String(pending.length), caption: "Awaiting your authorisation" },
+    { label: "Authorised", value: String(matters.filter((s) => s.status.label === AUTHORISED.label && thisMonth(s)).length), caption: "This month" },
+    { label: "Declined", value: String(matters.filter((s) => s.status.label === DECLINED.label && thisMonth(s)).length), caption: "This month" },
+    { label: "Oldest pending", value: oldest ? waited(oldest) : "—", caption: oldest?.reference ?? "Nothing pending" },
+  ];
+}
+export const signoffKpis = signoffKpisFor(signoffMatters);
 
 /** Dashboard: pending matters, oldest first — the 10 longest-waiting. */
-export const oldestPending = [...pending].sort((a, b) => daysAgo(b.escalated) - daysAgo(a.escalated)).slice(0, 10);
-export const pendingCount = pending.length;
-export const oldestPendingAge = waited(oldest);
+export const oldestPendingOf = (matters: SignoffMatter[]) => matters.filter(isPending).sort(byAge).slice(0, 10);
+export const pendingOf = (matters: SignoffMatter[]) => matters.filter(isPending);
 
 // ── Sign-off Detail (Figma "Sign-off Detail") ──
 export type SignoffDetail = {
@@ -212,20 +227,22 @@ const KINDS: Record<string, Kind> = {
     effect: "The register entry will be withdrawn with the cause recorded as Revocation.",
     done: "the licence is revoked and the holder is notified", grounds: "Licence conditions breached; notices unanswered",
   },
-  "Developer suspension": {
-    badge: "Suspend", verb: "suspend", noun: "suspension", credential: "PMT",
-    effect: "The register entry will be marked Suspended until Licensing lifts it.",
-    done: "the developer can't operate under its permit until the suspension is lifted", grounds: "Unresolved breach of permit conditions",
+  // Sign-off handles revocation only (KB A-10 §5, decided 2026-10-19): the credential type varies,
+  // the act doesn't. Suspension is not a sign-off type; de-listing and withdrawal are revocations.
+  "Permit revocation": {
+    badge: "Revoke", verb: "revoke", noun: "revocation", credential: "PMT",
+    effect: "The register entry will be withdrawn with the cause recorded as Revocation.",
+    done: "the permit is revoked and the developer is notified", grounds: "Unresolved breach of permit conditions",
   },
-  "Accreditation withdrawal": {
-    badge: "Withdraw", verb: "withdraw", noun: "withdrawal", credential: "ACC",
-    effect: "The register entry will be withdrawn with the cause recorded as Withdrawal.",
-    done: "the accreditation is withdrawn and the institution is notified", grounds: "Accreditation standards no longer met",
+  "Accreditation revocation": {
+    badge: "Revoke", verb: "revoke", noun: "revocation", credential: "ACC",
+    effect: "The register entry will be withdrawn with the cause recorded as Revocation.",
+    done: "the accreditation is revoked and the institution is notified", grounds: "Accreditation standards no longer met",
   },
-  "Practitioner de-listing": {
-    badge: "De-list", verb: "de-list", noun: "de-listing", credential: "PCC",
-    effect: "The practice card will be cancelled and the register entry withdrawn with the cause recorded as De-listing.",
-    done: "the practitioner is removed from the register and notified", grounds: "Professional misconduct finding",
+  "Practice card revocation": {
+    badge: "Revoke", verb: "revoke", noun: "revocation", credential: "PCC",
+    effect: "The practice card will be cancelled and the register entry withdrawn with the cause recorded as Revocation.",
+    done: "the practice card is revoked and the practitioner is notified", grounds: "Professional misconduct finding",
   },
 };
 
@@ -288,8 +305,8 @@ function buildSignoff(row: SignoffMatter): SignoffDetail {
     ],
     recommendation: {
       badge: k.badge,
-      headline: `${k.badge} ${kindName === "Licence revocation" ? "licence " : ""}${credential} — ${subjectShort}.`,
-      body: `${reason}. The Licensing Officer recommends that RERA ${k.verb} ${subjectShort}. ${k.effect}`,
+      headline: `${k.badge} ${kindName === "Licence revocation" ? "licence " : ""}${credential} — ${subjectShort.replace(/\.$/, "")}.`,
+      body: `${reason}. The Licensing Officer recommends that RERA ${k.verb} ${subjectShort.replace(/\.$/, "")}'s credential. ${k.effect}`,
       by: `Funke Adeyemi · Licensing Officer · ${row.escalated}`,
     },
     panelNote: `Authorising requires re-authentication and returns the ${k.noun} to Licensing to execute.`,
@@ -303,7 +320,7 @@ function buildSignoff(row: SignoffMatter): SignoffDetail {
     },
     decline: {
       title: "Decline this sign-off?",
-      body: `${row.reference} returns to Licensing with your reason. Nothing is ${k.verb === "de-list" ? "de-listed" : k.verb + "d"}.`,
+      body: `${row.reference} returns to Licensing with your reason. Nothing is ${k.verb}d.`,
       label: "Why are you declining?",
       placeholder: "Explain what Licensing should do instead, or what is missing from the recommendation.",
       confirm: "Decline sign-off",

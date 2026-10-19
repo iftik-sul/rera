@@ -14,6 +14,8 @@ import { DecisionPanel } from "./DecisionPanel";
 import { OverridePanel } from "./OverridePanel";
 import { ClaimStrip, DraftNote } from "./Claim";
 import { DocumentViewer, type DocVerdict } from "./DocumentViewer";
+import { applyApp } from "./demoApply";
+import { useDemo } from "@/lib/demo";
 
 /**
  * Application Review (Figma "Application Review — …").
@@ -24,8 +26,11 @@ import { DocumentViewer, type DocVerdict } from "./DocumentViewer";
  *  - with the applicant, or claimed by another officer → a read-only notice closes the page
  * Escrow items add the Trustee Assessment and Escrow Account panels (KB application-review.md §5).
  */
-export function ApplicationReview({ app }: { app: Application }) {
+export function ApplicationReview({ app: sample }: { app: Application }) {
   const role = useRole();
+  // What the DG did to this item in this session (lib/demo.ts) replaces its panels.
+  const demo = useDemo();
+  const app = applyApp(sample, demo);
   // The officer's document verdicts live here so the Approve pop-up can name unverified ones.
   const [verdicts, setVerdicts] = useState<Record<string, DocVerdict>>({});
   const docs = app.documents.map((d) => {

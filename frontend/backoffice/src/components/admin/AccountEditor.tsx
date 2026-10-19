@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { recordStaff, useDemo } from "@/lib/demo";
+import { applyStaff } from "./useStaff";
 import { Page } from "@/components/shell/Page";
 import { showToast } from "@/components/shell/Toast";
 import { directorGeneral, href } from "@/config/roles";
@@ -35,10 +37,11 @@ const list = (items: string[]) => (items.length <= 1 ? (items[0] ?? "") : `${ite
  * DEMO: changes last until you leave the page — there is no server to save them to.
  */
 export function AccountEditor({ member }: { member: StaffMember }) {
-  const [roles, setRoles] = useState<RoleName[]>(member.roles);
-  const [scope, setScope] = useState<Category[]>(member.scope);
-  const [status, setStatus] = useState<AccountStatus>(member.status);
-  const [mfa, setMfa] = useState<Mfa>(member.mfa);
+  // The account as it stands in this session: sample data + changes made here (lib/demo.ts),
+  // so the Admin Console list, the Dashboard and the Audit Trail all see them.
+  const demo = useDemo();
+  const current = applyStaff(member, demo.staff[member.id]);
+  const { roles, scope, status, mfa } = current;
   const [step, setStep] = useState<Step>(null);
   const [blocked, setBlocked] = useState<"category" | "separation" | null>(null);
   // Draft values inside the pop-ups
@@ -65,13 +68,14 @@ export function AccountEditor({ member }: { member: StaffMember }) {
   const saveRole = () => {
     const b = assignmentBlocker(draftRoles, draftScope);
     if (b) return setBlocked(b);
-    setRoles(draftRoles);
-    setScope(draftRoles.some((r) => SCOPED_ROLES.includes(r)) ? draftScope : []);
+    const nextScope = draftRoles.some((r) => SCOPED_ROLES.includes(r)) ? draftScope : [];
+    recordStaff(member.id, { roles: draftRoles, scope: nextScope }, { action: "Role assignment changed", type: "Access", subsystem: "Access", subject: member.email, reason: reason.trim() });
     close();
     showToast({ title: "Role updated", body: `${member.name}'s role and category scope were changed. Recorded in the audit trail.` });
   };
   const setAccount = (s: AccountStatus, title: string, body: string) => {
-    setStatus(s);
+    const action = { Active: "Account reactivated", Suspended: "Account suspended", Deactivated: "Account deactivated", Invited: "Invitation sent" }[s];
+    recordStaff(member.id, { status: s }, { action, type: "Access", subsystem: "Access", subject: member.email, reason: reason.trim() || "—" });
     close();
     showToast({ title, body });
   };
@@ -170,7 +174,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
             <Button
               variant="primary"
               onClick={() => {
-                setMfa("Not enrolled");
+                recordStaff(member.id, { mfa: "Not enrolled" }, { action: mfa === "Enrolled" ? "MFA reset" : "Enrolment link resent", type: "Access", subsystem: "Access", subject: member.email, reason: "—" });
                 close();
                 showToast({ title: mfa === "Enrolled" ? "MFA reset" : "Enrolment link sent", body: `${member.name} has been sent a new enrolment link.` });
               }}
@@ -192,13 +196,14 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="danger" disabled={!ack} onClick={() => setAccount("Suspended", "Account suspended", `${member.name} no longer has access. Recorded in the audit trail.`)}>
+            <Button variant="danger" disabled={!ack || !reason.trim()} onClick={() => setAccount("Suspended", "Account suspended", `${member.name} no longer has access. Recorded in the audit trail.`)}>
               Suspend account
             </Button>
           </>
         }
       >
         <Notice>Any item the account currently holds returns to the pool.</Notice>
+        <ReasonField label="Why is this account being suspended?" placeholder="For example: pending an investigation." value={reason} onChange={setReason} />
         <Acknowledge checked={ack} onChange={setAck}>
           I understand access is withdrawn immediately.
         </Acknowledge>
@@ -230,13 +235,14 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="danger" disabled={!ack} onClick={() => setStep("stepup")}>
+            <Button variant="danger" disabled={!ack || !reason.trim()} onClick={() => setStep("stepup")}>
               Deactivate account
             </Button>
           </>
         }
       >
         <Notice>You&apos;ll be asked to re-authenticate. This is recorded against you in the audit trail.</Notice>
+        <ReasonField label="Why is this account being deactivated?" placeholder="For example: left the authority." value={reason} onChange={setReason} />
         <Acknowledge checked={ack} onChange={setAck}>
           I understand this is permanent.
         </Acknowledge>

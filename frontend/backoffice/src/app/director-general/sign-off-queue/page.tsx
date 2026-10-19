@@ -1,12 +1,13 @@
 "use client";
 
 import { Page } from "@/components/shell/Page";
+import { useDemo } from "@/lib/demo";
 import { directorGeneral, href } from "@/config/roles";
 import { StatusBadge } from "@/components/ui/Badge";
 import { KpiCard, KpiRow } from "@/components/ui/KpiCard";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { QueueSwitch, decidedPeriodFilter, useQueueSide } from "@/components/review/queueSide";
-import { AGE_BUCKETS, ageBucket, signoffDecided, signoffKpis, signoffMatters, type SignoffMatter } from "@/data/director-general/signoff";
+import { AGE_BUCKETS, ageBucket, signoffDecided, signoffKpisFor, signoffMatters, withSignoffChanges, type SignoffMatter } from "@/data/director-general/signoff";
 
 // Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<SignoffMatter>[] = [
@@ -37,21 +38,23 @@ const doneFilters: FilterDef<SignoffMatter>[] = [
   decidedPeriodFilter<SignoffMatter>((r) => Date.parse(signoffDecided(r))),
 ];
 
-const pending = signoffMatters.filter((s) => s.status.label === "Pending Sign-off");
-const decided = signoffMatters.filter((s) => s.status.label !== "Pending Sign-off").sort((a, b) => Date.parse(signoffDecided(b)) - Date.parse(signoffDecided(a)));
-
 /**
  * Sign-off Queue (Figma "Sign-off Queue") — matters escalated for the DG's executive sign-off.
  * Open · Completed (signoff-queue.md §2a): pending matters on Open, authorised and declined on Completed.
  */
 export default function SignoffQueue() {
   const [side, setSide] = useQueueSide();
+  // This session's decisions (lib/demo.ts) move a matter from Open to Completed and recount the cards.
+  const demo = useDemo();
+  const matters = withSignoffChanges(signoffMatters, demo.signoffs);
+  const pending = matters.filter((s) => s.status.label === "Pending Sign-off");
+  const decided = matters.filter((s) => s.status.label !== "Pending Sign-off").sort((a, b) => Date.parse(signoffDecided(b)) - Date.parse(signoffDecided(a)));
   const lead = side && <QueueSwitch side={side} onChange={setSide} />;
   return (
     <Page title="Sign-off Queue" subtitle="Matters escalated for your executive sign-off.">
       {side !== "completed" && (
         <KpiRow>
-          {signoffKpis.map((k) => (
+          {signoffKpisFor(matters).map((k) => (
             <KpiCard key={k.label} {...k} />
           ))}
         </KpiRow>

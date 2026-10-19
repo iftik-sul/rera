@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Page } from "@/components/shell/Page";
 import { showToastOnNextPage } from "@/components/shell/Toast";
+import { demoToday, recordSignoff, useDemo, type SignoffChange } from "@/lib/demo";
 import { directorGeneral, href } from "@/config/roles";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +23,10 @@ type Step = "authorise" | "stepup" | "decline" | null;
  * Figma doesn't draw these pop-ups; their wording follows the KB modal spec.
  * The decision panel closes the page and is never pinned (KB signoff-detail.md §5).
  */
-export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
+export function SignoffDetailView({ matter: sample }: { matter: SignoffDetail }) {
+  // A decision taken on this matter in this session (lib/demo.ts) turns the page read-only.
+  const demo = useDemo();
+  const matter = applySignoff(sample, demo.signoffs[sample.id]);
   const router = useRouter();
   const [step, setStep] = useState<Step>(null);
   const [note, setNote] = useState("");
@@ -37,8 +41,10 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
     setStep(s);
   };
   const close = () => setStep(null);
-  const done = (toast: { title: string; body: string }) => {
-    showToastOnNextPage(toast);
+  const done = (what: "Authorised" | "Declined", toast: { title: string; body: string }) => {
+    const why = what === "Declined" ? reason.trim() : note.trim() || undefined;
+    recordSignoff(matter.id, { status: what, on: demoToday(), reason: why }, { action: what === "Authorised" ? "Sign-off authorised" : "Sign-off declined", type: "Decision", subsystem: "Sign-off", subject: matter.reference, reason: why ?? "—" });
+    showToastOnNextPage({ ...toast, link: { label: `View ${matter.reference}`, href: href(directorGeneral, `sign-off-queue/${matter.id}`) } });
     router.push(href(directorGeneral, "sign-off-queue"));
   };
 
@@ -102,7 +108,7 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
         </Acknowledge>
       </Modal>
 
-      <StepUpModal open={step === "stepup"} action="Authorising a sign-off" onCancel={close} onConfirmed={() => done(matter.authorise.toast)} />
+      <StepUpModal open={step === "stepup"} action="Authorising a sign-off" onCancel={close} onConfirmed={() => done("Authorised", matter.authorise.toast)} />
 
       <Modal
         open={step === "decline"}
@@ -113,7 +119,7 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="danger" disabled={!reason.trim()} onClick={() => done(matter.decline.toast)}>
+            <Button variant="danger" disabled={!reason.trim()} onClick={() => done("Declined", matter.decline.toast)}>
               {matter.decline.confirm}
             </Button>
           </>
@@ -123,4 +129,17 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
       </Modal>
     </Page>
   );
+}
+
+/** A matter decided in this session reads like one decided in the sample data: status + outcome banner, no panel. */
+function applySignoff(m: SignoffDetail, c: SignoffChange | undefined): SignoffDetail {
+  if (!c) return m;
+  const authorised = c.status === "Authorised";
+  return {
+    ...m,
+    status: { label: c.status, tone: authorised ? "success" : "error" },
+    outcome: authorised
+      ? { tone: "success", title: `Authorised by you on ${c.on}`, body: "Returned to Licensing to execute. A decided sign-off can't be changed from this screen." }
+      : { tone: "neutral", title: `Declined by you on ${c.on}`, body: `Returned to Licensing with the reason: “${c.reason}” Nothing was changed on the register.` },
+  };
 }

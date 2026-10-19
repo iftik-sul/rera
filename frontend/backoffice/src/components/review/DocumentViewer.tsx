@@ -134,7 +134,7 @@ export function DocumentViewer({
         <ReasonField
           label="Why are you rejecting this document?"
           placeholder="For example: the name on the certificate doesn't match the applicant."
-          hint="Recorded in the audit trail. The applicant isn't told about single documents — to ask them for a replacement, use Request Info or Return."
+          hint="Recorded in the audit trail. The applicant isn't told about single documents — to ask them for a replacement, use Request additional information or Return."
           value={reason}
           onChange={setReason}
         />

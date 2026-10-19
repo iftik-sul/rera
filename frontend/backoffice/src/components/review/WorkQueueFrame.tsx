@@ -17,6 +17,7 @@ export function WorkQueueFrame({
   subtitle,
   kpis,
   exportCount,
+  onCard,
   children,
 }: {
   title: string;
@@ -25,6 +26,8 @@ export function WorkQueueFrame({
   kpis?: Kpi[];
   /** How many items the queue holds as currently filtered — what Export covers. */
   exportCount: number;
+  /** Choosing a card applies its filter to the table (work-queue.md §1). */
+  onCard?: (filter: Record<string, string>) => void;
   children: React.ReactNode;
 }) {
   const role = useRole();
@@ -41,6 +44,7 @@ export function WorkQueueFrame({
         <span className="flex-1" />
         <ExportMenu
           title="Queue exported"
+          audit={{ subsystem: title.includes("Escrow") ? "Escrow" : title.includes("Licensing") ? "Licensing" : "Transaction", subject: title }}
           message={(kind) =>
             `${exportCount} ${exportCount === 1 ? "item" : "items"} — this side of the queue as filtered, every page — as a ${kind === "PDF" ? "PDF" : "spreadsheet"}. Recorded in the audit trail.`
           }
@@ -49,7 +53,7 @@ export function WorkQueueFrame({
       {kpis && (
         <KpiRow>
           {kpis.map((k) => (
-            <KpiCard key={k.label} {...k} />
+            <KpiCard key={k.label} label={k.label} value={k.value} caption={k.caption} onClick={k.filter && onCard ? () => onCard(k.filter!) : undefined} />
           ))}
         </KpiRow>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { showToast } from "@/components/shell/Toast";
+import { recordAudit } from "@/lib/demo";
 import { Button } from "./Button";
 import { PopoverItem, PopoverList, usePopover } from "./Popover";
 
@@ -17,6 +18,7 @@ export function ExportMenu({
   formats = ["PDF", "Spreadsheet"],
   title,
   message,
+  audit,
 }: {
   label?: string;
   formats?: ExportKind[];
@@ -24,10 +26,13 @@ export function ExportMenu({
   title: string;
   /** Toast body for the chosen format. */
   message: (kind: ExportKind) => string;
+  /** What the Audit Trail records the export against — the toast promises it is recorded (A-12 §21). */
+  audit?: { subsystem: string; subject: string };
 }) {
   const p = usePopover();
   const run = (kind: ExportKind) => {
     p.close();
+    if (audit) recordAudit({ action: `${title} (${kind})`, type: "Access", subsystem: audit.subsystem, subject: audit.subject, reason: "—" });
     showToast({ title, body: message(kind) });
   };
 

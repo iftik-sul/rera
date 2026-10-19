@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "./Icon";
 
@@ -9,7 +10,8 @@ import { Icon } from "./Icon";
  * A page calls showToastOnNextPage() just before navigating; the next page
  * shows it top-right for a few seconds. showToast() shows one on the current page.
  */
-type ToastMsg = { title: string; body: string };
+/** `link` = "a read-only link back" to the item just decided (application-review.md §6b). */
+type ToastMsg = { title: string; body: string; link?: { label: string; href: string } };
 const KEY = "reran.toast";
 const EVENT = "reran:toast";
 
@@ -60,6 +62,11 @@ export function ToastHost() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <p className="type-group-title text-strong">{msg.title}</p>
         <p className="type-caption text-muted">{msg.body}</p>
+        {msg.link && (
+          <Link href={msg.link.href} onClick={() => setMsg(null)} className="w-fit type-label text-link hover:underline focus-ring">
+            {msg.link.label}
+          </Link>
+        )}
       </div>
       <button type="button" onClick={() => setMsg(null)} aria-label="Dismiss" className="cursor-pointer text-muted hover:text-strong">
         ×

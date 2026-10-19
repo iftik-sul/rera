@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useRole } from "@/components/shell/RoleContext";
-import { showToastOnNextPage } from "@/components/shell/Toast";
-import { href } from "@/config/roles";
+import { showToast } from "@/components/shell/Toast";
+import { DG_NAME, DG_ROLE, demoToday, recordApp } from "@/lib/demo";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Cards";
@@ -13,15 +11,14 @@ import { StepUpModal } from "@/components/ui/StepUpModal";
 import type { Application, OverrideActions } from "@/data/director-general/applications";
 
 /**
- * Override panel on a decided item, and its two-step flow:
- *   Overturn decision (Figma M-GOV-03) → step-up re-authentication (M-SYS-02, required by
- *   KB modals.md §9) → Revoke the issued output (M-GOV-04, or M-LIC-03 for a credential)
- *   — or, overturning a rejection, issue the output fresh dated today → Dashboard.
- * Overturn needs a reason and the tick box before it can be confirmed.
+ * Override panel on a decided item, and its flow (KB modals.md §9, revised 2026-10-19):
+ *   Overturn decision (M-GOV-03: reason + tick box) → the consequence — revoke the issued output
+ *   (M-GOV-04, or M-LIC-03 for a credential) or issue it fresh dated today (M-GOV-05) →
+ *   step-up re-authentication (M-SYS-02), once, at the end → recorded.
+ * Nothing is recorded until the code is entered; cancelling any step before it says so.
+ * Once recorded the item stays on screen, now read-only and Overturned (lib/demo.ts).
  */
 export function OverridePanel({ app, actions }: { app: Application; actions: OverrideActions }) {
-  const role = useRole();
-  const router = useRouter();
   const [step, setStep] = useState<"overturn" | "stepup" | "revoke" | null>(null);
   const [reason, setReason] = useState("");
   const [ack, setAck] = useState(false);
@@ -33,6 +30,22 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
     setStep("overturn");
   };
   const close = () => setStep(null);
+  // Leaving after the first pop-up: nothing was recorded, and the officer is told so.
+  const abandon = () => {
+    setStep(null);
+    showToast({ title: "Overturn not recorded", body: "Nothing changed — the recorded decision stands." });
+  };
+  const ref = app.title.split(" — ")[0];
+  const record = () => {
+    const to = recorded.outcome.label === "Rejected" ? "Approved" : "Rejected";
+    recordApp(
+      app.id,
+      { status: { label: to, tone: to === "Approved" ? "success" : "error", overturned: true }, kind: "overturned", replaced: `${recorded.outcome.label} by ${recorded.decidedBy}`, on: demoToday(), by: DG_NAME, role: DG_ROLE, reason: reason.trim() },
+      { action: "Decision overturned", type: "Override", subsystem: app.queue === "licensing" ? "Licensing" : app.queue === "escrow" ? "Escrow" : "Transaction", subject: ref, reason: reason.trim() },
+    );
+    setStep(null);
+    showToast(actions.revoke.toast);
+  };
 
   return (
     <section className="flex flex-col gap-4 rounded-card border border-card bg-white px-6 py-5">
@@ -84,7 +97,7 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="danger" disabled={!reason.trim() || !ack} onClick={() => setStep("stepup")}>
+            <Button variant="danger" disabled={!reason.trim() || !ack} onClick={() => setStep("revoke")}>
               Overturn decision
             </Button>
           </>
@@ -97,30 +110,25 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
         </Acknowledge>
       </Modal>
 
-      <StepUpModal open={step === "stepup"} action="Overturning a decision" onCancel={close} onConfirmed={() => setStep("revoke")} />
-
       <Modal
         open={step === "revoke"}
-        onClose={close}
+        onClose={abandon}
         title={actions.revoke.title}
         description={<p>{actions.revoke.body}</p>}
         actions={
           <>
-            <Button onClick={close}>Cancel</Button>
-            <Button
-              variant={actions.revoke.variant ?? "danger"}
-              onClick={() => {
-                showToastOnNextPage(actions.revoke.toast);
-                router.push(href(role, "dashboard"));
-              }}
-            >
+            <Button onClick={abandon}>Cancel</Button>
+            <Button variant={actions.revoke.variant ?? "danger"} onClick={() => setStep("stepup")}>
               {actions.revoke.confirm}
             </Button>
           </>
         }
       >
         <Notice>{actions.revoke.callout}</Notice>
+        <Notice>Next you&apos;ll re-authenticate. Nothing is recorded until you do.</Notice>
       </Modal>
+
+      <StepUpModal open={step === "stepup"} action="Overturning a decision" onCancel={abandon} onConfirmed={record} />
     </section>
   );
 }

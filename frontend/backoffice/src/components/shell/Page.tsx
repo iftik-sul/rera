@@ -1,5 +1,8 @@
 "use client";
 
+import { resetDemo } from "@/lib/demo";
+import { showToast } from "./Toast";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -110,7 +113,11 @@ function ProfileMenu() {
           <PopoverItem role="menuitem" tick={false} onClick={() => { p.close(); router.push(href(role, "help")); }} trailing={<Icon name="help-circle" />}>
             Help &amp; Support
           </PopoverItem>
-          <PopoverItem role="menuitem" tick={false} onClick={() => { signOut(); router.replace("/"); }} trailing={<Icon name="log-out" />}>
+          {/* Prototype only: decisions stick for the browser session (lib/demo.ts); this starts it over. */}
+          <PopoverItem role="menuitem" tick={false} onClick={() => { p.close(); resetDemo(); showToast({ title: "Demo reset", body: "Every screen is back to the sample data." }); }}>
+            Reset demo data
+          </PopoverItem>
+          <PopoverItem role="menuitem" tick={false} onClick={() => { resetDemo(); signOut(); router.replace("/"); }} trailing={<Icon name="log-out" />}>
             Sign out
           </PopoverItem>
         </PopoverList>

@@ -18,7 +18,7 @@ type ReasonDialog = { title: string; body: string[]; label: string; placeholder:
 export type DecideActions = {
   /** Label on the request button: "Request Info" (transaction) or "Request additional information" (licensing). */
   requestLabel: string;
-  approve: { title: string; body: string[]; callout: string; toast: Toast; /** Confirm button; default "Approve and issue". */ confirm?: string };
+  approve: { title: string; body: string[]; callout: string; toast: Toast; /** Confirm button; default "Approve and issue". */ confirm?: string; /** Pay-after service (RED #22): the decision records Accepted, the licence issues on payment (KB A-2 §9). */ outcome?: "Accepted" };
   request: ReasonDialog;
   return: ReasonDialog;
   reject: ReasonDialog & { callout: string };
@@ -153,7 +153,7 @@ export const featuredApplications: Application[] = [
     checksTitle: "Registry checks",
     checks: grandeurChecks,
     decide: {
-      requestLabel: "Request Info",
+      requestLabel: "Request additional information",
       approve: {
         title: "Approve and issue the Title Deed?",
         body: ["This issues the e-Title Deed to Adron Homes & Properties immediately. Issuance is instant and final."],
@@ -311,13 +311,16 @@ export const featuredApplications: Application[] = [
     decide: {
       requestLabel: "Request additional information",
       approve: {
-        title: "Approve and issue the licence?",
+        // RED #22 is paid after RERA's decision (KB A-2 §9, open-questions A12 resolved 2026-10-19).
+        title: "Accept this application?",
         body: [
-          "This issues the Real Estate Developer Licence to Sahara Estates Development Co immediately, and writes the entry to the National Practitioner Register.",
+          "A notice of acceptance goes to Sahara Estates Development Co. The Real Estate Developer Licence issues — and its register entry is written — when they pay the licence fee, not now.",
           "Both prior stages recommended approval.",
         ],
-        callout: "There is no undo. Issuance is immediate and the register is written at this stage.",
-        toast: { title: "Licence issued", body: "LIC-2026-00412 — Real Estate Developer Licence issued to Sahara Estates Development Co." },
+        callout: "There is no undo. The application is accepted now; the licence follows payment.",
+        confirm: "Accept application",
+        outcome: "Accepted",
+        toast: { title: "Application accepted", body: "LIC-2026-00412 — Sahara Estates Development Co has been sent a notice of acceptance. The licence issues when the fee is paid." },
       },
       request: {
         title: "Request additional information?",

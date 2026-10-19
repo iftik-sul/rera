@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useStaff } from "@/components/admin/useStaff";
 import { Page } from "@/components/shell/Page";
 import { directorGeneral, href } from "@/config/roles";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { InviteModal } from "@/components/admin/InviteModal";
-import { ACCOUNT_STATUS_ORDER, ROLES, ROLE_TAG, accountStatus, mfaStatus, scopeText, staff, type StaffMember } from "@/data/director-general/staff";
+import { ACCOUNT_STATUS_ORDER, ROLES, ROLE_TAG, accountStatus, mfaStatus, scopeText, type StaffMember } from "@/data/director-general/staff";
 
 // Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<StaffMember>[] = [
@@ -32,7 +33,8 @@ const columns: Column<StaffMember>[] = [
 ];
 
 const filters: FilterDef<StaffMember>[] = [
-  { label: "Role", key: "role", value: (m) => m.roles[0], order: [...ROLES] },
+  // Any role the person holds — someone with two roles shows under both (was: first role only).
+  { label: "Role", key: "role", value: () => "", options: [...ROLES], matches: (m, o) => m.roles.includes(o as (typeof ROLES)[number]) },
   { label: "Status", key: "status", value: (m) => m.status, order: ACCOUNT_STATUS_ORDER },
   { label: "MFA", key: "mfa", value: (m) => m.mfa, order: ["Enrolled", "Not enrolled"] },
 ];
@@ -40,6 +42,7 @@ const filters: FilterDef<StaffMember>[] = [
 /** Admin Console — Staff Directory (Figma "Admin Console"). DG only; assigns roles, never defines them. */
 export default function AdminConsole() {
   const [inviting, setInviting] = useState(false);
+  const staff = useStaff();
   return (
     <Page title="Admin Console" subtitle="Manage staff accounts, role assignments and MFA.">
       <TableCard
