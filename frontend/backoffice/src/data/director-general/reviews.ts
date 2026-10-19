@@ -55,6 +55,9 @@ const SHORT = MONTHS.map((m) => m.slice(0, 3));
 const before = (days: number) => new Date(SAMPLE_TODAY.getTime() - days * 86_400_000);
 const dayMonYear = (d: Date) => `${d.getUTCDate()} ${SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 
+/** "none required…" → "None required…" when the text stands on its own. */
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
 /** Digits of a reference, used to vary sample figures deterministically. */
 const seed = (ref: string) => parseInt(ref.replace(/\D/g, "").slice(-4), 10) || 1;
 const naira = (n: number) => "₦" + n.toLocaleString("en-NG");
@@ -328,6 +331,7 @@ function transactionReview(row: TransactionRow, i: number): Application {
       txn: row.service.replace("Register ", ""),
       price: naira(price),
       fee: naira(price * 0.04),
+      submitted: dayMonYear(submitted),
     }).map((g) =>
       isMortgage(row.service) && g.title === "Transaction details"
         ? { ...g, fields: g.fields.map((f) => (f.label === "Sale price" ? { label: "Mortgage amount", value: f.value } : f)) }
@@ -370,9 +374,44 @@ function transactionReview(row: TransactionRow, i: number): Application {
       rejectRule: "State the registry rule or check the application fails, in terms the applicant can act on.",
     });
     app.claim = MY_CLAIM;
+    const guard = TRX_GUARDS[ref];
+    if (guard) guard(app, { who, project, unit });
   }
   return app;
 }
+
+/**
+ * The two decision guards on transaction items (KB application-review.md §4, modals.md §8),
+ * each on one sample item so the prototype has somewhere to show them. The screen explains
+ * the guard instead of silently disabling the decision.
+ */
+const TRX_GUARDS: Record<string, (app: Application, o: { who: string; project: string; unit: string }) => void> = {
+  // M-BLK-01 — the live registry checks couldn't be fetched: nothing can be decided until they load (A-1 §21 rule 2).
+  "TRX-2024-0839": (app) => {
+    app.checksPending = [...app.checks];
+    app.checksPendingLabel = "Unavailable";
+    app.checksNote = "The register didn't respond, so these checks couldn't be run. They reload when you open the item again.";
+    app.decideBlock = {
+      title: "Registry checks are unavailable",
+      body: "The live checks against the register couldn't be retrieved for this item. An application can't be approved or rejected without them.",
+      helpTitle: "What would unblock this",
+      help: "The checks loading — reopen the item in a few minutes. You can still request additional information or return the item now.",
+    };
+  },
+  // M-BLK-03 — a mortgage can only be registered against a property whose title is verified (FTI #3 rule 2; A-1 §21 rule 4).
+  "TRX-2024-0821": (app, { unit, project }) => {
+    app.checksPending = ["Title deed status"];
+    app.checksPendingLabel = "Not verified";
+    app.checksNote = `${project} ${unit} is registered, but its title is not yet verified on the register.`;
+    app.decideBlock = {
+      title: "This mortgage can't be approved yet",
+      body: `A mortgage can only be registered against a property whose title is verified. The title for ${project} ${unit} isn't — and approving the mortgage is what lets sales linked to it (RED #6) go ahead.`,
+      helpTitle: "What would unblock this",
+      help: "The title being verified on the register. You can still reject the application, request additional information or return it now.",
+      blocks: ["approve"],
+    };
+  },
+};
 
 // ── Escrow items ────────────────────────────────────────────
 
@@ -765,7 +804,7 @@ function licensingReview(row: LicensingRow, i: number): Application {
     app.override = overrideActions({
       ref, title: app.title, who, output: shape.output, outcome: row.status,
       decidedBy: "Funke Adeyemi", role: "Licensing & Registration Officer", decidedOn: before(daysIn - 6), recordedAt: stage3At,
-      reason: stages[2].reason.replace("Reason given: ", ""),
+      reason: cap(stages[2].reason.replace("Reason given: ", "")),
       issuedRef: freeCredential(shape.kind === "institution" ? "ACC" : shape.kind === "practitioner" ? "PCC" : "LIC", "26", 500 + n),
       credential: true,
     });

@@ -1,5 +1,6 @@
 "use client";
 
+import { rememberList } from "@/lib/listMemory";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
@@ -64,11 +65,15 @@ export function Table<T>({
       </div>
 
       {rows.map((r) => {
-        const cells = columns.map((c) => (
-          <span role="cell" key={c.header} className={`min-w-0 truncate type-body ${toneClass[c.tone ?? "strong"]} ${align(c)}`}>
-            {c.cell(r)}
-          </span>
-        ));
+        // Rows are one line and cut long text with "…" (design standard D0.6); the full text shows on hover.
+        const cells = columns.map((c) => {
+          const v = c.cell(r);
+          return (
+            <span role="cell" key={c.header} title={typeof v === "string" ? v : undefined} className={`min-w-0 truncate type-body ${toneClass[c.tone ?? "strong"]} ${align(c)}`}>
+              {v}
+            </span>
+          );
+        });
         const cls = "grid h-row w-full items-center gap-3 border-b border-control px-5 text-left";
         const action = rowAction(r);
         if (action && "href" in action)
@@ -190,6 +195,7 @@ export function TableCard<T>({
     const sel: Record<string, string | null> = {};
     for (const f of defs) sel[f.key] = params.get(f.key);
     setChosen(sel);
+    rememberList();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once, on arrival
   }, []);
 
@@ -203,6 +209,7 @@ export function TableCard<T>({
       else url.searchParams.delete(f.key);
     }
     window.history.replaceState(window.history.state, "", url);
+    rememberList();
   };
   const goTo = (p: number) => {
     setPage(p);

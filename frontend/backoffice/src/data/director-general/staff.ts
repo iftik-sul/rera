@@ -73,7 +73,7 @@ export type StaffMember = {
   /**
    * Sign-in locked after repeated failed attempts — when it happened. A lock-out is not an account
    * status: the account stays Active and only sign-in is blocked until an administrator unlocks it
-   * (open-questions A16, proposed 2026-10-19).
+   * (open-questions A16, decided 2026-10-19).
    */
   lockedOut?: string;
   /** The officer asked for an MFA reset from the sign-in page — when. Cleared by Reset MFA. */

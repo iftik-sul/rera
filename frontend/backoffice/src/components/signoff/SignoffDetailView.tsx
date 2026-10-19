@@ -12,6 +12,9 @@ import { Banner, Breadcrumb, Card, DetailHeader, FieldGroup, Notice } from "@/co
 import { Acknowledge, Modal, ReasonField } from "@/components/ui/Modal";
 import { StepUpModal } from "@/components/ui/StepUpModal";
 import type { SignoffDetail } from "@/data/director-general/signoff";
+import { Activity, type ActivityItem } from "@/components/ui/Activity";
+import { auditFor } from "@/components/review/activity";
+import { linkRefs } from "@/components/ui/RefLink";
 
 type Step = "authorise" | "stepup" | "decline" | null;
 
@@ -50,14 +53,14 @@ export function SignoffDetailView({ matter: sample }: { matter: SignoffDetail })
 
   return (
     <Page title={matter.title} subtitle={matter.subtitle} bodyClassName="gap-4 px-8 py-5">
-      <Breadcrumb items={[{ label: "Sign-off Queue", href: href(directorGeneral, "sign-off-queue") + (pending ? "" : "?view=completed") }, { label: "Sign-off Detail" }]} />
+      <Breadcrumb items={[{ label: "Sign-off Queue", href: href(directorGeneral, "sign-off-queue") + (pending ? "" : "?view=completed") }, { label: matter.reference }]} />
 
       <DetailHeader title={matter.subtitle} subtitle={matter.reference} status={matter.status} meta={matter.meta} />
 
       <div className="flex items-start gap-6">
         <Card title="Matter" className="min-w-0 flex-1">
           {matter.groups.map((g) => (
-            <FieldGroup key={g.title} title={g.title} fields={g.fields} />
+            <FieldGroup key={g.title} title={g.title} fields={linkRefs(g.fields)} />
           ))}
         </Card>
 
@@ -86,6 +89,8 @@ export function SignoffDetailView({ matter: sample }: { matter: SignoffDetail })
           <p className="px-1 type-caption text-muted">{matter.outcome.body}</p>
         </div>
       )}
+
+      <Activity items={signoffActivity(sample, matter, demo)} />
 
       <Modal
         open={step === "authorise"}
@@ -142,4 +147,16 @@ function applySignoff(m: SignoffDetail, c: SignoffChange | undefined): SignoffDe
       ? { tone: "success", title: `Authorised by you on ${c.on}`, body: "Returned to Licensing to execute. A decided sign-off can't be changed from this screen." }
       : { tone: "neutral", title: `Declined by you on ${c.on}`, body: `Returned to Licensing with the reason: “${c.reason}” Nothing was changed on the register.` },
   };
+}
+
+/** The matter's history (KB signoff-detail.md §6): the escalation, the recommendation, the DG's decision and every Audit Trail entry about it. */
+function signoffActivity(sample: SignoffDetail, matter: SignoffDetail, demo: ReturnType<typeof useDemo>): ActivityItem[] {
+  const f = (label: string) => sample.groups.flatMap((g) => g.fields).find((x) => x.label === label)?.value;
+  const items: ActivityItem[] = [];
+  const by = f("Escalated by");
+  const on = f("Date");
+  if (by && on) items.push({ at: on, who: by, role: f("Role"), what: "Escalated for sign-off", note: sample.recommendation.headline });
+  const decided = sample.outcome?.title.match(/^(Authorised|Declined) by (.+?) on (.+)$/);
+  if (decided) items.push({ at: decided[3], who: decided[2], role: "Director-General / Registrar", what: `Sign-off ${decided[1].toLowerCase()}` });
+  return [...items, ...auditFor(matter.reference, demo)];
 }

@@ -32,7 +32,7 @@ export const entryId = (credentialNo: string) => credentialNo.toLowerCase().repl
 /**
  * A credential still marked Active past its valid-to date is Expired — the status follows the
  * date, so the Status and Expiry filters can't disagree (2026-10-19 review: Eko Realty's
- * licence read Active although it lapsed on 01 Apr 2026).
+ * licence read Active although it lapsed on 1 Apr 2026).
  */
 const e = (credentialNo: string, holder: string, practitionerType: string, status: Status, issued: string, validTo: string): RegisterEntry => ({
   credentialNo,
@@ -46,26 +46,26 @@ const e = (credentialNo: string, holder: string, practitionerType: string, statu
 
 export const registerEntries: RegisterEntry[] = [
   e("CRED/LIC/26/0412", "Crestline Homes Development Co", "Real Estate Developer", ACTIVE, "12 Jan 2026", "11 Jan 2029"),
-  e("CRED/PCC/26/0388", "Adeyemi Okonkwo", "Estate Surveyor & Valuer", ACTIVE, "03 Feb 2026", "02 Feb 2027"),
+  e("CRED/PCC/26/0388", "Adeyemi Okonkwo", "Estate Surveyor & Valuer", ACTIVE, "3 Feb 2026", "2 Feb 2027"),
   e("CRED/ACC/26/0101", "Lagos Institute of Property Studies", "Training Institution", ACTIVE, "20 Mar 2026", "19 Mar 2028"),
   e("CRED/LIC/25/0298", "Coastline Realty Partners Ltd", "Estate Agency Firm", SUSPENDED, "15 Jun 2025", "14 Jun 2028"),
-  e("CRED/PCC/24/0177", "Funmilayo Bello", "Estate Agent", EXPIRED, "01 Aug 2024", "31 Jul 2025"),
-  e("CRED/PMT/26/0233", "Brains & Hammers Ltd", "Real Estate Developer", ACTIVE, "09 Apr 2026", "08 Apr 2027"),
+  e("CRED/PCC/24/0177", "Funmilayo Bello", "Estate Agent", EXPIRED, "1 Aug 2024", "31 Jul 2025"),
+  e("CRED/PMT/26/0233", "Brains & Hammers Ltd", "Real Estate Developer", ACTIVE, "9 Apr 2026", "8 Apr 2027"),
   e("CRED/PCC/26/0201", "Chukwuemeka Nwankwo", "Estate Surveyor & Valuer", ACTIVE, "11 May 2026", "10 May 2027"),
   // Figma links the first row to the Entry Detail, but that frame shows THIS entry (Kano Homes, cancelled) — so this is the row that opens it.
-  e("CRED/LIC/23/0044", "Kano Homes Ltd", "Real Estate Developer", CANCELLED, "02 Feb 2023", "—"),
+  e("CRED/LIC/23/0044", "Kano Homes Ltd", "Real Estate Developer", CANCELLED, "2 Feb 2023", "—"),
   e("CRED/ACC/25/0067", "Delta Valuers Association", "Professional Body", ACTIVE, "18 Sep 2025", "17 Sep 2027"),
   e("CRED/PCC/26/0215", "Aisha Mohammed", "Facilities Manager", ACTIVE, "22 Jun 2026", "21 Jun 2027"),
   // ── Beyond the Figma frame: sample entries for page 2 ──
-  e("CRED/LIC/24/0231", "Eko Realty Ltd", "Estate Agency Firm", ACTIVE, "14 Mar 2024", "01 Apr 2026"),
+  e("CRED/LIC/24/0231", "Eko Realty Ltd", "Estate Agency Firm", ACTIVE, "14 Mar 2024", "1 Apr 2026"),
   e("CRED/PCC/25/0412", "Tunde Akinwale", "Estate Agent", ACTIVE, "29 Oct 2025", "28 Oct 2026"),
-  e("CRED/LIC/26/0356", "Harbourline Realty Consulting Ltd", "Estate Agency Firm", ACTIVE, "02 Jul 2026", "01 Jul 2029"),
+  e("CRED/LIC/26/0356", "Harbourline Realty Consulting Ltd", "Estate Agency Firm", ACTIVE, "2 Jul 2026", "1 Jul 2029"),
   e("CRED/PCC/25/0390", "Nkem Achebe", "Estate Agent", ACTIVE, "21 Nov 2025", "20 Nov 2026"),
-  e("CRED/PMT/25/0144", "Okafor & Sons Properties Ltd", "Real Estate Developer", SUSPENDED, "05 May 2025", "04 May 2026"),
+  e("CRED/PMT/25/0144", "Okafor & Sons Properties Ltd", "Real Estate Developer", SUSPENDED, "5 May 2025", "4 May 2026"),
   e("CRED/ACC/24/0052", "Abuja School of Estate Management", "Training Institution", EXPIRED, "12 Sep 2024", "11 Sep 2026"),
   e("CRED/PCC/26/0274", "Kemi Adeyinka", "Facilities Manager", ACTIVE, "17 Aug 2026", "16 Aug 2027"),
-  e("CRED/LIC/22/0019", "Crestview Property Managers Ltd", "Estate Agency Firm", CANCELLED, "08 Jun 2022", "—"),
-  e("CRED/PCC/26/0301", "Musa Ibrahim", "Estate Surveyor & Valuer", ACTIVE, "04 Sep 2026", "03 Sep 2027"),
+  e("CRED/LIC/22/0019", "Crestview Property Managers Ltd", "Estate Agency Firm", CANCELLED, "8 Jun 2022", "—"),
+  e("CRED/PCC/26/0301", "Musa Ibrahim", "Estate Surveyor & Valuer", ACTIVE, "4 Sep 2026", "3 Sep 2027"),
   e("CRED/ACC/26/0118", "Nigerian Institution of Estate Surveyors", "Professional Body", ACTIVE, "30 Jan 2026", "29 Jan 2028"),
 ];
 
@@ -137,14 +137,14 @@ const featuredEntries: EntryDetail[] = [
       {
         title: "Validity",
         fields: [
-          { label: "Issued", value: "02 Feb 2023" },
+          { label: "Issued", value: "2 Feb 2023" },
           { label: "Cancelled on", value: "11 Oct 2026" },
-          { label: "Issued by", value: "F. Adeyemi · Lic. Officer" },
+          { label: "Issued by", value: "Funke Adeyemi · Licensing & Registration Officer" },
         ],
       },
     ],
     history: [
-      { date: "02 Feb 2023", event: "Credential issued", by: "F. Adeyemi", type: { label: "Issued", tone: "info" }, reference: "LIC-2023-0044" },
+      { date: "2 Feb 2023", event: "Credential issued", by: "F. Adeyemi", type: { label: "Issued", tone: "info" }, reference: "LIC-2023-0044" },
       { date: "11 Oct 2026", event: "Cancelled — cause: Overturn", by: "A. Nwosu · DG", type: CANCELLED, reference: "OVR/2026/0044" },
     ],
     withdrawal: { cause: "Overturn", authorisedBy: "Director-General / Registrar", date: "11 Oct 2026", decisionRef: "OVR/2026/0044" },
@@ -163,7 +163,7 @@ const KIND: Record<string, { type: string; category: string; short: string }> = 
 
 /** Sign-off matters that changed an entry (kept here so the register and the Sign-off Queue agree). */
 const SIGNED_OFF: Record<string, { cause: string; date: string; ref: string; authorisedOn?: string }> = {
-  "CRED/LIC/22/0019": { cause: "Revocation", date: "10 Oct 2026", ref: "RRA/SO/2026/0231", authorisedOn: "09 Oct 2026" }, // authorised 09 Oct (audit aud-0893), executed by Licensing next day
+  "CRED/LIC/22/0019": { cause: "Revocation", date: "10 Oct 2026", ref: "RRA/SO/2026/0231", authorisedOn: "9 Oct 2026" }, // authorised 09 Oct (audit aud-0893), executed by Licensing next day
 };
 
 const SUSPENSIONS: Record<string, { date: string; ref: string }> = {
@@ -189,7 +189,7 @@ function buildEntry(r: RegisterEntry): EntryDetail {
   const person = code === "PCC";
   const n = digits(r.credentialNo);
   const decision = `LIC-20${yy}-${serial}`;
-  const issuedBy = `${OFFICER} · Lic. Officer`;
+  const issuedBy = `${OFFICER} · Licensing & Registration Officer`;
   const history: EntryDetail["history"] = [
     { date: r.issued, event: "Credential issued", by: OFFICER, type: { label: "Issued", tone: "info" }, reference: decision },
   ];
