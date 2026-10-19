@@ -23,7 +23,7 @@ type Which = "approve" | "request" | "return" | "reject" | "blocked" | "chain" |
  * Licensing items at stage 3 add "Return to stage 1 or 2" (M-CHN-05): back down the chain with a
  * reason, superseding the positions from that stage on. It is not a decision and nothing is issued.
  */
-export function DecisionPanel({ app, actions }: { app: Application; actions: DecideActions }) {
+export function DecisionPanel({ app, actions, unverified = [] }: { app: Application; actions: DecideActions; unverified?: string[] }) {
   const role = useRole();
   const router = useRouter();
   const [open, setOpen] = useState<Which>(null);
@@ -77,6 +77,11 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
         }
       >
         <Notice>{actions.approve.callout}</Notice>
+        {unverified.length > 0 && (
+          <Notice>
+            Not yet verified: {unverified.join(", ")}. You can still approve — the documents are recorded as they stand.
+          </Notice>
+        )}
       </Modal>
 
       {app.decideBlock && (
