@@ -16,9 +16,9 @@ Static Next.js site built from the Regulatory Authority Figma screens.
 
 ## Rules
 
-- Static export only (`output: "export"`) — no server functions.
-- Colours come from the tokens in `globals.css`; don't hard-code new hex values.
-- Screen text matches Figma exactly. No internal codes (service numbers, modal IDs, C1/C2/C3) in the UI.
+All build rules live in one place, shared with the Figma standard:
+**KnowledgeBase → `RERAN/reran-design-standard.md`, Section D (Frontend build rules).**
+Read it before building any screen. If this code and Figma disagree, the code follows the KB.
 
 ## Signing in (demo)
 
