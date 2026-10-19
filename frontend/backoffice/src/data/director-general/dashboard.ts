@@ -4,14 +4,23 @@
  * the Sign-off Queue's data (signoff.ts), so the two screens always agree.
  * When the backend exists, this file is replaced by an API call.
  */
+import { auditEntries, dateBucket } from "./audit";
 import { oldestPending, oldestPendingAge, pendingCount, waited } from "./signoff";
+import { staff } from "./staff";
+
+const active = staff.filter((m) => m.status === "Active");
 
 export const kpis = [
   { label: "Pending sign-off", value: String(pendingCount), caption: "Awaiting your authorisation" },
   { label: "Oldest pending", value: oldestPendingAge, caption: "Longest in the queue" },
-  { label: "Active staff", value: "41", caption: "Across 9 roles" },
-  { label: "Pending invites", value: "3", caption: "Awaiting acceptance" },
-  { label: "Recent access changes", value: "7", caption: "In the last 7 days" },
+  // Counted from the Admin Console and Audit Trail data (Figma's 41 / 3 / 7 matched neither).
+  { label: "Active staff", value: String(active.length), caption: `Across ${new Set(active.flatMap((m) => m.roles)).size} roles` },
+  { label: "Pending invites", value: String(staff.filter((m) => m.status === "Invited").length), caption: "Awaiting acceptance" },
+  {
+    label: "Recent access changes",
+    value: String(auditEntries.filter((e) => e.type === "Access" && dateBucket(e.timestamp) !== "Earlier").length),
+    caption: "In the last 7 days",
+  },
 ];
 
 export type PendingSignOff = { reference: string; item: string; origin: string; waiting: string; detail?: string };

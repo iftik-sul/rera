@@ -64,34 +64,46 @@ const pending: Status = { label: "Pending", tone: "warning" };
 const underReview: Status = { label: "Under Review", tone: "info" };
 const approved: Status = { label: "Approved", tone: "success" };
 
-// Shared by the two Grandeur (transaction) screens
-const grandeurSummary: Application["summary"] = [
+// Two transaction screens, one per Work Queue row that opens them (Figma reused one
+// "Grandeur Properties / TRX-2024-00891" frame for both rows — corrected 2026-10-19).
+const summaryFor = (o: { entity: string; rc: string; contact: string; developer: string; project: string; unit: string; type: string; txn: string; price: string; fee: string }): Application["summary"] => [
   {
     title: "Applicant Information",
     fields: [
-      { label: "Entity name", value: "Grandeur Properties Ltd" },
-      { label: "License number", value: "RC-20198" },
-      { label: "Contact", value: "info@grandeurng.com" },
+      { label: "Entity name", value: o.entity },
+      { label: "License number", value: o.rc },
+      { label: "Contact", value: o.contact },
     ],
   },
   {
     title: "Property / Project Information",
     fields: [
-      { label: "Developer", value: "Grandeur Developments Plc" },
-      { label: "Project", value: "Ajah Lekki Phase 3" },
-      { label: "Unit / Plot", value: "Plot 42" },
-      { label: "Type", value: "Villa" },
+      { label: "Developer", value: o.developer },
+      { label: "Project", value: o.project },
+      { label: "Unit / Plot", value: o.unit },
+      { label: "Type", value: o.type },
     ],
   },
   {
     title: "Transaction Details",
     fields: [
-      { label: "Transaction type", value: "Initial Sale" },
-      { label: "Sale price", value: "₦485,000,000" },
-      { label: "Fee payable", value: "₦19,400,000" },
+      { label: "Transaction type", value: o.txn },
+      { label: "Sale price", value: o.price },
+      { label: "Fee payable", value: o.fee },
     ],
   },
 ];
+
+const adronSummary = summaryFor({
+  entity: "Adron Homes & Properties", rc: "RC-20198", contact: "registry@adronhomes.ng",
+  developer: "Adron Homes & Properties", project: "Victoria Island", unit: "Plot A-12", type: "Detached house",
+  txn: "Initial Sale", price: "₦485,000,000", fee: "₦19,400,000",
+});
+const mixtaSummary = summaryFor({
+  entity: "Mixta Nigeria Ltd", rc: "RC-114502", contact: "conveyancing@mixtanigeria.com",
+  developer: "Eko Atlantic City Developers", project: "Eko Atlantic Tower", unit: "Unit 2304", type: "Apartment",
+  txn: "Resale", price: "₦310,000,000", fee: "₦12,400,000",
+});
 
 const grandeurDocs: Doc[] = [
   { name: "Title Deed Copy", type: "PDF", uploaded: "Sep 14", status: verified },
@@ -99,21 +111,22 @@ const grandeurDocs: Doc[] = [
   { name: "Consent from Developer", type: "PDF", uploaded: "Sep 15", status: pending },
   { name: "Passport / NIN Card", type: "Image", uploaded: "Sep 14", status: verified },
 ];
+const decidedDocs: Doc[] = grandeurDocs.map((d) => ({ ...d, uploaded: d.uploaded.replace("Sep 1", "Sep 2"), status: verified }));
 
 const grandeurChecks = ["Developer registration", "Project registration", "Unit/plot registration", "Title deed status", "Applicant validity"];
 
 export const applications: Application[] = [
   {
     id: "trx-undecided",
-    title: "TRX-2024-00891 — Register Initial Sale",
-    subtitle: "Grandeur Properties Ltd",
+    title: "TRX-2024-0891 — Register Initial Sale",
+    subtitle: "Adron Homes & Properties",
     status: underReview,
     metaSubtitle: "Review details and current status",
     meta: [
       { label: "Output", value: "Title Deed" },
       { label: "SLA", value: "Day 3 of 5" },
     ],
-    summary: grandeurSummary,
+    summary: adronSummary,
     documents: grandeurDocs,
     checksTitle: "Registry Checks",
     checks: grandeurChecks,
@@ -121,49 +134,49 @@ export const applications: Application[] = [
       requestLabel: "Request Info",
       approve: {
         title: "Approve and issue the Title Deed?",
-        body: ["This issues the e-Title Deed to Grandeur Properties Ltd immediately. Issuance is instant and final."],
+        body: ["This issues the e-Title Deed to Adron Homes & Properties immediately. Issuance is instant and final."],
         callout: "There is no undo. The Title Deed is issued the moment you approve.",
-        toast: { title: "Title Deed issued", body: "TRX-2024-00891 approved — the e-Title Deed has been sent to Grandeur Properties Ltd." },
+        toast: { title: "Title Deed issued", body: "TRX-2024-0891 approved — the e-Title Deed has been sent to Adron Homes & Properties." },
       },
       request: {
         title: "Request additional information?",
-        body: ["TRX-2024-00891 returns to Grandeur Properties Ltd and comes back to your queue when they respond."],
+        body: ["TRX-2024-0891 returns to Adron Homes & Properties and comes back to your queue when they respond."],
         label: "What does the applicant need to supply?",
         placeholder: "Name the document or detail that is missing.",
         confirm: "Send Request",
-        toast: { title: "Information requested", body: "TRX-2024-00891 has been sent back to Grandeur Properties Ltd." },
+        toast: { title: "Information requested", body: "TRX-2024-0891 has been sent back to Adron Homes & Properties." },
       },
       return: {
         title: "Return for correction?",
-        body: ["TRX-2024-00891 goes back to Grandeur Properties Ltd for correction, and returns to your queue when resubmitted."],
+        body: ["TRX-2024-0891 goes back to Adron Homes & Properties for correction, and returns to your queue when resubmitted."],
         label: "What needs correcting?",
         placeholder: "Describe what the applicant must change before resubmitting.",
         confirm: "Return Application",
-        toast: { title: "Application returned", body: "TRX-2024-00891 has gone back to Grandeur Properties Ltd for correction." },
+        toast: { title: "Application returned", body: "TRX-2024-0891 has gone back to Adron Homes & Properties for correction." },
       },
       reject: {
         title: "Reject this application?",
-        body: ["Grandeur Properties Ltd is refused and no Title Deed is issued. The applicant is told the outcome and your reason."],
+        body: ["Adron Homes & Properties is refused and no Title Deed is issued. The applicant is told the outcome and your reason."],
         callout: "This decision is terminal, and it is appealable. It carries the same weight as an approval.",
         label: "Why is this application refused?",
         placeholder: "State the registry rule or check the application fails, in terms the applicant can act on.",
         confirm: "Reject Application",
-        toast: { title: "Application rejected", body: "TRX-2024-00891 — Grandeur Properties Ltd has been told the outcome and your reason." },
+        toast: { title: "Application rejected", body: "TRX-2024-0891 — Adron Homes & Properties has been told the outcome and your reason." },
       },
     },
   },
   {
     id: "trx-decided",
-    title: "TRX-2024-00891 — Register Initial Sale",
-    subtitle: "Grandeur Properties Ltd",
+    title: "TRX-2024-0887 — Register Resale",
+    subtitle: "Mixta Nigeria Ltd",
     status: approved,
     metaSubtitle: "Review details and current status",
     meta: [
       { label: "Output", value: "Title Deed" },
       { label: "SLA", value: "Met — decided day 4 of 5" },
     ],
-    summary: grandeurSummary,
-    documents: grandeurDocs,
+    summary: mixtaSummary,
+    documents: decidedDocs,
     checksTitle: "Registry Checks",
     checks: grandeurChecks,
     override: {
@@ -179,7 +192,7 @@ export const applications: Application[] = [
         { label: "Artefact", value: "e-Title Deed" },
         { label: "Reference", value: "RERA/TD/2026/04418" },
         { label: "Issued", value: "2 Oct 2026" },
-        { label: "Delivered to", value: "Grandeur Properties Ltd" },
+        { label: "Delivered to", value: "Mixta Nigeria Ltd" },
       ],
       bannerTitle: "What an overturn will do to this item",
       banner:
@@ -188,7 +201,7 @@ export const applications: Application[] = [
         "Requires re-authentication. The audit entry records the Director-General / Registrar with action type override — never the officer whose decision it replaces.",
       overturn: {
         title: "Overturn this decision?",
-        body: "On record: TRX-2024-00891 — Register Initial Sale, filed by Grandeur Properties Ltd. Approved by Chukwuemeka Obi (Compliance & Escrow Auditor) on 2 Oct 2026.",
+        body: "On record: TRX-2024-0887 — Register Resale, filed by Mixta Nigeria Ltd. Approved by Chukwuemeka Obi (Compliance & Escrow Auditor) on 2 Oct 2026.",
         callout:
           "Replacement outcome: Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and issues the rejection dated today. The item will then read Overturned · Rejected — final, with no undo and no second overturn.",
         label: "Why was this decision wrong?",
@@ -199,9 +212,9 @@ export const applications: Application[] = [
         title: "Revoke the issued Title Deed?",
         body: "This follows the rejection you just confirmed. The output issued under the original approval must now be revoked.",
         callout:
-          "e-Title Deed RERA/TD/2026/04418, issued to Grandeur Properties Ltd on 2 Oct 2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
+          "e-Title Deed RERA/TD/2026/04418, issued to Mixta Nigeria Ltd on 2 Oct 2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
         confirm: "Revoke Title Deed",
-        toast: { title: "Decision overturned", body: "TRX-2024-00891 now reads Overturned · Rejected. e-Title Deed RERA/TD/2026/04418 has been revoked." },
+        toast: { title: "Decision overturned", body: "TRX-2024-0887 now reads Overturned · Rejected. e-Title Deed RERA/TD/2026/04418 has been revoked." },
       },
     },
   },
@@ -221,17 +234,17 @@ export const applications: Application[] = [
         {
           name: "Stage 1 · Reviewer",
           outcome: { label: "Recommended Approval", tone: "success" },
-          recorded: "Adaeze Nwosu recorded this on 30 September 2026 at 09:42.",
+          recorded: "Ibrahim Musa recorded this on 30 September 2026 at 09:42.",
           reason: "Reason given: none required for a recommendation to approve. All five register checks passed.",
         },
         {
           name: "Stage 2 · Authorizer",
           outcome: { label: "Endorsed", tone: "success" },
-          recorded: "Emeka Nwankwo recorded this on 30 September 2026 at 11:18.",
+          recorded: "Ngozi Eze recorded this on 30 September 2026 at 11:18.",
           reason: "Reason given: none required for an endorsement. Reviewer's checks confirmed against the CAC record.",
         },
       ],
-      path: "Stage 1 Reviewer ✓  →  Stage 2 Authorizer ✓  →  Stage 3 Licensing & Registration Officer (you)",
+      path: "Stage 1 Reviewer ✓  →  Stage 2 Authorizer ✓  →  Stage 3 Final sign-off (you)",
       noticeTitle: "Approving issues the licence immediately.",
       notice: "The register is written at this stage and there is no undo.",
     },
