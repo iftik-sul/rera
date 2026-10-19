@@ -30,13 +30,22 @@ export function Modal({
   const titleId = useId();
   const boxRef = useRef<HTMLDivElement>(null);
 
+  // The latest onClose, without re-running the effect below. Callers pass a new function on
+  // every render (an inline arrow), so depending on it re-ran the effect on each keystroke and
+  // pulled focus out of the field being typed in (2026-10-19 bug: one letter, then focus lost).
+  const closeRef = useRef(onClose);
+  useEffect(() => {
+    closeRef.current = onClose;
+  });
+
+  // Only when the pop-up opens: listen for Escape and move focus into it, once.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current();
     document.addEventListener("keydown", onKey);
     boxRef.current?.focus();
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
