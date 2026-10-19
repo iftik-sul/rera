@@ -79,6 +79,7 @@ export type Application = {
 
 export const verified: Status = { label: "Verified", tone: "success" };
 export const pending: Status = { label: "Pending", tone: "warning" };
+export const rejected: Status = { label: "Rejected", tone: "error" };
 export const underReview: Status = { label: "Under Review", tone: "info" };
 export const approved: Status = { label: "Approved", tone: "success" };
 

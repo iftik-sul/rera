@@ -6,13 +6,19 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ReasonField } from "@/components/ui/Modal";
 import type { Doc } from "@/data/director-general/applications";
 
-export type DocMark = { kind: "seen" } | { kind: "flagged"; reason: string };
+/** The reviewing officer's verdict on one document, made this session (KB application-review.md §3). */
+export type DocVerdict = { status: "Verified" | "Rejected" | "Pending"; reason?: string; at?: string };
+
+const now = () => new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
 /**
  * Document viewer (KB application-review.md §3): a pop-up over Application Review, never its
- * own screen. Shows one document with Previous / Next; on a review the DG can act on it offers
- * Mark as seen and Flag an issue. Both are the officer's own working marks — not decisions,
- * never sent to the applicant, and they don't change the document's verification badge.
+ * own screen. Shows one document with Previous / Next. On a review the DG can act on, a Pending
+ * document offers Verify (sets Verified, moves to the next) and Reject document (reason
+ * required); a document already verified or rejected offers Undo (back to Pending) until the
+ * application is decided. The verdict is the document's status badge (status-badges.md §5);
+ * the applicant isn't told per document — they hear the decision on the whole application.
+ * A read-only review opens the viewer to read only.
  * DEMO: there are no uploaded files in the static build, so the preview is a drawn page.
  */
 export function DocumentViewer({
@@ -20,34 +26,35 @@ export function DocumentViewer({
   index,
   onIndex,
   onClose,
-  marks,
-  onMark,
-  canMark,
+  verdicts,
+  onVerdict,
+  canAct,
   reference,
   applicant,
 }: {
+  /** Documents with their current status (the officer's verdict already applied). */
   docs: Doc[];
   index: number | null;
   onIndex: (i: number) => void;
   onClose: () => void;
-  marks: Record<string, DocMark>;
-  onMark: (name: string, mark: DocMark) => void;
-  canMark: boolean;
+  verdicts: Record<string, DocVerdict>;
+  onVerdict: (name: string, verdict: DocVerdict) => void;
+  canAct: boolean;
   reference: string;
   applicant: string;
 }) {
-  const [flagging, setFlagging] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   useEffect(() => {
-    setFlagging(false);
+    setRejecting(false);
     setReason("");
   }, [index]);
 
   if (index === null) return null;
   const doc = docs[index];
-  const mark = marks[doc.name];
+  const mine = verdicts[doc.name];
+  const status = doc.status.label;
   const last = index === docs.length - 1;
-  const advance = () => (last ? onClose() : onIndex(index + 1));
 
   return (
     <Modal
@@ -61,7 +68,6 @@ export function DocumentViewer({
             {doc.type} · uploaded {doc.uploaded}
           </span>
           <StatusBadge status={doc.status} />
-          {mark && <span className={`type-body-strong ${mark.kind === "seen" ? "text-valid" : "text-ageing"}`}>{mark.kind === "seen" ? "Seen" : "Flagged"}</span>}
           <span className="flex-1" />
           <span>
             {index + 1} of {docs.length}
@@ -77,47 +83,58 @@ export function DocumentViewer({
             Next
           </Button>
           <span className="flex-1" />
-          <Button onClick={onClose}>Close</Button>
-          {canMark && !flagging && (
+          {rejecting ? (
             <>
-              <Button onClick={() => setFlagging(true)}>Flag an issue</Button>
+              <Button onClick={() => setRejecting(false)}>Cancel</Button>
               <Button
-                variant="primary"
+                variant="danger"
+                disabled={!reason.trim()}
                 onClick={() => {
-                  onMark(doc.name, { kind: "seen" });
-                  advance();
+                  onVerdict(doc.name, { status: "Rejected", reason: reason.trim(), at: now() });
+                  setRejecting(false);
                 }}
               >
-                Mark as seen
+                Reject document
               </Button>
             </>
-          )}
-          {canMark && flagging && (
-            <Button
-              variant="primary"
-              disabled={!reason.trim()}
-              onClick={() => {
-                onMark(doc.name, { kind: "flagged", reason: reason.trim() });
-                setFlagging(false);
-              }}
-            >
-              Flag document
-            </Button>
+          ) : (
+            <>
+              <Button onClick={onClose}>Close</Button>
+              {canAct && status === "Pending" && (
+                <>
+                  <Button onClick={() => setRejecting(true)}>Reject document</Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      onVerdict(doc.name, { status: "Verified", at: now() });
+                      if (last) onClose();
+                      else onIndex(index + 1);
+                    }}
+                  >
+                    Verify
+                  </Button>
+                </>
+              )}
+              {canAct && status !== "Pending" && <Button onClick={() => onVerdict(doc.name, { status: "Pending" })}>Undo</Button>}
+            </>
           )}
         </>
       }
     >
       <Preview doc={doc} reference={reference} applicant={applicant} />
-      {mark?.kind === "flagged" && !flagging && (
-        <p className="rounded-control bg-warning-bg px-4 py-3 type-body text-strong">
-          <span className="type-body-strong">You flagged this document:</span> {mark.reason}
+      {!rejecting && mine?.status === "Rejected" && (
+        <p className="rounded-control bg-error-bg px-4 py-3 type-body text-strong">
+          <span className="type-body-strong">Rejected by you · {mine.at}</span> — {mine.reason}
         </p>
       )}
-      {flagging && (
+      {!rejecting && mine?.status === "Verified" && (
+        <p className="rounded-control bg-success-bg px-4 py-3 type-body-strong text-strong">Verified by you · {mine.at}</p>
+      )}
+      {rejecting && (
         <ReasonField
-          label="What's wrong with this document?"
+          label="Why are you rejecting this document?"
           placeholder="For example: the name on the certificate doesn't match the applicant."
-          hint="A note for you — the applicant isn't told. To ask them for a new document, use Request Info or Return."
+          hint="Recorded in the audit trail. The applicant isn't told about single documents — to ask them for a replacement, use Request Info or Return."
           value={reason}
           onChange={setReason}
         />
