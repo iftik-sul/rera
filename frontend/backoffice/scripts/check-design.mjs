@@ -26,6 +26,8 @@ const RULES = [
 ];
 // Raw form controls are allowed only inside the shared component folders.
 const CONTROL = { id: "hand-made-control", why: "Hand-made control — use Button / ButtonLink / TextInput / TextArea / Checkbox from components/ui", re: /<(button|input|textarea|select)\b/g };
+// Detail screens open with the shared Breadcrumb + DetailHeader, never a hand-drawn "← Back" link.
+const BACK_LINK = { id: "hand-made-back-link", why: "Hand-made back link — open the screen with Breadcrumb + DetailHeader from components/ui/Cards", re: /←/g };
 const CONTROL_OK = [`components${sep}ui${sep}`, `components${sep}shell${sep}`];
 
 function files(dir) {
@@ -42,7 +44,7 @@ for (const file of files(ROOT)) {
   lines.forEach((line, i) => {
     // ignore comments: // …, /* … */, {/* … */}, and JSDoc lines
     const code = line.replace(/\{?\/\*.*?\*\/\}?/g, "").replace(/\/\/.*$/, "").replace(/^\s*(\/\*\*|\*).*$/, "");
-    const rules = CONTROL_OK.some((ok) => rel.includes(ok)) ? RULES : [...RULES, CONTROL];
+    const rules = CONTROL_OK.some((ok) => rel.includes(ok)) ? RULES : [...RULES, CONTROL, BACK_LINK];
     for (const r of rules) for (const m of code.matchAll(r.re)) problems.push(`  ${rel}:${i + 1}  ${m[0]}  — ${r.why}`);
   });
 }

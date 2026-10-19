@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Page } from "@/components/shell/Page";
 import { showToast } from "@/components/shell/Toast";
 import { directorGeneral, href } from "@/config/roles";
 import { Button } from "@/components/ui/Button";
-import { Notice } from "@/components/ui/Cards";
+import { Breadcrumb, DetailHeader, Notice } from "@/components/ui/Cards";
 import { Acknowledge, Modal, ReasonField } from "@/components/ui/Modal";
 import { StepUpModal } from "@/components/ui/StepUpModal";
 import {
   ALL_CATEGORY_ROLES,
   CATEGORIES,
+  accountStatus,
   SCOPED_ROLES,
   assignmentBlocker,
   type AccountStatus,
@@ -79,16 +79,18 @@ export function AccountEditor({ member }: { member: StaffMember }) {
   const currently = `${member.name} currently holds ${list(roles)}${scoped ? `, scoped to ${list(scope)}` : ""}.`;
 
   return (
-    <Page title="Admin Console" subtitle="Edit staff account" bodyClassName="gap-4 px-8 py-5">
-      <div className="flex flex-col gap-1">
-        <Link href={href(directorGeneral, "admin-console")} className="type-label text-link hover:underline">
-          ← Staff Directory
-        </Link>
-        <h2 className="type-display text-strong">{member.name}</h2>
-        <p className="type-caption text-muted">
-          {member.email} · {status} · {mfa === "Enrolled" ? "MFA enrolled" : "MFA not enrolled"}
-        </p>
-      </div>
+    <Page title={member.name} subtitle="Edit staff account" bodyClassName="gap-4 px-8 py-5">
+      <Breadcrumb items={[{ label: "Admin Console", href: href(directorGeneral, "admin-console") }, { label: "Staff Account" }]} />
+
+      <DetailHeader
+        title={member.name}
+        subtitle={member.email}
+        status={accountStatus(status)}
+        meta={[
+          { label: "Role", value: list(roles) },
+          { label: "MFA", value: mfa === "Enrolled" ? "Enrolled" : "Not enrolled" },
+        ]}
+      />
 
       {member.self && <Notice>This is your own account. Your role and account status can&apos;t be changed from your own session.</Notice>}
       {closed && <Notice>This account is deactivated. Deactivation is permanent — nothing on it can be changed.</Notice>}
