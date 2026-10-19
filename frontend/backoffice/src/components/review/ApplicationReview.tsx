@@ -18,6 +18,8 @@ import { OverridePanel } from "./OverridePanel";
  *  - undecided transaction → decision bar (Approve / Request Info / Return / Reject)
  *  - licensing at stage 3  → claim strip + review chain + the same decision bar
  *  - decided item          → Override panel (overturn the recorded decision)
+ *  - with the applicant, or claimed by another officer → a read-only notice closes the page
+ * Escrow items add the Trustee Assessment and Escrow Account panels (KB application-review.md §5).
  */
 export function ApplicationReview({ app }: { app: Application }) {
   const role = useRole();
@@ -28,7 +30,7 @@ export function ApplicationReview({ app }: { app: Application }) {
       subtitle={app.subtitle}
       bodyClassName="gap-4 px-8 py-5"
     >
-      <Breadcrumb items={[{ label: "Work Queue", href: href(role, "work-queue/transaction") }, { label: "Application Review" }]} />
+      <Breadcrumb items={[{ label: "Work Queue", href: href(role, `work-queue/${app.queue}`) }, { label: "Application Review" }]} />
 
       {/* Application metadata */}
       <DetailHeader title="Application metadata" subtitle={app.metaSubtitle} status={app.status} meta={app.meta}>
@@ -40,7 +42,7 @@ export function ApplicationReview({ app }: { app: Application }) {
                 <span className="type-body-strong text-strong">{app.claim.held}</span> <span className="text-muted">{app.claim.detail}</span>
               </p>
               {/* Release isn't designed for the DG yet (the Licensing roles have a pop-up for it). */}
-              <Button variant="link">Release item</Button>
+              {app.claim.mine !== false && <Button variant="link">Release item</Button>}
             </div>
           </>
         )}
@@ -78,26 +80,69 @@ export function ApplicationReview({ app }: { app: Application }) {
           <Documents docs={app.documents} />
         </div>
 
-        <Card title={app.checksTitle} gap="gap-3" className="w-panel shrink-0">
-          {app.checks.map((c) => (
-            <div key={c} className="flex items-center justify-between gap-2 type-body">
-              <span className="text-strong">{c}</span>
-              <span className="flex items-center gap-1 type-body-strong text-valid">
-                <Icon name="check-circle" className="text-valid" />
-                Valid
-              </span>
-            </div>
-          ))}
-          <span>
-            <Badge tone="success">All Clear</Badge>
-          </span>
-        </Card>
+        <div className="flex w-panel shrink-0 flex-col gap-4">
+          <Card title={app.checksTitle} gap="gap-3">
+            {app.checks.map((c) => {
+              const waiting = app.checksPending?.includes(c);
+              return (
+                <div key={c} className="flex items-center justify-between gap-2 type-body">
+                  <span className="text-strong">{c}</span>
+                  {waiting ? (
+                    <span className="type-body-strong text-ageing">Awaiting</span>
+                  ) : (
+                    <span className="flex items-center gap-1 type-body-strong text-valid">
+                      <Icon name="check-circle" className="text-valid" />
+                      Valid
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+            <span>{app.checksPending?.length ? <Badge tone="warning">Attention</Badge> : <Badge tone="success">All Clear</Badge>}</span>
+          </Card>
+
+          {app.escrow && (
+            <>
+              <Card
+                title="Trustee assessment"
+                gap="gap-3"
+                aside={<Badge tone={app.escrow.trustee.received ? "success" : "warning"}>{app.escrow.trustee.received ? "Received" : "Awaiting Trustee"}</Badge>}
+              >
+                <p className="type-body-strong text-strong">{app.escrow.trustee.summary}</p>
+                <Pairs fields={app.escrow.trustee.fields} />
+              </Card>
+              <Card title="Escrow account" gap="gap-3">
+                <Pairs fields={app.escrow.account} />
+              </Card>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Decision / override panels close the page — never pinned (KB application-review.md §6). */}
       {app.decide && <DecisionPanel app={app} actions={app.decide} />}
       {app.override && <OverridePanel app={app} actions={app.override} />}
+      {app.held && (
+        <div className={`flex flex-col gap-1 rounded-card border border-control px-6 py-4 ${app.held.tone === "warning" ? "bg-warning-bg" : "bg-white"}`}>
+          <p className="type-group-title text-strong">{app.held.title}</p>
+          <p className="type-caption text-muted">{app.held.body}</p>
+        </div>
+      )}
     </Page>
+  );
+}
+
+/** Label / value lines in a side panel. */
+function Pairs({ fields }: { fields: { label: string; value: string }[] }) {
+  return (
+    <>
+      {fields.map((f) => (
+        <div key={f.label} className="flex items-center justify-between gap-2 type-body">
+          <span className="text-muted">{f.label}</span>
+          <span className="type-body-strong text-right text-strong">{f.value}</span>
+        </div>
+      ))}
+    </>
   );
 }
 

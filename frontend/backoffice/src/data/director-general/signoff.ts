@@ -10,6 +10,7 @@
  */
 import type { Status } from "@/components/ui/Badge";
 import { daysAgo, plural } from "@/data/sample-date";
+import { freeCredential, registerEntries } from "./register";
 
 const PENDING: Status = { label: "Pending Sign-off", tone: "warning" };
 const AUTHORISED: Status = { label: "Authorised", tone: "success" };
@@ -26,16 +27,18 @@ export type SignoffMatter = {
   source: string;
   /** Where the matter comes from — shown on the Dashboard. */
   origin: string;
-  /** Detail page id, when one exists in the sample data. */
+  /** Detail page id. Every matter has one ("RRA/SO/2026/0224" → "rra-so-2026-0224"). */
   detail?: string;
 };
 
-const m = (reference: string, matter: string, recommendation: string, status: Status, escalated: string, origin: string, detail?: string): SignoffMatter => ({
-  reference, matter, recommendation, status, escalated, source: "Licensing", origin, detail,
+export const signoffId = (reference: string) => reference.toLowerCase().replace(/\//g, "-");
+
+const m = (reference: string, matter: string, recommendation: string, status: Status, escalated: string, origin: string): SignoffMatter => ({
+  reference, matter, recommendation, status, escalated, source: "Licensing", origin, detail: signoffId(reference),
 });
 
 export const signoffMatters: SignoffMatter[] = [
-  m("RRA/SO/2026/0218", "Licence revocation — Eko Realty Ltd", "Recommend revoke — licence lapsed", PENDING, "05 Oct 2026", "Lagos", "rra-so-2026-0218"),
+  m("RRA/SO/2026/0218", "Licence revocation — Eko Realty Ltd", "Recommend revoke — licence lapsed", PENDING, "05 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0224", "Developer suspension — Zenith Estates Plc", "Recommend suspend — unresolved breach", PENDING, "07 Oct 2026", "Abuja"),
   m("RRA/SO/2026/0229", "Accreditation withdrawal — Delta Valuers", "Recommend withdraw accreditation", PENDING, "08 Oct 2026", "Port Harcourt"),
   // Figma: Kano Homes — but Kano Homes' licence was withdrawn by OVERTURN (its register entry), not revocation.
@@ -99,11 +102,14 @@ export type SignoffDetail = {
   recommendation: { badge: string; headline: string; body: string; by: string };
   panelNote: string;
   /** Pop-up wording — not drawn in Figma; follows KB modals.md M-GOV-01 / M-GOV-02. */
-  authorise: { title: string; body: string; callout: string; confirm: string; toast: { title: string; body: string } };
+  authorise: { title: string; body: string; callout: string; confirm: string; toast: { title: string; body: string }; acknowledge: string };
   decline: { title: string; body: string; label: string; placeholder: string; confirm: string; toast: { title: string; body: string } };
+  /** A matter already decided: what was decided, shown in place of the decision panel. */
+  outcome?: { tone: "success" | "neutral"; title: string; body: string };
 };
 
-export const signoffDetails: SignoffDetail[] = [
+/** The detail Figma draws. Every other matter's detail is built below. */
+const featuredSignoffs: SignoffDetail[] = [
   {
     id: "rra-so-2026-0218",
     reference: "RRA/SO/2026/0218",
@@ -155,6 +161,7 @@ export const signoffDetails: SignoffDetail[] = [
       callout: "This is final. Once Licensing executes it, the licence is revoked and the holder is notified.",
       confirm: "Authorise revocation",
       toast: { title: "Sign-off authorised", body: "RRA/SO/2026/0218 has returned to Licensing to execute the revocation." },
+      acknowledge: "I understand this authorises the revocation and cannot be undone from this screen.",
     },
     decline: {
       title: "Decline this sign-off?",
@@ -165,6 +172,143 @@ export const signoffDetails: SignoffDetail[] = [
       toast: { title: "Sign-off declined", body: "RRA/SO/2026/0218 has returned to Licensing with your reason." },
     },
   },
+];
+
+// ── Every other matter's detail, built from its queue row ──
+
+type Kind = { badge: string; verb: string; noun: string; effect: string; done: string; credential: string; grounds: string };
+const KINDS: Record<string, Kind> = {
+  "Licence revocation": {
+    badge: "Revoke", verb: "revoke", noun: "revocation", credential: "LIC",
+    effect: "The register entry will be withdrawn with the cause recorded as Revocation.",
+    done: "the licence is revoked and the holder is notified", grounds: "Licence conditions breached; notices unanswered",
+  },
+  "Developer suspension": {
+    badge: "Suspend", verb: "suspend", noun: "suspension", credential: "PMT",
+    effect: "The register entry will be marked Suspended until Licensing lifts it.",
+    done: "the developer can't operate under its permit until the suspension is lifted", grounds: "Unresolved breach of permit conditions",
+  },
+  "Accreditation withdrawal": {
+    badge: "Withdraw", verb: "withdraw", noun: "withdrawal", credential: "ACC",
+    effect: "The register entry will be withdrawn with the cause recorded as Withdrawal.",
+    done: "the accreditation is withdrawn and the institution is notified", grounds: "Accreditation standards no longer met",
+  },
+  "Practitioner de-listing": {
+    badge: "De-list", verb: "de-list", noun: "de-listing", credential: "PCC",
+    effect: "The practice card will be cancelled and the register entry withdrawn with the cause recorded as De-listing.",
+    done: "the practitioner is removed from the register and notified", grounds: "Professional misconduct finding",
+  },
+};
+
+/** Decisions already on record (kept in step with the audit trail where it names them). */
+const DECIDED_ON: Record<string, { date: string; reason?: string }> = {
+  "RRA/SO/2026/0231": { date: "09 Oct 2026" },
+  "RRA/SO/2026/0198": { date: "26 Sep 2026" },
+  "RRA/SO/2026/0187": { date: "22 Sep 2026" },
+  "RRA/SO/2026/0179": { date: "17 Sep 2026" },
+  "RRA/SO/2026/0209": { date: "30 Sep 2026", reason: "The renewal application was lodged inside the window; Licensing should decide the renewal before any revocation." },
+};
+
+const serial = (ref: string) => parseInt(ref.slice(-4), 10);
+
+function buildSignoff(row: SignoffMatter): SignoffDetail {
+  const [kindName, subject] = row.matter.split(" — ");
+  const k = KINDS[kindName];
+  const n = serial(row.reference);
+  const [, why] = row.recommendation.split(" — ");
+  const reason = why ? why[0].toUpperCase() + why.slice(1) : k.grounds;
+  // The holder's real register entry when the register has one ("Bello F." → Funmilayo Bello).
+  const person = subject.match(/^(\S+) (\S)\.$/);
+  const entry = registerEntries.find((e) => (person ? e.holder.endsWith(person[1]) && e.holder.startsWith(person[2]) : e.holder.startsWith(subject)));
+  const credential = entry?.credentialNo ?? freeCredential(k.credential, `2${3 + (n % 3)}`, n);
+  const [, , yy, num] = credential.split("/");
+  const decisionRef = `LIC-20${yy}-${num}`;
+  const age = daysAgo(row.escalated);
+  const subjectShort = subject.replace(/ (Ltd|Plc)$/, "");
+  const decided = DECIDED_ON[row.reference];
+  const authorised = row.status === AUTHORISED;
+
+  return {
+    id: signoffId(row.reference),
+    reference: row.reference,
+    title: `${row.reference} — Executive Sign-off`,
+    subtitle: row.matter,
+    status: row.status,
+    meta: [
+      { label: "Source", value: row.source },
+      { label: "Escalated", value: age === 0 ? "Today" : `${plural(age, "day")} ago` },
+    ],
+    groups: [
+      {
+        title: "Escalation",
+        fields: [
+          { label: "Escalated by", value: "Funke Adeyemi" },
+          { label: "Role", value: "Licensing & Registration Officer" },
+          { label: "Date", value: row.escalated },
+        ],
+      },
+      {
+        title: "Underlying record",
+        fields: [
+          { label: "Practitioner / Company", value: subject },
+          { label: "Credential", value: credential },
+          { label: "Original decision", value: decisionRef },
+          { label: "Office", value: row.origin },
+        ],
+      },
+      {
+        title: "Grounds for escalation",
+        fields: [
+          { label: "Reason", value: reason },
+          { label: "Breach reference", value: `ENF/2026/0${100 + (n % 90)}` },
+          { label: "Prior notices", value: `${1 + (n % 3)} served` },
+        ],
+      },
+    ],
+    recommendation: {
+      badge: k.badge,
+      headline: `${k.badge} ${kindName === "Licence revocation" ? "licence " : ""}${credential} — ${subjectShort}.`,
+      body: `${reason}. The Licensing Officer recommends that RERA ${k.verb} ${subjectShort}. ${k.effect}`,
+      by: `Funke Adeyemi · Licensing Officer · ${row.escalated}`,
+    },
+    panelNote: `Authorising requires re-authentication and returns the ${k.noun} to Licensing to execute.`,
+    authorise: {
+      title: `Authorise this ${k.noun}?`,
+      body: `This authorises the ${k.noun} of ${credential} — ${subjectShort} — and returns it to Licensing to execute. ${k.effect}`,
+      callout: `This is final. Once Licensing executes it, ${k.done}.`,
+      confirm: `Authorise ${k.noun}`,
+      toast: { title: "Sign-off authorised", body: `${row.reference} has returned to Licensing to execute the ${k.noun}.` },
+      acknowledge: `I understand this authorises the ${k.noun} and cannot be undone from this screen.`,
+    },
+    decline: {
+      title: "Decline this sign-off?",
+      body: `${row.reference} returns to Licensing with your reason. Nothing is ${k.verb === "de-list" ? "de-listed" : k.verb + "d"}.`,
+      label: "Why are you declining?",
+      placeholder: "Explain what Licensing should do instead, or what is missing from the recommendation.",
+      confirm: "Decline sign-off",
+      toast: { title: "Sign-off declined", body: `${row.reference} has returned to Licensing with your reason.` },
+    },
+    outcome:
+      row.status === PENDING
+        ? undefined
+        : authorised
+          ? {
+              tone: "success",
+              title: `Authorised by Adaeze Nwosu on ${decided?.date ?? row.escalated}`,
+              body: `The ${k.noun} was returned to Licensing to execute. A decided sign-off can't be changed from this screen.`,
+            }
+          : {
+              tone: "neutral",
+              title: `Declined by Adaeze Nwosu on ${decided?.date ?? row.escalated}`,
+              body: `Returned to Licensing with the reason: “${decided?.reason ?? "The recommendation is not supported by the record."}” Nothing was changed on the register.`,
+            },
+  };
+}
+
+const featuredSignoffIds = new Set(featuredSignoffs.map((d) => d.id));
+export const signoffDetails: SignoffDetail[] = [
+  ...featuredSignoffs,
+  ...signoffMatters.filter((r) => !featuredSignoffIds.has(signoffId(r.reference))).map(buildSignoff),
 ];
 
 export const findSignoff = (id: string) => signoffDetails.find((d) => d.id === id);

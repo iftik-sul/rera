@@ -7,7 +7,7 @@ import { showToastOnNextPage } from "@/components/shell/Toast";
 import { directorGeneral, href } from "@/config/roles";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Breadcrumb, Card, DetailHeader, FieldGroup, Notice } from "@/components/ui/Cards";
+import { Banner, Breadcrumb, Card, DetailHeader, FieldGroup, Notice } from "@/components/ui/Cards";
 import { Acknowledge, Modal, ReasonField } from "@/components/ui/Modal";
 import { StepUpModal } from "@/components/ui/StepUpModal";
 import type { SignoffDetail } from "@/data/director-general/signoff";
@@ -74,6 +74,13 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
         </div>
       )}
 
+      {matter.outcome && (
+        <div className="flex flex-col gap-2">
+          <Banner tone={matter.outcome.tone} icon={matter.outcome.tone === "success" ? "check-circle" : "x-circle"}>{matter.outcome.title}</Banner>
+          <p className="px-1 type-caption text-muted">{matter.outcome.body}</p>
+        </div>
+      )}
+
       <Modal
         open={step === "authorise"}
         onClose={close}
@@ -91,7 +98,7 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
         <Notice>{matter.authorise.callout}</Notice>
         <ReasonField optional label="Note (optional)" placeholder="Add a note for Licensing, if any." value={note} onChange={setNote} />
         <Acknowledge checked={ack} onChange={setAck}>
-          I understand this authorises the revocation and cannot be undone from this screen.
+          {matter.authorise.acknowledge}
         </Acknowledge>
       </Modal>
 
