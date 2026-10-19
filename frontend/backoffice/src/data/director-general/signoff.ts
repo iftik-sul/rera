@@ -38,7 +38,8 @@ export const signoffMatters: SignoffMatter[] = [
   m("RRA/SO/2026/0218", "Licence revocation — Eko Realty Ltd", "Recommend revoke — licence lapsed", PENDING, "05 Oct 2026", "Lagos", "rra-so-2026-0218"),
   m("RRA/SO/2026/0224", "Developer suspension — Zenith Estates Plc", "Recommend suspend — unresolved breach", PENDING, "07 Oct 2026", "Abuja"),
   m("RRA/SO/2026/0229", "Accreditation withdrawal — Delta Valuers", "Recommend withdraw accreditation", PENDING, "08 Oct 2026", "Port Harcourt"),
-  m("RRA/SO/2026/0231", "Licence revocation — Kano Homes Ltd", "Recommend revoke", AUTHORISED, "02 Oct 2026", "Kano"),
+  // Figma: Kano Homes — but Kano Homes' licence was withdrawn by OVERTURN (its register entry), not revocation.
+  m("RRA/SO/2026/0231", "Licence revocation — Crestview Property Managers Ltd", "Recommend revoke", AUTHORISED, "02 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0235", "Practitioner de-listing — Adeyemi O.", "Recommend de-list", PENDING, "09 Oct 2026", "Ibadan"),
   m("RRA/SO/2026/0209", "Licence revocation — Lagos Prime Ltd", "Recommend revoke", DECLINED, "28 Sep 2026", "Lagos"),
   m("RRA/SO/2026/0241", "Developer suspension — Suru Group Ltd", "Recommend suspend", PENDING, "10 Oct 2026", "Lagos"),
@@ -52,7 +53,7 @@ export const signoffMatters: SignoffMatter[] = [
   m("RRA/SO/2026/0237", "Accreditation withdrawal — Northern Surveyors Guild", "Recommend withdraw — curriculum lapsed", PENDING, "09 Oct 2026", "Kaduna"),
   m("RRA/SO/2026/0239", "Licence revocation — Niger Delta Estates Ltd", "Recommend revoke — licence lapsed", PENDING, "09 Oct 2026", "Port Harcourt"),
   m("RRA/SO/2026/0243", "Developer suspension — Eastgate Property Developers", "Recommend suspend", PENDING, "10 Oct 2026", "Onitsha"),
-  m("RRA/SO/2026/0247", "Practitioner de-listing — Ibrahim M.", "Recommend de-list", PENDING, "11 Oct 2026", "Kano"),
+  m("RRA/SO/2026/0247", "Practitioner de-listing — Ibrahim K.", "Recommend de-list", PENDING, "11 Oct 2026", "Kano"),
   m("RRA/SO/2026/0249", "Licence revocation — Royal Crest Facility Managers", "Recommend revoke", PENDING, "11 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0187", "Licence revocation — Haven Homes Nigeria Ltd", "Recommend revoke", AUTHORISED, "19 Sep 2026", "Lagos"),
   m("RRA/SO/2026/0179", "Developer suspension — Garden City Homes Ltd", "Recommend suspend", AUTHORISED, "15 Sep 2026", "Port Harcourt"),

@@ -92,7 +92,7 @@ export const escrowKpis: Kpi[] = [
   { label: "Awaiting Review", value: "9", caption: "New submissions" },
   { label: "Under Review", value: "6", caption: "Assigned to reviewers" },
   { label: "Information Requested", value: "2", caption: "Waiting on applicants" },
-  { label: "Decided This Month", value: "14", caption: "64 approved · 19 closed" },
+  { label: "Decided This Month", value: "14", caption: "11 approved · 3 closed" }, // Figma copied the Transaction caption
   { label: "Breaching SLA", value: "1", caption: "Needs immediate attention" },
 ];
 
@@ -110,7 +110,7 @@ const RECEIVED: Status = { label: "Received", tone: "success" };
 const AWAIT_TRUSTEE: Status = { label: "Awaiting Trustee", tone: "warning" };
 
 export const escrowRows: EscrowRow[] = [
-  { reference: "REF-ESC-1001", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 7, Lekki Phase 1", status: UR, age: { text: "3 days", tone: "normal" }, opens: "review:trx-undecided" },
+  { reference: "REF-ESC-1001", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 7, Lekki Phase 1", status: UR, age: { text: "3 days", tone: "normal" } }, // Figma linked this to the TRANSACTION review; no escrow review is designed for the DG yet, so it opens nothing
   { reference: "REF-ESC-1002", escrowFlag: AWAIT_TRUSTEE, applicant: "Zenith Trust Services", subject: "New Escrow Account — Block A, Banana Island", status: AR, age: { text: "7 days", tone: "normal" } },
   { reference: "REF-ESC-1003", escrowFlag: RECEIVED, applicant: "GTBank Trustee Division", subject: "Escrow Amendment — Tower B, Victoria Island", status: IR, age: { text: "12 days", tone: "warning" } },
   { reference: "REF-ESC-1004", escrowFlag: RECEIVED, applicant: "First Bank Trust Co", subject: "Escrow Closure — Villa 12, Maitama", status: UR, age: { text: "1 day", tone: "normal" } },
@@ -137,12 +137,6 @@ export const escrowRows: EscrowRow[] = [
 ];
 
 // ── Licensing (stage 3 of 3) ────────────────────────────────
-export const licensingKpis: Kpi[] = [
-  { label: "Dissents to resolve", value: "1", caption: "Authorizer disagreed" },
-  { label: "Longest waiting", value: "12 days", caption: "LIC-2026-00387" },
-  { label: "Waiting to be picked up", value: "2", caption: "Unclaimed at your stage" },
-  { label: "My open items", value: "2", caption: "Claimed by you" },
-];
 
 export type LicensingRow = {
   reference: string;
@@ -169,7 +163,8 @@ const lic = (reference: string, applicant: string, service: string, submitted: s
 });
 
 export const licensingRows: LicensingRow[] = [
-  lic("LIC-2026-00412", "Sahara Estates Development Co", "Real Estate Licensing Application", "2 days ago", "4 hours", null, "review:lic-stage3"),
+  // Submitted 28 Sep (its review chain); claimed by the DG, as its Application Review says. Figma had "2 days ago" and unclaimed.
+  lic("LIC-2026-00412", "Sahara Estates Development Co", "Real Estate Licensing Application", "13 days ago", "4 hours", "Adaeze Nwosu", "review:lic-stage3"),
   lic("LIC-2026-00369", "Zenith Realty Partners Ltd", "Real Estate Permit Application", "14 days ago", "1 day", "Funke Adeyemi"),
   lic("LIC-2026-00394", "Mainland Realty Consulting Ltd", "Real Estate Licensing Application", "9 days ago", "2 days", null),
   lic("LIC-2026-00398", "Lagos Institute of Property Studies", "Accreditation of Training Entities", "8 days ago", "1 day", "Funke Adeyemi"),
@@ -194,4 +189,16 @@ export const licensingRows: LicensingRow[] = [
   lic("LIC-2026-00298", "Greenfield Developers Ltd", "Real Estate Licensing Application", "26 days ago", "—", null, undefined, APPROVED),
   lic("LIC-2026-00291", "Yemi Olatunji", "Issue Professional Practice Card", "27 days ago", "—", null, undefined, REJECTED),
   lic("LIC-2026-00286", "Lagos School of Valuation", "Accreditation of Training Entities", "29 days ago", "—", null, undefined, APPROVED),
+];
+
+// Counted from the rows above, so the cards and the table can't disagree (Figma's said
+// "Longest waiting 12 days" while three of its own rows had waited longer).
+const openLic = licensingRows.filter((r) => statusFilterValue(r.status) !== "Decided");
+const daysOf = (r: LicensingRow) => parseInt(r.submitted, 10);
+const longest = [...openLic].sort((a, b) => daysOf(b) - daysOf(a))[0];
+export const licensingKpis: Kpi[] = [
+  { label: "Dissents to resolve", value: "1", caption: "Authorizer disagreed" },
+  { label: "Longest waiting", value: `${daysOf(longest)} days`, caption: longest.reference },
+  { label: "Waiting to be picked up", value: String(openLic.filter((r) => !r.claimedBy).length), caption: "Unclaimed at your stage" },
+  { label: "My open items", value: String(openLic.filter((r) => r.claimedBy === "Adaeze Nwosu").length), caption: "Claimed by you" },
 ];
