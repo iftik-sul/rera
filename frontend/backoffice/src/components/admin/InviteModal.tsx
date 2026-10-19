@@ -11,29 +11,28 @@ import { AdminBlockerModal } from "./AdminBlockerModal";
 import { RoleScopeFields } from "./RoleScopeFields";
 
 /**
- * M-ADM-01 Invite staff account (form pattern). Figma shows a single "Initial role" picker;
- * the role tick boxes and category scope are added so its callout ("a licensing role also
- * needs at least one category scope, set here") can actually be met.
+ * M-ADM-01 Invite staff account (form pattern): name, work email, the account's one role
+ * (a single choice — one role per person) and, for a Reviewer or Authorizer, its scope.
  * DEMO: no account is created and no email is sent — the toast confirms what would happen.
  */
 export function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [roles, setRoles] = useState<RoleName[]>([]);
+  const [role, setRole] = useState<RoleName | null>(null);
   const [scope, setScope] = useState<Category[]>([]);
-  const [blocked, setBlocked] = useState<"category" | "separation" | null>(null);
+  const [blocked, setBlocked] = useState<"category" | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setName("");
     setEmail("");
-    setRoles([]);
+    setRole(null);
     setScope([]);
   }, [open]);
 
-  const valid = name.trim() !== "" && /^[^\s@]+@rera\.gov\.ng$/i.test(email.trim()) && roles.length > 0;
+  const valid = name.trim() !== "" && /^[^\s@]+@rera\.gov\.ng$/i.test(email.trim()) && !!role;
   const send = () => {
-    const b = assignmentBlocker(roles, scope);
+    const b = assignmentBlocker(role, scope);
     if (b) return setBlocked(b);
     onClose();
     showToast({ title: "Invite sent", body: `${name.trim()} will get an email to set a password and enrol MFA.` });
@@ -61,7 +60,7 @@ export function InviteModal({ open, onClose }: { open: boolean; onClose: () => v
         <Field label="Work email" htmlFor="invite-email" hint="Must be a rera.gov.ng address.">
           <TextInput id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@rera.gov.ng" />
         </Field>
-        <RoleScopeFields roles={roles} scope={scope} onRoles={setRoles} onScope={setScope} />
+        <RoleScopeFields role={role} scope={scope} onRole={setRole} onScope={setScope} />
         <Notice>A licensing role also needs at least one category scope, set here.</Notice>
       </Modal>
       <AdminBlockerModal which={open ? blocked : null} onClose={() => setBlocked(null)} />

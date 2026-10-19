@@ -56,7 +56,7 @@ export const dgGuides: Guide[] = [
 export const serviceDesk = [
   { label: "Email", value: "servicedesk@rera.gov.ng", href: "mailto:servicedesk@rera.gov.ng" },
   { label: "Telephone", value: "+234 9 461 0000" },
-  { label: "Hours", value: "Monday to Friday, 08:00–17:00 WAT" },
+  { label: "Hours", value: "Monday to Friday, 08:00:00AM–05:00:00PM WAT" },
   { label: "Response target", value: "Within one business day" },
 ];
 
@@ -64,5 +64,5 @@ export const systemInfo = [
   { label: "Application", value: "RERAN Back-Office" },
   { label: "Version", value: "1.0.0" },
   { label: "Environment", value: "Staging" },
-  { label: "Last updated", value: "11 Oct 2026" },
+  { label: "Last updated", value: "11/10/2026" },
 ];

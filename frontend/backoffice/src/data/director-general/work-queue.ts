@@ -18,6 +18,7 @@
  * Rows after Figma's are marked below.
  */
 import type { Status } from "@/components/ui/Badge";
+import { fmtTime } from "@/lib/dates";
 
 /** `filter` = the table filters choosing the card applies (work-queue.md §1: "selecting one filters the table"). */
 export type Kpi = { label: string; value: string; caption: string; filter?: Record<string, string> };
@@ -259,7 +260,7 @@ const categoryOf = (service: string): LicensingCategory =>
 /** When another officer took the claim — shown on the "already claimed" pop-up and the review. */
 export const claimSince = (r: Pick<LicensingRow, "reference">) => {
   const n = parseInt(r.reference.slice(-3), 10);
-  return `${String(8 + (n % 3)).padStart(2, "0")}:${String((n * 7) % 60).padStart(2, "0")} today`;
+  return `${fmtTime(8 + (n % 3), (n * 7) % 60, (n * 13) % 60)} today`;
 };
 
 const lic = (reference: string, applicant: string, service: string, submitted: string, atStage: string, claimedBy: string | null, opens?: Opens, status: Status = FINAL_SIGNOFF): LicensingRow => ({

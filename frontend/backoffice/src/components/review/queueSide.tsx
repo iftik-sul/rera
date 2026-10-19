@@ -11,6 +11,7 @@ import { isCompleted, OUTCOME_ORDER, outcomeValue } from "@/data/director-genera
 import type { Status } from "@/components/ui/Badge";
 import type { AppChange, Demo } from "@/lib/demo";
 import { applyRow, leftStage } from "./demoApply";
+import { toTime } from "@/lib/dates";
 
 /**
  * The Work Queue's Open · Completed switch (KB work-queue.md §4d).
@@ -63,7 +64,7 @@ export function splitQueue<T extends { status: Status; opens?: string }>(rows: T
     open: all.filter((r) => !isCompleted(r)),
     completed: all
       .filter(isCompleted)
-      .map((r) => ({ ...r, ...(r.demo ? { decided: r.demo.on, at: Date.parse(r.demo.on), by: r.demo.by } : completedRecord(r.opens)) }))
+      .map((r) => ({ ...r, ...(r.demo ? { decided: r.demo.on, at: toTime(r.demo.on), by: r.demo.by } : completedRecord(r.opens)) }))
       .sort((a, b) => b.at - a.at),
   };
 }

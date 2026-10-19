@@ -7,7 +7,8 @@
  *  - Nine roles. Role definitions live in the backend; the console only ASSIGNS them.
  *  - Licensing Reviewer / Authorizer must carry at least one category scope.
  *  - The Licensing & Registration Officer (and the DG) cover every category by role.
- *  - One person may not hold the Officer role together with Reviewer or Authorizer.
+ *  - One role per person (project lead 2026-10-19). The old Officer + Reviewer/Authorizer
+ *    refusal can no longer arise, so it is gone.
  */
 import type { BadgeTone, Status } from "@/components/ui/Badge";
 
@@ -63,7 +64,8 @@ export type StaffMember = {
   id: string;
   name: string;
   email: string;
-  roles: RoleName[];
+  /** One role per person (project lead 2026-10-19). */
+  role: RoleName;
   /** Only for Reviewer / Authorizer. */
   scope: Category[];
   status: AccountStatus;
@@ -81,7 +83,7 @@ export type StaffMember = {
 };
 
 const s = (id: string, name: string, email: string, role: RoleName, status: AccountStatus, mfa: Mfa, scope: Category[] = []): StaffMember => ({
-  id, name, email, roles: [role], scope, status, mfa,
+  id, name, email, role, scope, status, mfa,
 });
 
 const [C1, C2, C3] = CATEGORIES;
@@ -99,11 +101,11 @@ export const staff: StaffMember[] = [
   s("stf-00156", "Sunday Okon", "s.okon@rera.gov.ng", "Compliance & Escrow Auditor", "Suspended", "Enrolled"),
   // ── Beyond the Figma frame: sample staff for page 2 ──
   s("stf-00162", "Halima Garba", "h.garba@rera.gov.ng", "Licensing Reviewer", "Active", "Enrolled", [C3]),
-  { ...s("stf-00168", "Emeka Nwankwo", "e.nwankwo@rera.gov.ng", "Licensing Authorizer", "Active", "Enrolled", [C3]), lockedOut: "11 Oct 2026, 09:12" },
+  { ...s("stf-00168", "Emeka Nwankwo", "e.nwankwo@rera.gov.ng", "Licensing Authorizer", "Active", "Enrolled", [C3]), lockedOut: "11/10/2026, 09:12:16AM" },
   s("stf-00174", "Bola Ogunleye", "b.ogunleye@rera.gov.ng", "Compliance & Escrow Auditor", "Active", "Enrolled"),
   s("stf-00180", "Kelechi Onyema", "k.onyema@rera.gov.ng", "Dispute Adjudication Officer", "Active", "Enrolled"),
   s("stf-00186", "Zainab Lawal", "z.lawal@rera.gov.ng", "Revenue & Finance Officer", "Active", "Enrolled"),
-  { ...s("stf-00188", "Chidi Okafor", "c.okafor@rera.gov.ng", "Inspection & Enforcement Officer", "Active", "Enrolled"), mfaRequest: "10 Oct 2026, 16:30" },
+  { ...s("stf-00188", "Chidi Okafor", "c.okafor@rera.gov.ng", "Inspection & Enforcement Officer", "Active", "Enrolled"), mfaRequest: "10/10/2026, 04:30:31PM" },
   s("stf-00193", "Grace Etim", "g.etim@rera.gov.ng", "Licensing Reviewer", "Invited", "Not enrolled", [C2]),
   s("stf-00197", "Musa Danjuma", "m.danjuma@rera.gov.ng", "State Liaison Coordinator", "Active", "Enrolled"),
   s("stf-00142", "Femi Adebayo", "f.adebayo@rera.gov.ng", "Compliance & Escrow Auditor", "Deactivated", "Enrolled"),
@@ -113,16 +115,14 @@ export const staff: StaffMember[] = [
 export const findStaff = (id: string) => staff.find((m) => m.id === id);
 
 /** "Company · Practitioner", "All categories", or "—" — for the directory column. */
-export function scopeText(m: Pick<StaffMember, "roles" | "scope">): string {
-  if (m.roles.some((r) => ALL_CATEGORY_ROLES.includes(r))) return "All categories";
-  if (!m.roles.some((r) => SCOPED_ROLES.includes(r))) return "—";
+export function scopeText(m: Pick<StaffMember, "role" | "scope">): string {
+  if (ALL_CATEGORY_ROLES.includes(m.role)) return "All categories";
+  if (!SCOPED_ROLES.includes(m.role)) return "—";
   if (m.scope.length === CATEGORIES.length) return "All three categories";
   return m.scope.length ? m.scope.map((c) => CATEGORY_SHORT[c]).join(" · ") : "None";
 }
 
-/** Why a role/scope combination can't be saved, or null if it can (A-6 §21). */
-export function assignmentBlocker(roles: RoleName[], scope: Category[]): "category" | "separation" | null {
-  if (roles.includes("Licensing & Registration Officer") && roles.some((r) => SCOPED_ROLES.includes(r))) return "separation";
-  if (roles.some((r) => SCOPED_ROLES.includes(r)) && scope.length === 0) return "category";
-  return null;
+/** The one refusal left: a Reviewer or Authorizer must carry at least one category (KB admin-console.md §2). */
+export function assignmentBlocker(role: RoleName | null, scope: Category[]): "category" | null {
+  return role && SCOPED_ROLES.includes(role) && scope.length === 0 ? "category" : null;
 }

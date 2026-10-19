@@ -2,6 +2,7 @@ import type { ActivityItem } from "@/components/ui/Activity";
 import type { Application } from "@/data/director-general/applications";
 import { auditEntries, type AuditEntry } from "@/data/director-general/audit";
 import type { Demo } from "@/lib/demo";
+import { toTime } from "@/lib/dates";
 
 /** Audit Trail entries about one subject — the sample trail plus what was done in this session. */
 export function auditFor(subject: string, demo: Demo): ActivityItem[] {
@@ -23,7 +24,7 @@ const field = (app: Application, label: string) => app.summary.flatMap((g) => g.
 export function applicationActivity(sample: Application, app: Application, demo: Demo): ActivityItem[] {
   const ref = app.title.split(" — ")[0];
   const applicant = field(app, "Entity name") ?? app.subtitle;
-  const submitted = field(app, "Submitted") ?? app.documents.map((d) => d.uploaded).sort((a, b) => Date.parse(a) - Date.parse(b))[0];
+  const submitted = field(app, "Submitted") ?? app.documents.map((d) => d.uploaded).sort((a, b) => toTime(a) - toTime(b))[0];
   const items: ActivityItem[] = [];
   if (submitted) items.push({ at: submitted, who: applicant, what: "Application submitted" });
   for (const s of sample.chain?.stages ?? []) {

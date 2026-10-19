@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import type { Status } from "@/components/ui/Badge";
 import type { AuditEntry } from "@/data/director-general/audit";
 import { SAMPLE_TODAY } from "@/data/sample-date";
+import { clockTime, fmtDate } from "@/lib/dates";
 
 /**
  * Demo state — what the signed-in officer has done in this browser session.
@@ -21,7 +22,7 @@ const EVENT = "reran:demo";
 /** What happened to an application in this session. */
 export type AppChange = {
   status: Status;
-  /** "11 Oct 2026" */
+  /** "11/10/2026" */
   on: string;
   by: string;
   role: string;
@@ -30,14 +31,14 @@ export type AppChange = {
   kind: "decided" | "overturned" | "with-applicant" | "chain";
   /** For an overturn: the outcome that was replaced. */
   replaced?: string;
-  /** "11 Oct 2026, 14:07" — set when recorded. */
+  /** "11/10/2026, 02:07:28PM" — set when recorded. */
   at?: string;
 };
 export type SignoffChange = { status: "Authorised" | "Declined"; on: string; reason?: string };
 export type StaffChange = Partial<{
   status: "Invited" | "Active" | "Suspended" | "Deactivated";
   mfa: "Enrolled" | "Not enrolled";
-  roles: string[];
+  role: string;
   scope: string[];
   /** null = the lock-out / MFA request was dealt with this session (null, not undefined, so it survives JSON). */
   lockedOut: null;
@@ -95,14 +96,10 @@ export function useDemo(): Demo {
 /** Read once, outside React (e.g. right before navigating). */
 export const demoNow = () => read();
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-/** The prototype's "today" (11 Oct 2026), as the screens write dates. */
-export const demoToday = () => `${SAMPLE_TODAY.getUTCDate()} ${MONTHS[SAMPLE_TODAY.getUTCMonth()]} ${SAMPLE_TODAY.getUTCFullYear()}`;
-/** "11 Oct 2026, 14:07" — the date stays the sample day, the time is the real clock. */
-export const demoStamp = () => {
-  const t = new Date();
-  return `${demoToday()}, ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
-};
+/** The prototype's "today" (11/10/2026), as the screens write dates. */
+export const demoToday = () => fmtDate(SAMPLE_TODAY);
+/** "11/10/2026, 02:07:28PM" — the date stays the sample day, the time is the real clock. */
+export const demoStamp = () => `${demoToday()}, ${clockTime()}`;
 
 let seq = 0;
 function audit(entry: Omit<AuditEntry, "id" | "timestamp">): AuditEntry {

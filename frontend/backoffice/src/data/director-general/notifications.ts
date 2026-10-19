@@ -18,7 +18,7 @@ export type Notification = {
   related: string;
   link: string;
   received: string;
-  /** Days before the sample "today" (11 Oct 2026) — drives the Date range filter. */
+  /** Days before the sample "today" (11/10/2026) — drives the Date range filter. */
   daysAgo: number;
   unread: boolean;
 };
@@ -46,7 +46,7 @@ const n = (id: string, type: NotificationType, message: string, related: string,
 
 export const notifications: Notification[] = [
   escalation("RRA/SO/2026/0251", "12 minutes ago", 0, true),
-  n("ntf-p-2026-09", "Period filed", "September collections marked Filed by the Revenue & Finance Officer", "Sep 2026", dg("revenue-reports") + "?period=2026-09", "3 Oct 2026", 8, false), // audit aud-0868: filed 03 Oct 16:40
+  n("ntf-p-2026-09", "Period filed", "September collections marked Filed by the Revenue & Finance Officer", "Sep 2026", dg("revenue-reports") + "?period=2026-09", "03/10/2026", 8, false), // audit aud-0868: filed 03 Oct 16:40
   n("ntf-lock-168", "Account locked out", "Emeka Nwankwo's staff account locked after repeated failed sign-in", "STF-00168", dg("admin-console/stf-00168"), "5 hours ago", 0, true),
   escalation("RRA/SO/2026/0249", "6 hours ago", 0, true),
   escalation("RRA/SO/2026/0247", "8 hours ago", 0, false),
@@ -66,7 +66,7 @@ export const notifications: Notification[] = [
   escalation("RRA/SO/2026/0220", "5 days ago", 5, false),
   escalation("RRA/SO/2026/0218", "6 days ago", 6, false),
   n("ntf-lock-231", "Account locked out", "Tolani Bankole's staff account locked after repeated failed sign-in", "STF-00231", dg("admin-console/stf-00231"), "9 days ago", 9, false),
-  n("ntf-p-2026-08", "Period filed", "August collections marked Filed by the Revenue & Finance Officer", "Aug 2026", dg("revenue-reports") + "?period=2026-08", "4 Sep 2026", 37, false), // filed 04 Sep (revenue.ts)
+  n("ntf-p-2026-08", "Period filed", "August collections marked Filed by the Revenue & Finance Officer", "Aug 2026", dg("revenue-reports") + "?period=2026-08", "04/09/2026", 37, false), // filed 04 Sep (revenue.ts)
 ];
 
 export const dateBucket = (x: Notification) => (x.daysAgo === 0 ? "Today" : x.daysAgo <= 7 ? "Last 7 days" : "Earlier");

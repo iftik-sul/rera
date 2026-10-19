@@ -129,22 +129,22 @@ export const summaryFor = (o: { entity: string; rc: string; contact: string; dev
 const adronSummary = summaryFor({
   entity: "Adron Homes & Properties", rc: "RC-20198", contact: "registry@adronhomes.ng",
   developer: "Adron Homes & Properties", project: "Victoria Island", unit: "Plot A-12", type: "Detached house",
-  txn: "Initial Sale", price: "₦485,000,000", fee: "₦19,400,000", submitted: "8 Oct 2026",
+  txn: "Initial Sale", price: "₦485,000,000", fee: "₦19,400,000", submitted: "08/10/2026",
 });
 const mixtaSummary = summaryFor({
   entity: "Mixta Nigeria Ltd", rc: "RC-114502", contact: "conveyancing@mixtanigeria.com",
   developer: "Eko Atlantic City Developers", project: "Eko Atlantic Tower", unit: "Unit 2304", type: "Apartment",
-  txn: "Resale", price: "₦310,000,000", fee: "₦12,400,000", submitted: "28 Sep 2026",
+  txn: "Resale", price: "₦310,000,000", fee: "₦12,400,000", submitted: "28/09/2026",
 });
 
 const grandeurDocs: Doc[] = [
-  { name: "Title Deed Copy", type: "PDF", uploaded: "8 Oct 2026", status: verified },
-  { name: "Sale & Purchase Agreement", type: "PDF", uploaded: "8 Oct 2026", status: verified },
-  { name: "Consent from Developer", type: "PDF", uploaded: "9 Oct 2026", status: pending },
-  { name: "Passport / NIN Card", type: "Image", uploaded: "8 Oct 2026", status: verified },
+  { name: "Title Deed Copy", type: "PDF", uploaded: "08/10/2026", status: verified },
+  { name: "Sale & Purchase Agreement", type: "PDF", uploaded: "08/10/2026", status: verified },
+  { name: "Consent from Developer", type: "PDF", uploaded: "09/10/2026", status: pending },
+  { name: "Passport / NIN Card", type: "Image", uploaded: "08/10/2026", status: verified },
 ];
 /** TRX-2024-0887 was submitted on 28 Sep and decided on 2 Oct. */
-const decidedDocs: Doc[] = grandeurDocs.map((d) => ({ ...d, uploaded: d.uploaded.startsWith("9") ? "29 Sep 2026" : "28 Sep 2026", status: verified }));
+const decidedDocs: Doc[] = grandeurDocs.map((d) => ({ ...d, uploaded: d.uploaded.startsWith("9") ? "29/09/2026" : "28/09/2026", status: verified }));
 
 export const grandeurChecks = ["Developer registration", "Project registration", "Unit/plot registration", "Title deed status", "Applicant validity"];
 
@@ -221,14 +221,14 @@ export const featuredApplications: Application[] = [
         outcome: approved,
         decidedBy: "Chukwuemeka Obi",
         role: "Compliance & Escrow Auditor",
-        recordedAt: "2 Oct 2026, 11:42",
+        recordedAt: "02/10/2026, 11:42:22AM",
         reason:
           "Registry checks returned clear on all five points; developer consent and the title deed copy were verified against the register. Approved for title deed issuance.",
       },
       issued: [
         { label: "Artefact", value: "e-Title Deed" },
         { label: "Reference", value: "RERA/TD/2026/04418" },
-        { label: "Issued", value: "2 Oct 2026" },
+        { label: "Issued", value: "02/10/2026" },
         { label: "Delivered to", value: "Mixta Nigeria Ltd" },
       ],
       bannerTitle: "What an overturn will do to this item",
@@ -238,7 +238,7 @@ export const featuredApplications: Application[] = [
         "Requires re-authentication. The audit entry records the Director-General / Registrar with action type override — never the officer whose decision it replaces.",
       overturn: {
         title: "Overturn this decision?",
-        body: "On record: TRX-2024-0887 — Register Resale, filed by Mixta Nigeria Ltd. Approved by Chukwuemeka Obi (Compliance & Escrow Auditor) on 2 Oct 2026.",
+        body: "On record: TRX-2024-0887 — Register Resale, filed by Mixta Nigeria Ltd. Approved by Chukwuemeka Obi (Compliance & Escrow Auditor) on 02/10/2026.",
         callout:
           "Replacement outcome: Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and issues the rejection dated today. The item will then read Rejected, marked Overturned — final, with no undo and no second overturn.",
         label: "Why was this decision wrong?",
@@ -249,7 +249,7 @@ export const featuredApplications: Application[] = [
         title: "Revoke the issued Title Deed?",
         body: "This follows the rejection you just confirmed. The output issued under the original approval must now be revoked.",
         callout:
-          "e-Title Deed RERA/TD/2026/04418, issued to Mixta Nigeria Ltd on 2 Oct 2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
+          "e-Title Deed RERA/TD/2026/04418, issued to Mixta Nigeria Ltd on 02/10/2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
         confirm: "Revoke title deed",
         toast: { title: "Decision overturned", body: "TRX-2024-0887 now reads Rejected, marked Overturned. e-Title Deed RERA/TD/2026/04418 has been revoked." },
       },
@@ -266,19 +266,19 @@ export const featuredApplications: Application[] = [
       { label: "Expected output", value: "Real Estate Developer Licence" },
       { label: "Review stage", value: "Stage 3 of 3 — Licensing & Registration Officer" },
     ],
-    claim: { held: "Claimed by you", detail: "· since 11:46 today · lapses after 30 minutes of inactivity", mine: true },
+    claim: { held: "Claimed by you", detail: "· since 11:46:23AM today · lapses after 30 minutes of inactivity", mine: true },
     chain: {
       stages: [
         {
           name: "Stage 1 · Reviewer",
           outcome: { label: "Recommended Approval", tone: "success" },
-          recorded: "Ibrahim Musa recorded this on 30 Sep 2026, 09:42.",
+          recorded: "Ibrahim Musa recorded this on 30/09/2026, 09:42:30AM.",
           reason: "Reason given: none required for a recommendation to approve. All five register checks passed.",
         },
         {
           name: "Stage 2 · Authorizer",
           outcome: { label: "Endorsed", tone: "success" },
-          recorded: "Ngozi Eze recorded this on 30 Sep 2026, 11:18.",
+          recorded: "Ngozi Eze recorded this on 30/09/2026, 11:18:41AM.",
           reason: "Reason given: none required for an endorsement. Reviewer's checks confirmed against the CAC record.",
         },
       ],
@@ -301,7 +301,7 @@ export const featuredApplications: Application[] = [
         fields: [
           { label: "Credential sought", value: "Developer Licence" },
           { label: "Application reference", value: "LIC-2026-00412" },
-          { label: "Submitted", value: "28 Sep 2026" },
+          { label: "Submitted", value: "28/09/2026" },
           { label: "Category", value: "Company Licensing" },
         ],
       },
@@ -310,16 +310,16 @@ export const featuredApplications: Application[] = [
         fields: [
           { label: "CAC status", value: "Active" },
           { label: "Directors verified", value: "3 of 3" },
-          { label: "Last annual filing", value: "30 Jun 2026" },
+          { label: "Last annual filing", value: "30/06/2026" },
         ],
       },
     ],
     documents: [
-      { name: "Certificate of Incorporation (CAC)", type: "PDF", uploaded: "28 Sep 2026", status: verified },
-      { name: "Board Resolution authorising portal use", type: "PDF", uploaded: "28 Sep 2026", status: verified },
-      { name: "Company Letterhead", type: "PDF", uploaded: "28 Sep 2026", status: verified },
-      { name: "Directors' NIN Verification", type: "PDF", uploaded: "28 Sep 2026", status: verified },
-      { name: "Sector Accreditation Certificate", type: "PDF", uploaded: "29 Sep 2026", status: pending },
+      { name: "Certificate of Incorporation (CAC)", type: "PDF", uploaded: "28/09/2026", status: verified },
+      { name: "Board Resolution authorising portal use", type: "PDF", uploaded: "28/09/2026", status: verified },
+      { name: "Company Letterhead", type: "PDF", uploaded: "28/09/2026", status: verified },
+      { name: "Directors' NIN Verification", type: "PDF", uploaded: "28/09/2026", status: verified },
+      { name: "Sector Accreditation Certificate", type: "PDF", uploaded: "29/09/2026", status: pending },
     ],
     checksTitle: "Company register check",
     checks: ["CAC registration valid", "Directors match CAC record", "No existing licence conflict", "No outstanding sanctions", "Tax clearance current"],

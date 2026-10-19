@@ -33,7 +33,7 @@ const list = (items: string[]) => (items.length <= 1 ? (items[0] ?? "") : `${ite
  * Admin Console — Account Editor (Figma) and its pop-ups:
  *   M-ADM-02 Change role & scope (reason required) · M-ADM-04 Reset MFA ·
  *   M-ADM-05 Suspend (tick box) · M-ADM-06 Deactivate (tick box + step-up) ·
- *   plus the two refusals (no category; Officer combined with a junior licensing role).
+ *   plus the one refusal (a licensing role with no category). One role per account.
  * DEMO: changes last until you leave the page — there is no server to save them to.
  */
 export function AccountEditor({ member }: { member: StaffMember }) {
@@ -41,23 +41,23 @@ export function AccountEditor({ member }: { member: StaffMember }) {
   // so the Admin Console list, the Dashboard and the Audit Trail all see them.
   const demo = useDemo();
   const current = applyStaff(member, demo.staff[member.id]);
-  const { roles, scope, status, mfa, lockedOut, mfaRequest } = current;
+  const { role, scope, status, mfa, lockedOut, mfaRequest } = current;
   const [step, setStep] = useState<Step>(null);
-  const [blocked, setBlocked] = useState<"category" | "separation" | null>(null);
+  const [blocked, setBlocked] = useState<"category" | null>(null);
   // Draft values inside the pop-ups
-  const [draftRoles, setDraftRoles] = useState<RoleName[]>([]);
+  const [draftRole, setDraftRole] = useState<RoleName | null>(null);
   const [draftScope, setDraftScope] = useState<Category[]>([]);
   const [reason, setReason] = useState("");
   const [ack, setAck] = useState(false);
 
   const first = member.name.split(" ")[0];
-  const scoped = roles.some((r) => SCOPED_ROLES.includes(r));
-  const allByRole = roles.some((r) => ALL_CATEGORY_ROLES.includes(r));
+  const scoped = SCOPED_ROLES.includes(role);
+  const allByRole = ALL_CATEGORY_ROLES.includes(role);
   const closed = status === "Deactivated";
   const locked = member.self || closed;
 
   const open = (s: Step) => {
-    setDraftRoles(roles);
+    setDraftRole(role);
     setDraftScope(scope);
     setReason("");
     setAck(false);
@@ -66,10 +66,11 @@ export function AccountEditor({ member }: { member: StaffMember }) {
   const close = () => setStep(null);
 
   const saveRole = () => {
-    const b = assignmentBlocker(draftRoles, draftScope);
+    if (!draftRole) return;
+    const b = assignmentBlocker(draftRole, draftScope);
     if (b) return setBlocked(b);
-    const nextScope = draftRoles.some((r) => SCOPED_ROLES.includes(r)) ? draftScope : [];
-    recordStaff(member.id, { roles: draftRoles, scope: nextScope }, { action: "Role assignment changed", type: "Access", subsystem: "Access", subject: member.email, reason: reason.trim() });
+    const nextScope = SCOPED_ROLES.includes(draftRole) ? draftScope : [];
+    recordStaff(member.id, { role: draftRole, scope: nextScope }, { action: "Role assignment changed", type: "Access", subsystem: "Access", subject: member.email, reason: reason.trim() });
     close();
     showToast({ title: "Role updated", body: `${member.name}'s role and category scope were changed. Recorded in the audit trail.` });
   };
@@ -80,7 +81,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
     showToast({ title, body });
   };
 
-  const currently = `${member.name} currently holds ${list(roles)}${scoped ? `, scoped to ${list(scope)}` : ""}.`;
+  const currently = `${member.name} currently holds ${role}${scoped ? `, scoped to ${list(scope)}` : ""}.`;
 
   return (
     <Page title={member.name} subtitle="Edit staff account" bodyClassName="gap-4 px-8 py-5">
@@ -91,7 +92,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         subtitle={member.email}
         status={accountStatus(status)}
         meta={[
-          { label: "Role", value: list(roles) },
+          { label: "Role", value: role },
           { label: "MFA", value: mfa === "Enrolled" ? "Enrolled" : "Not enrolled" },
         ]}
       />
@@ -105,7 +106,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
       )}
       {!locked && mfaRequest && <Notice>{first} asked for an MFA reset on {mfaRequest}. Reset MFA below to send a new enrolment link.</Notice>}
 
-      <Section title="Role" rows={[["Assigned role", list(roles)]]}>
+      <Section title="Role" rows={[["Assigned role", role]]}>
         {!locked && <Button onClick={() => open("role")}>Change role</Button>}
       </Section>
 
@@ -153,17 +154,17 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         onClose={close}
         width={520}
         title="Change role & category scope?"
-        description={<p>{currently} Changing the role updates which screens the account can reach; a licensing role must keep at least one category.</p>}
+        description={<p>{currently} An account holds one role. Changing it updates which screens the account can reach; a licensing role must keep at least one category.</p>}
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="primary" disabled={!reason.trim() || draftRoles.length === 0} onClick={saveRole}>
+            <Button variant="primary" disabled={!reason.trim() || !draftRole} onClick={saveRole}>
               Save changes
             </Button>
           </>
         }
       >
-        <RoleScopeFields roles={draftRoles} scope={draftScope} onRoles={setDraftRoles} onScope={setDraftScope} />
+        <RoleScopeFields role={draftRole} scope={draftScope} onRole={setDraftRole} onScope={setDraftScope} />
         <ReasonField label="Why is the role or scope changing?" placeholder="Record the reason for the change." value={reason} onChange={setReason} />
       </Modal>
       <AdminBlockerModal which={step === "role" ? blocked : null} onClose={() => setBlocked(null)} />

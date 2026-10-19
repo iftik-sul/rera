@@ -17,15 +17,7 @@ const columns: Column<StaffMember>[] = [
   {
     header: "Role",
     width: 19,
-    cell: (m) => (
-      <span className="flex gap-1.5">
-        {m.roles.map((r) => (
-          <Badge key={r} tone="info">
-            {ROLE_TAG[r]}
-          </Badge>
-        ))}
-      </span>
-    ),
+    cell: (m) => <Badge tone="info">{ROLE_TAG[m.role]}</Badge>,
   },
   { header: "Category scope", width: 18, tone: "muted", cell: (m) => scopeText(m) },
   { header: "Status", width: 12, cell: (m) => <StatusBadge status={accountStatus(m.status)} /> },
@@ -33,8 +25,8 @@ const columns: Column<StaffMember>[] = [
 ];
 
 const filters: FilterDef<StaffMember>[] = [
-  // Any role the person holds — someone with two roles shows under both (was: first role only).
-  { label: "Role", key: "role", value: () => "", options: [...ROLES], matches: (m, o) => m.roles.includes(o as (typeof ROLES)[number]) },
+  // One role per person, so the filter is the role itself; every role is listed even with no holder.
+  { label: "Role", key: "role", value: (m) => m.role, options: [...ROLES], matches: (m, o) => m.role === o },
   { label: "Status", key: "status", value: (m) => m.status, order: ACCOUNT_STATUS_ORDER },
   { label: "MFA", key: "mfa", value: (m) => m.mfa, order: ["Enrolled", "Not enrolled"] },
 ];

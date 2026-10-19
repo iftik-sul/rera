@@ -20,7 +20,7 @@ export function dashboardKpis(matters: SignoffMatter[], staff: StaffMember[], au
     { label: "Pending sign-off", value: String(pending.length), caption: "Awaiting your authorisation", href: "sign-off-queue" },
     { label: "Oldest pending", value: oldest ? waited(oldest) : "—", caption: "Longest in the queue", href: "sign-off-queue" },
     // Counted from the Admin Console and Audit Trail data (Figma's 41 / 3 / 7 matched neither).
-    { label: "Active staff", value: String(active.length), caption: `Across ${new Set(active.flatMap((m) => m.roles)).size} roles`, href: "admin-console" },
+    { label: "Active staff", value: String(active.length), caption: `Across ${new Set(active.map((m) => m.role)).size} roles`, href: "admin-console" },
     { label: "Pending invites", value: String(staff.filter((m) => m.status === "Invited").length), caption: "Awaiting acceptance", href: "admin-console" },
     {
       label: "Recent access changes",
