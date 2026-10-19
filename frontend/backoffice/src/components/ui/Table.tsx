@@ -105,11 +105,12 @@ export type FilterDef<T> = {
   /** Option order. Leave out to list values alphabetically. */
   order?: string[];
   /**
-   * A value whose rows stay hidden until this filter selects it. The DG's
-   * Status filter uses "Decided": decided items only appear on purpose
-   * (Work Queue spec §4c — "a Decided filter value, off by default").
+   * Fixed options whose rows can overlap — e.g. "This month" ⊂ "Last 3 months".
+   * Give both: `options` lists them (each shown with its count, even 0), and
+   * `matches` says whether a row belongs to the chosen one. `value` is then unused.
    */
-  hiddenUnlessSelected?: string;
+  options?: string[];
+  matches?: (r: T, option: string) => boolean;
 };
 
 /**
@@ -130,6 +131,7 @@ export function TableCard<T>({
   paginate,
   note,
   onMatchedChange,
+  lead,
   ...table
 }: {
   title: string;
@@ -150,6 +152,8 @@ export function TableCard<T>({
   note?: React.ReactNode;
   /** Told the rows that pass the search and filters (every page) — e.g. so Export knows what it covers. */
   onMatchedChange?: (rows: T[]) => void;
+  /** A control placed first in the filters row, before search — e.g. the queues' Open · Completed switch. */
+  lead?: React.ReactNode;
 } & Parameters<typeof Table<T>>[0]) {
   const defs = filters ?? [];
   const [query, setQuery] = useState("");
@@ -157,16 +161,12 @@ export function TableCard<T>({
   const [chosen, setChosen] = useState<Record<string, string | null>>({});
   const q = query.trim().toLowerCase();
 
-  // Does a row pass the search and every filter? Rows with a "hidden unless selected"
-  // value (e.g. Decided) fail unless that value is the one chosen.
+  // Does a row satisfy one filter's current choice?
+  const fits = (r: T, f: FilterDef<T>, sel: string | null) => sel === null || (f.matches ? f.matches(r, sel) : f.value(r) === sel);
+  // Does a row pass the search and every filter?
   const passes = (r: T) => {
     if (q && searchText && !searchText(r).toLowerCase().includes(q)) return false;
-    return defs.every((f) => {
-      const v = f.value(r);
-      const sel = chosen[f.key] ?? null;
-      if (f.hiddenUnlessSelected && v === f.hiddenUnlessSelected && sel !== f.hiddenUnlessSelected) return false;
-      return sel === null || v === sel;
-    });
+    return defs.every((f) => fits(r, f, chosen[f.key] ?? null));
   };
   const matched = table.rows.filter((r) => passes(r));
   const filtered = q !== "" || Object.values(chosen).some((v) => v !== null);
@@ -230,19 +230,16 @@ export function TableCard<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run only when the numbers change
   }, [paginate, page, current]);
 
-  // Does a row pass search + every OTHER filter? (Ignores this filter entirely, including its
-  // "hidden unless selected" rule — so each option can say how many rows choosing it would show.)
+  // Does a row pass search + every OTHER filter? (So each option can say how many rows choosing it would show.)
   const passesOthers = (r: T, f: FilterDef<T>) => {
     if (q && searchText && !searchText(r).toLowerCase().includes(q)) return false;
-    return defs.every((g) => {
-      if (g.key === f.key) return true;
-      const v = g.value(r);
-      const sel = chosen[g.key] ?? null;
-      if (g.hiddenUnlessSelected && v === g.hiddenUnlessSelected && sel !== g.hiddenUnlessSelected) return false;
-      return sel === null || v === sel;
-    });
+    return defs.every((g) => g.key === f.key || fits(r, g, chosen[g.key] ?? null));
   };
   const optionsFor = (f: FilterDef<T>) => {
+    if (f.options && f.matches) {
+      const pool = table.rows.filter((r) => passesOthers(r, f));
+      return f.options.map((o) => ({ value: o, count: pool.filter((r) => f.matches!(r, o)).length }));
+    }
     const counts = new Map<string, number>();
     for (const r of table.rows) {
       if (!passesOthers(r, f)) continue;
@@ -274,6 +271,7 @@ export function TableCard<T>({
         </div>
         {filters && (
           <div className="flex flex-wrap items-center gap-3">
+            {lead}
             <SearchBox value={query} onChange={search} />
             {defs.map((f) => (
               <FilterDropdown key={f.key} label={f.label} options={optionsFor(f)} value={chosen[f.key] ?? null} onChange={(v) => choose(f.key, v)} />

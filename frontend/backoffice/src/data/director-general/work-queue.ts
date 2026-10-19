@@ -11,8 +11,10 @@
  * Row counts: page 1 (the first 10 rows) is exactly the Figma frame. Every
  * queue carries exactly 20 open sample rows — two full pages of 10 — so pagination
  * can be used and every page looks the same (project-lead rule, 2026-10-18).
- * Each queue also holds a few DECIDED items, hidden until the Status filter
- * picks "Decided" (Work Queue spec §4c — the DG is the only role that sees them).
+ * Each queue also holds twelve or more DECIDED items. They are not open work: the page
+ * shows them on the Completed side of the Open · Completed switch (Work Queue spec §4d).
+ * `decidedAgo` (days before the sample "today") sets when each was decided; the review
+ * built for the row reads the same value, so the list and the review agree.
  * Rows after Figma's are marked below.
  */
 import type { Status } from "@/components/ui/Badge";
@@ -37,15 +39,19 @@ const AR: Status = { label: "Awaiting Review", tone: "info" };
 const IR: Status = { label: "Information Requested", tone: "warning" };
 const RET: Status = { label: "Returned", tone: "warning" };
 const SLA: Status = { label: "Breaching SLA", tone: "error" };
-// Decided items: listed for the DG only, hidden until the Status filter picks "Decided" (spec §4c).
+// Decided items: the Completed side of the switch (spec §4d).
 const APPROVED: Status = { label: "Approved", tone: "success" };
 const REJECTED: Status = { label: "Rejected", tone: "error" };
 /** Overturned by the DG: two badges, "Overturned" then the replacement outcome (status-badges.md §1). */
 const OVERTURNED_REJECTED: Status = { label: "Rejected", tone: "error", overturned: true };
 
-/** Status filter value: Approved / Rejected group under "Decided"; everything else is its own label. */
+/** Approved / Rejected (and overturned) items are "Decided" — they belong on the Completed side. */
 export const statusFilterValue = (s: Status) => (s.overturned || s.label === "Approved" || s.label === "Rejected" ? "Decided" : s.label);
-export const STATUS_ORDER = ["Awaiting Review", "Under Review", "Information Requested", "Returned", "Breaching SLA", "Decided"];
+export const STATUS_ORDER = ["Awaiting Review", "Under Review", "Information Requested", "Returned", "Breaching SLA"];
+export const isCompleted = (r: { status: Status }) => statusFilterValue(r.status) === "Decided";
+/** Outcome filter on the Completed side. */
+export const outcomeValue = (s: Status) => (s.overturned ? "Overturned" : s.label);
+export const OUTCOME_ORDER = ["Approved", "Rejected", "Overturned"];
 
 /** Age / SLA state filter value, from the colour the age is shown in. */
 export const ageState = (a: Age) => (a.tone === "breach" ? "Breaching SLA" : a.tone === "warning" ? "Ageing" : "Within SLA");
@@ -68,6 +74,8 @@ export type TransactionRow = {
   status: Status;
   age: Age;
   opens?: Opens;
+  /** Decided items: how many days before the sample "today" the decision was recorded. */
+  decidedAgo?: number;
 };
 
 export const transactionRows: TransactionRow[] = linked([
@@ -97,10 +105,20 @@ export const transactionRows: TransactionRow[] = linked([
   { reference: "TRX-2024-0807", service: "Register Initial Sale", applicant: "Kano Heritage Developers", subject: "Nassarawa GRA Plot 15", status: AR, age: { text: "2 days", tone: "normal" } },
   // Added in batch 6, when TRX-2024-0878 became decided — keeps 20 open rows (two full pages).
   { reference: "TRX-2024-0803", service: "Register Resale", applicant: "Skyview Properties Ltd", subject: "Wuse Zone 4 Unit 2C", status: UR, age: { text: "3 days", tone: "normal" } },
-  // ── Decided items (hidden until Status → Decided) ──
+  // ── Decided items (the Completed side) ──
   { reference: "TRX-2024-0796", service: "Register Initial Sale", applicant: "Victoria Crest Homes", subject: "Chevron Drive Terrace 12", status: APPROVED, age: { text: "Decided day 2", tone: "normal" } },
   { reference: "TRX-2024-0792", service: "Register Mortgage", applicant: "Enugu Royal Estates", subject: "Independence Layout Villa 9", status: REJECTED, age: { text: "Decided day 5", tone: "normal" } },
   { reference: "TRX-2024-0788", service: "Register Resale", applicant: "Atlantic Shores Ltd", subject: "Lekki Phase 2 Unit 14C", status: APPROVED, age: { text: "Decided day 3", tone: "normal" } },
+  // Added with the Completed side (2026-10-19) — enough history for two pages, spread over the year.
+  { reference: "TRX-2024-0784", service: "Register Mortgage", applicant: "Homebase Mortgage Bank", subject: "Lekki Phase 1 Villa 31", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 1 },
+  { reference: "TRX-2024-0779", service: "Register Resale", applicant: "Grenadines Homes Ltd", subject: "Ikoyi Banana Court Unit 5A", status: REJECTED, age: { text: "Decided day 4", tone: "normal" }, decidedAgo: 6 },
+  { reference: "TRX-2024-0775", service: "Register Initial Sale", applicant: "Urban Shelter Ltd", subject: "Apo Resettlement Plot 21", status: APPROVED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 18 },
+  { reference: "TRX-2024-0770", service: "Register Mortgage", applicant: "Imperial Homes Mortgage Bank", subject: "Gbagada Phase 2 House 7", status: APPROVED, age: { text: "Decided day 5", tone: "normal" }, decidedAgo: 27 },
+  { reference: "TRX-2024-0766", service: "Register Resale", applicant: "Elalan Constructions", subject: "Lekki County Homes Duplex 18", status: REJECTED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 35 },
+  { reference: "TRX-2024-0761", service: "Register Initial Sale", applicant: "Echostone Development", subject: "Ibeju-Lekki Coastal Plot 92", status: APPROVED, age: { text: "Decided day 4", tone: "normal" }, decidedAgo: 48 },
+  { reference: "TRX-2024-0757", service: "Register Mortgage", applicant: "Abbey Mortgage Bank", subject: "Wuse II Crescent Flat 3C", status: APPROVED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 74 },
+  { reference: "TRX-2024-0752", service: "Register Resale", applicant: "Paramount Estates Ltd", subject: "Ikeja GRA Villa 11", status: REJECTED, age: { text: "Decided day 5", tone: "normal" }, decidedAgo: 130 },
+  { reference: "TRX-2024-0748", service: "Register Initial Sale", applicant: "Royal Gardens Developers", subject: "Ajah Sangotedo Plot 205", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 320 },
 ]);
 
 // ── Escrow ──────────────────────────────────────────────────
@@ -120,6 +138,8 @@ export type EscrowRow = {
   status: Status;
   age: Age;
   opens?: Opens;
+  /** Decided items: how many days before the sample "today" the decision was recorded. */
+  decidedAgo?: number;
 };
 
 const RECEIVED: Status = { label: "Received", tone: "success" };
@@ -147,9 +167,20 @@ export const escrowRows: EscrowRow[] = linked([
   { reference: "REF-ESC-1018", escrowFlag: RECEIVED, applicant: "Chapel Hill Denham Trustees", subject: "Fund Release — Unit 9, Victoria Garden City", status: UR, age: { text: "4 days", tone: "normal" } },
   { reference: "REF-ESC-1019", escrowFlag: AWAIT_TRUSTEE, applicant: "Norrenberger Trustees", subject: "Escrow Setup — Phase 4, Lekki Gardens", status: AR, age: { text: "1 day", tone: "normal" } },
   { reference: "REF-ESC-1020", escrowFlag: RECEIVED, applicant: "Lotus Capital Trustees", subject: "Escrow Closure — Plot 18, Wuye", status: IR, age: { text: "11 days", tone: "warning" } },
-  // ── Decided items (hidden until Status → Decided) ──
+  // ── Decided items (the Completed side) ──
   { reference: "REF-ESC-0994", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 2, Lekki Phase 1", status: APPROVED, age: { text: "Decided day 3", tone: "normal" } },
   { reference: "REF-ESC-0991", escrowFlag: RECEIVED, applicant: "Zenith Trust Services", subject: "Escrow Closure — Block E, Banana Island", status: REJECTED, age: { text: "Decided day 4", tone: "normal" } },
+  // Added with the Completed side (2026-10-19).
+  { reference: "REF-ESC-0988", escrowFlag: RECEIVED, applicant: "Stanbic IBTC Trustees", subject: "Fund Release — Block A, Ikoyi", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 2 },
+  { reference: "REF-ESC-0985", escrowFlag: RECEIVED, applicant: "First Bank Trust Co", subject: "New Escrow Account — Phase 1, Maitama", status: APPROVED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 7 },
+  { reference: "REF-ESC-0981", escrowFlag: RECEIVED, applicant: "UBA Trustees Nigeria", subject: "Escrow Amendment — Tower C, Eko Atlantic", status: REJECTED, age: { text: "Decided day 4", tone: "normal" }, decidedAgo: 16 },
+  { reference: "REF-ESC-0978", escrowFlag: RECEIVED, applicant: "GTBank Trustee Division", subject: "Escrow Release — Plot 9, Victoria Island", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 24 },
+  { reference: "REF-ESC-0974", escrowFlag: RECEIVED, applicant: "Fidelity Trustees Ltd", subject: "Escrow Closure — Block G, Gwarinpa", status: APPROVED, age: { text: "Decided day 5", tone: "normal" }, decidedAgo: 39 },
+  { reference: "REF-ESC-0970", escrowFlag: RECEIVED, applicant: "Coronation Trustees", subject: "Fund Release — Tower B, Oniru", status: REJECTED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 55 },
+  { reference: "REF-ESC-0965", escrowFlag: RECEIVED, applicant: "ARM Trustees Ltd", subject: "Escrow Setup — Block D, Katampe", status: APPROVED, age: { text: "Decided day 4", tone: "normal" }, decidedAgo: 81 },
+  { reference: "REF-ESC-0961", escrowFlag: RECEIVED, applicant: "Meristem Trustees", subject: "Escrow Release — Unit 4, Ikeja GRA", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 112 },
+  { reference: "REF-ESC-0957", escrowFlag: RECEIVED, applicant: "Afrinvest Trustees", subject: "Escrow Amendment — Block C, Maitama", status: REJECTED, age: { text: "Decided day 5", tone: "normal" }, decidedAgo: 160 },
+  { reference: "REF-ESC-0952", escrowFlag: RECEIVED, applicant: "Union Trustees Nigeria", subject: "New Escrow Account — Phase 1, Ibeju-Lekki", status: APPROVED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 340 },
 ]);
 
 // ── Licensing (stage 3 of 3) ────────────────────────────────
@@ -170,8 +201,8 @@ export type LicensingRow = {
 
 /** The three licensing categories and which service belongs to which (licensing-categories.md §2). */
 export type LicensingCategory = "Company Licensing & Permits" | "Individual Practitioner Credentials" | "Institutional Accreditation";
-/** Status filter order on the licensing queue: the stage badges, then decided items. */
-export const LICENSING_STATUS_ORDER = ["Under Final Sign-off", "Dissent Recorded", "Decided"];
+/** Status filter order on the licensing queue (Open side): the stage badges. */
+export const LICENSING_STATUS_ORDER = ["Under Final Sign-off", "Dissent Recorded"];
 export const CATEGORY_ORDER: LicensingCategory[] = ["Company Licensing & Permits", "Individual Practitioner Credentials", "Institutional Accreditation"];
 const categoryOf = (service: string): LicensingCategory =>
   /Practice Card/.test(service) ? "Individual Practitioner Credentials" : /Accreditation/.test(service) ? "Institutional Accreditation" : "Company Licensing & Permits";
@@ -209,10 +240,20 @@ export const licensingRows: LicensingRow[] = linked([
   lic("LIC-2026-00333", "Musa Ibrahim", "Issue Professional Practice Card", "7 days ago", "2 days", null),
   lic("LIC-2026-00329", "Eastgate Property Developers", "Real Estate Permit Application", "3 days ago", "1 day", null),
   lic("LIC-2026-00326", "Kemi Adeyinka", "Cancel Professional Practice Card", "9 days ago", "4 hours", null),
-  // ── Decided items (hidden until Status → Decided) ──
+  // ── Decided items (the Completed side). Decided 6 days after submission (reviews.ts). ──
   lic("LIC-2026-00298", "Greenfield Developers Ltd", "Real Estate Licensing Application", "26 days ago", "—", null, undefined, APPROVED),
   lic("LIC-2026-00291", "Yemi Olatunji", "Issue Professional Practice Card", "27 days ago", "—", null, undefined, REJECTED),
   lic("LIC-2026-00286", "Lagos School of Valuation", "Accreditation of Training Entities", "29 days ago", "—", null, undefined, APPROVED),
+  // Added with the Completed side (2026-10-19).
+  lic("LIC-2026-00309", "Adebayo Ogundipe", "Issue Professional Practice Card", "8 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00305", "Crown Point Realtors Ltd", "Real Estate Permit Application", "15 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00279", "Ngozi Umeh", "Amend Professional Practice Card", "34 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00271", "Benin Estate Surveyors Ltd", "Real Estate Licensing Application", "45 days ago", "—", null, undefined, REJECTED),
+  lic("LIC-2026-00262", "Kaduna Polytechnic (Estate Management)", "Accreditation of Training Entities", "63 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00248", "Seyi Bankole", "Issue Professional Practice Card", "90 days ago", "—", null, undefined, REJECTED),
+  lic("LIC-2026-00231", "Oasis Homes & Realty", "Real Estate Permit Application", "128 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00214", "Chukwudi Eze", "Cancel Professional Practice Card", "171 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00196", "Lekki Realty Partners", "Real Estate Licensing Application", "360 days ago", "—", null, undefined, APPROVED),
 ]);
 
 // Counted from the rows above, so the cards and the table can't disagree (Figma's said

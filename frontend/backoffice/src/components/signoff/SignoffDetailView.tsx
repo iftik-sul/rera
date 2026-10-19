@@ -44,7 +44,7 @@ export function SignoffDetailView({ matter }: { matter: SignoffDetail }) {
 
   return (
     <Page title={matter.title} subtitle={matter.subtitle} bodyClassName="gap-4 px-8 py-5">
-      <Breadcrumb items={[{ label: "Sign-off Queue", href: href(directorGeneral, "sign-off-queue") }, { label: "Sign-off Detail" }]} />
+      <Breadcrumb items={[{ label: "Sign-off Queue", href: href(directorGeneral, "sign-off-queue") + (pending ? "" : "?view=completed") }, { label: "Sign-off Detail" }]} />
 
       <DetailHeader title={matter.subtitle} subtitle={matter.reference} status={matter.status} meta={matter.meta} />
 

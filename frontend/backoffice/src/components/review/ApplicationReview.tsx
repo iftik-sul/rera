@@ -32,6 +32,8 @@ export function ApplicationReview({ app }: { app: Application }) {
     const v = verdicts[d.name];
     return v ? { ...d, status: v.status === "Verified" ? verified : v.status === "Rejected" ? rejected : pending } : d;
   });
+  // A decided item lives on the queue's Completed side (work-queue.md §4d) — the breadcrumb goes back there.
+  const decided = !!app.status.overturned || app.status.label === "Approved" || app.status.label === "Rejected";
   const unverified = docs.filter((d) => d.status.label !== "Verified").map((d) => d.name);
 
   return (
@@ -40,7 +42,7 @@ export function ApplicationReview({ app }: { app: Application }) {
       subtitle={app.subtitle}
       bodyClassName="gap-4 px-8 py-5"
     >
-      <Breadcrumb items={[{ label: "Work Queue", href: href(role, `work-queue/${app.queue}`) }, { label: "Application Review" }]} />
+      <Breadcrumb items={[{ label: "Work Queue", href: href(role, `work-queue/${app.queue}`) + (decided ? "?view=completed" : "") }, { label: "Application Review" }]} />
 
       {/* Application metadata */}
       <DetailHeader title="Application metadata" subtitle={app.metaSubtitle} status={app.status} meta={app.meta}>
