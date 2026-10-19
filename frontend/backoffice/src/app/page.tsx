@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, currentRole } from "@/lib/auth";
 import { href } from "@/config/roles";
+import { Button } from "@/components/ui/Button";
+import { Field, TextInput } from "@/components/ui/Form";
 
 /**
  * Sign-in page. Figma: "Welcome back - Log in" (empty) and
@@ -44,12 +46,12 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg-blue">
+    <div className="flex min-h-screen flex-col bg-signin">
       {/* Top bar */}
       <header className="flex justify-center bg-white">
-        <div className="flex h-16 w-full max-w-[1280px] items-center justify-between px-10">
+        <div className="flex h-16 w-full max-w-7xl items-center justify-between px-10">
           <div className="flex items-center gap-2">
-            <div className="relative h-[60px] w-14 shrink-0 overflow-hidden">
+            <div className="relative h-crest w-14 shrink-0 overflow-hidden">
               <img
                 src="/brand/logo.png"
                 alt="Real Estate Regulatory Agency crest"
@@ -58,85 +60,78 @@ export default function SignInPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <p className="font-brand text-base leading-[22.5px] font-bold tracking-[0.375px] text-n900">
+              <p className="type-brand-lg text-strong">
                 Real Estate Regulatory Agency
               </p>
-              <p className="font-brand text-xs leading-[14.67px] text-n400">Federal Republic of Nigeria</p>
+              <p className="type-brand-sub text-muted">Federal Republic of Nigeria</p>
             </div>
           </div>
-          <p className="font-brand text-[13px] leading-[18.57px] text-n900">
-            Need help? <span className="ml-3 font-semibold text-blue-500">Contact Support</span>
+          <p className="type-body text-strong">
+            Need help? <span className="ml-3 type-group-title text-link">Contact Support</span>
           </p>
         </div>
       </header>
 
       {/* Form */}
-      <main className="flex flex-1 justify-center border border-n20 px-4 pt-[139px] pb-16">
-        <div className="flex w-full max-w-[640px] flex-col items-center gap-5">
+      <main className="flex flex-1 justify-center border border-page px-4 pt-34 pb-16">
+        <div className="flex w-full max-w-160 flex-col items-center gap-5">
           <form
             onSubmit={onSubmit}
-            className="flex w-full flex-col gap-6 rounded-3xl border border-n40 bg-white px-[33px] py-[25px]"
+            className="flex w-full flex-col gap-6 rounded-signin border border-control bg-white px-8 py-6"
           >
             <div className="flex flex-col gap-1 text-center">
-              <h1 className="text-2xl font-semibold tracking-[-0.96px] text-n900">Welcome Back</h1>
-              <p className="text-sm leading-5 text-n400">Sign in to your RERA Portal account.</p>
+              <h1 className="type-display text-strong">Welcome back</h1>
+              <p className="type-body-lg text-muted">Sign in to your RERA Portal account.</p>
             </div>
 
             <div className="flex flex-col gap-5">
-              <Field label="Email Address" htmlFor="email">
-                <img src="/icons/mail.svg" alt="" className="size-4 shrink-0" />
-                <input
+              <Field label="Email address" htmlFor="email" required>
+                <TextInput
                   id="email"
+                  size="lg"
                   type="email"
                   autoComplete="username"
                   placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="min-w-0 flex-1 bg-transparent text-sm leading-5 text-n900 outline-none placeholder:text-n400"
+                  leading={<img src="/icons/mail.svg" alt="" className="size-4 shrink-0" />}
                 />
               </Field>
 
               <div className="flex flex-col gap-1.5">
-                <Field label="Password" htmlFor="password">
-                  <img src="/icons/lock.svg" alt="" className="size-4 shrink-0" />
-                  <input
+                <Field label="Password" htmlFor="password" required>
+                  <TextInput
                     id="password"
+                    size="lg"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="min-w-0 flex-1 bg-transparent text-sm leading-5 text-n900 outline-none placeholder:text-n400"
+                    leading={<img src="/icons/lock.svg" alt="" className="size-4 shrink-0" />}
+                    trailing={
+                      password && (
+                        <Button variant="link" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
+                          <img src="/icons/eye.svg" alt="" className="size-4" />
+                        </Button>
+                      )
+                    }
                   />
-                  {password && (
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      className="shrink-0 cursor-pointer"
-                    >
-                      <img src="/icons/eye.svg" alt="" className="size-4" />
-                    </button>
-                  )}
                 </Field>
-                <p className="text-[13px] leading-5 text-blue-600">Forgot password</p>
+                <p className="type-body text-link">Forgot password</p>
               </div>
             </div>
 
             {error && (
-              <p role="alert" className="-mt-2 text-[13px] leading-5 text-red-600">
+              <p role="alert" className="-mt-2 type-body text-danger">
                 {error}
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={!filled || busy}
-              className={`flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-5 py-2.5 text-base leading-6 font-medium text-white ${
-                filled ? "cursor-pointer hover:bg-blue-600/90" : "opacity-30"
-              }`}
-            >
-              {filled ? (
+            <Button type="submit" variant="primary" size="lg" disabled={!filled} busy={busy}>
+              {busy ? (
+                "Signing in…"
+              ) : filled ? (
                 <>
                   <img src="/icons/check-circle.svg" alt="" className="size-4" />
                   Log in
@@ -147,29 +142,15 @@ export default function SignInPage() {
                   <img src="/icons/arrow-right.svg" alt="" className="size-6" />
                 </>
               )}
-            </button>
+            </Button>
           </form>
 
-          <p className="w-[352px] px-[15px] text-center text-xs leading-[18px] text-[#64748b]">
-            By continuing, you agree to the Portal <span className="text-blue-600">Terms of Service</span> and{" "}
-            <span className="text-blue-600">Privacy Policy</span>.
+          <p className="w-88 px-4 text-center type-caption text-muted">
+            By continuing, you agree to the Portal <span className="text-link">Terms of Service</span> and{" "}
+            <span className="text-link">Privacy Policy</span>.
           </p>
         </div>
       </main>
-    </div>
-  );
-}
-
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="flex gap-0.5 text-sm leading-5 font-medium">
-        <span className="text-n900">{label}</span>
-        <span className="text-red-600">*</span>
-      </label>
-      <div className="flex items-center gap-2 rounded-lg border border-n40 bg-white px-[13px] py-[11px] focus-within:border-blue-600">
-        {children}
-      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
+import { CodeInput, Field } from "./Form";
 
 /**
  * Step-up re-authentication (Figma "M-SYS-02 Step-up authentication" — "Confirm it's you").
@@ -46,18 +47,9 @@ export function StepUpModal({
         </>
       }
     >
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-n900">Authentication code</span>
-        <input
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={6}
-          value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-          placeholder="6-digit code from your authenticator app"
-          className="rounded-lg border border-n40 bg-white px-3 py-2.5 text-[13px] leading-5 tracking-wide text-n900 outline-none placeholder:tracking-normal placeholder:text-n400 focus:border-blue-600"
-        />
-      </label>
+      <Field label="Authentication code" htmlFor="stepup-code">
+        <CodeInput id="stepup-code" value={code} onChange={setCode} placeholder="6-digit code from your authenticator app" />
+      </Field>
     </Modal>
   );
 }

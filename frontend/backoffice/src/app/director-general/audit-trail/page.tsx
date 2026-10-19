@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Page } from "@/components/shell/Page";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { ACTION_TYPE_ORDER, DATE_ORDER, SUBSYSTEM_ORDER, auditEntries, dateBucket, subjectLink, type AuditEntry } from "@/data/director-general/audit";
@@ -33,7 +32,7 @@ export default function AuditTrail() {
   return (
     <Page title="Audit Trail" subtitle="Every recorded action in the back office.">
       <TableCard
-        title="Audit Trail"
+        title="Audit entries"
         titleSize="md"
         filters={filters}
         columns={columns}
@@ -53,16 +52,16 @@ export default function AuditTrail() {
         actions={
           <>
             {link && (
-              <Link href={link} className="inline-flex items-center rounded-lg border border-blue-600 bg-blue-600 px-3.5 py-2 text-sm leading-5 font-semibold text-white hover:bg-blue-600/90">
+              <ButtonLink href={link} variant="primary">
                 Open {open?.subject}
-              </Link>
+              </ButtonLink>
             )}
             <Button onClick={() => setOpen(null)}>Close</Button>
           </>
         }
       >
         {open && (
-          <dl className="flex flex-col gap-2.5 rounded-lg border border-n40 p-4 text-[13px]">
+          <dl className="flex flex-col gap-2.5 rounded-control border border-control p-4 type-body">
             {[
               ["When", open.timestamp],
               ["Actor", open.actor],
@@ -74,8 +73,8 @@ export default function AuditTrail() {
               ["Entry ID", open.id.toUpperCase()],
             ].map(([k, v]) => (
               <div key={String(k)} className="flex gap-4">
-                <dt className="w-28 shrink-0 text-n400">{k}</dt>
-                <dd className="text-n900">{v}</dd>
+                <dt className="w-28 shrink-0 text-muted">{k}</dt>
+                <dd className="text-strong">{v}</dd>
               </div>
             ))}
           </dl>

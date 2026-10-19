@@ -34,7 +34,7 @@ export default function PractitionerRegister() {
         ))}
       </KpiRow>
       <TableCard
-        title="Register Entries"
+        title="Register entries"
         filters={filters}
         columns={columns}
         rows={registerEntries}

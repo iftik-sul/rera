@@ -49,13 +49,13 @@ export function Pagination({
   return (
     // min-h-16 keeps the bar the same height whether or not the buttons show.
     <nav aria-label="Pagination" className="flex min-h-16 items-center justify-between px-5 py-4">
-      <p className="text-xs leading-[18px] text-n400">{label}</p>
+      <p className="type-caption text-muted">{label}</p>
       {pages > 1 && (
         <div className="flex items-center gap-1">
           <Step label="Previous page" icon="chevron-left" disabled={page <= 1} onClick={() => onPage(page - 1)} />
           {pageList(page, pages).map((p, i) =>
             p === "…" ? (
-              <span key={`gap${i}`} className="flex size-8 items-center justify-center text-[13px] text-n400">
+              <span key={`gap${i}`} className="flex size-8 items-center justify-center type-body text-muted">
                 …
               </span>
             ) : (
@@ -64,8 +64,8 @@ export function Pagination({
                 type="button"
                 onClick={() => onPage(p)}
                 aria-current={p === page ? "page" : undefined}
-                className={`flex size-8 cursor-pointer items-center justify-center rounded-lg text-[13px] font-medium ${
-                  p === page ? "bg-blue-600 text-white" : "bg-white text-n400 hover:bg-n20"
+                className={`flex size-8 cursor-pointer items-center justify-center rounded-control type-body-strong ${
+                  p === page ? "bg-action text-white" : "bg-white text-muted hover:bg-page"
                 }`}
               >
                 {p}
@@ -86,7 +86,7 @@ function Step({ label, icon, disabled, onClick }: { label: string; icon: string;
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex size-8 cursor-pointer items-center justify-center rounded-lg bg-n20 text-n400 hover:text-n900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-n400"
+      className="flex size-8 cursor-pointer items-center justify-center rounded-control bg-page text-muted hover:text-strong disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-muted"
     >
       <Icon name={icon} size={14} />
     </button>

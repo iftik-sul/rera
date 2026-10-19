@@ -81,11 +81,11 @@ export function AccountEditor({ member }: { member: StaffMember }) {
   return (
     <Page title="Admin Console" subtitle="Edit staff account" bodyClassName="gap-4 px-8 py-5">
       <div className="flex flex-col gap-1">
-        <Link href={href(directorGeneral, "admin-console")} className="text-xs font-medium text-blue-600 hover:underline">
+        <Link href={href(directorGeneral, "admin-console")} className="type-label text-link hover:underline">
           ← Staff Directory
         </Link>
-        <h2 className="text-2xl leading-8 font-semibold text-n900">{member.name}</h2>
-        <p className="text-xs text-n400">
+        <h2 className="type-display text-strong">{member.name}</h2>
+        <p className="type-caption text-muted">
           {member.email} · {status} · {mfa === "Enrolled" ? "MFA enrolled" : "MFA not enrolled"}
         </p>
       </div>
@@ -251,12 +251,12 @@ export function AccountEditor({ member }: { member: StaffMember }) {
 
 function Section({ title, rows, children }: { title: string; rows: [string, string][]; children?: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-n30 bg-white px-6 py-5">
-      <h3 className="text-[13px] font-semibold text-n900">{title}</h3>
+    <section className="flex flex-col gap-3 rounded-card border border-card bg-white px-6 py-5">
+      <h3 className="type-group-title text-strong">{title}</h3>
       {rows.map(([label, value]) => (
-        <div key={label} className="flex gap-6 text-[13px]">
-          <span className="w-[200px] shrink-0 text-n400">{label}</span>
-          <span className="text-n900">{value}</span>
+        <div key={label} className="flex gap-6 type-body">
+          <span className="w-50 shrink-0 text-muted">{label}</span>
+          <span className="text-strong">{value}</span>
         </div>
       ))}
       {children && <div className="flex gap-2 pt-1">{children}</div>}

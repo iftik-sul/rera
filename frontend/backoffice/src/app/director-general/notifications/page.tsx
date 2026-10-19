@@ -41,7 +41,7 @@ export default function Notifications() {
   // Widths are % of the row (design standard §A5a.0 rule 5).
   const columns: Column<Row>[] = [
     { header: "Type", width: 17, tone: "link", cell: (r) => r.type },
-    { header: "Message", width: 42, cell: (r) => <span className={r.state === "Unread" ? "font-medium" : ""}>{r.message}</span> },
+    { header: "Message", width: 42, cell: (r) => <span className={r.state === "Unread" ? "type-body-strong" : ""}>{r.message}</span> },
     { header: "Related item", width: 15, tone: "muted", cell: (r) => r.related },
     { header: "Received", width: 14, tone: "muted", cell: (r) => r.received },
     { header: "State", width: 12, cell: (r) => <Badge tone={r.state === "Unread" ? "info" : "neutral"}>{r.state}</Badge> },
@@ -55,7 +55,7 @@ export default function Notifications() {
   return (
     <Page title="Notifications" subtitle="Events that need you — each one opens the screen that deals with it.">
       <TableCard
-        title="All Notifications"
+        title="All notifications"
         action={
           <Button disabled={unreadCount === 0} onClick={() => markRead(rows.map((r) => r.id))}>
             Mark all as read

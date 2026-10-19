@@ -33,7 +33,7 @@ export default function SignoffQueue() {
         ))}
       </KpiRow>
       <TableCard
-        title="Matters Awaiting Sign-off"
+        title="Matters awaiting sign-off"
         filters={filters}
         columns={columns}
         rows={signoffMatters}

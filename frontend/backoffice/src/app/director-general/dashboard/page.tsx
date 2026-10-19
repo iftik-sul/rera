@@ -29,7 +29,7 @@ export default function Dashboard() {
         title="Oldest pending sign-offs"
         titleSize="md"
         action={
-          <Link href={href(directorGeneral, "sign-off-queue")} className="text-[13px] leading-5 font-medium text-blue-600 hover:underline">
+          <Link href={href(directorGeneral, "sign-off-queue")} className="type-body-strong text-link hover:underline">
             See All
           </Link>
         }

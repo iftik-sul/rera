@@ -34,14 +34,14 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
   const close = () => setStep(null);
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-n30 bg-white px-6 py-5">
+    <section className="flex flex-col gap-4 rounded-card border border-card bg-white px-6 py-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-medium text-n900">Override</h2>
+        <h2 className="type-section-title text-strong">Override</h2>
         <Badge tone="warning">Step-up required</Badge>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-lg border border-n40 p-4">
-        <h3 className="text-[13px] font-semibold text-n900">Recorded Decision</h3>
+      <div className="flex flex-col gap-2 rounded-control border border-control p-4">
+        <h3 className="type-group-title text-strong">Recorded decision</h3>
         <div className="flex gap-6">
           <Pair label="Outcome" value={<StatusBadge status={recorded.outcome} />} />
           <Pair label="Decided by" value={recorded.decidedBy} />
@@ -51,8 +51,8 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
         <Pair label="Reason recorded" value={recorded.reason} />
       </div>
 
-      <div className="flex flex-col gap-2 rounded-lg border border-n40 p-4">
-        <h3 className="text-[13px] font-semibold text-n900">Issued Output</h3>
+      <div className="flex flex-col gap-2 rounded-control border border-control p-4">
+        <h3 className="type-group-title text-strong">Issued output</h3>
         <div className="flex gap-6">
           {actions.issued.map((f) => (
             <Pair key={f.label} label={f.label} value={f.value} />
@@ -60,13 +60,13 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5 rounded-xl bg-warning-bg px-4 py-3">
-        <p className="text-[13px] font-semibold text-age-warning">{actions.bannerTitle}</p>
-        <p className="text-xs text-n900">{actions.banner}</p>
+      <div className="flex flex-col gap-1.5 rounded-card bg-warning-bg px-4 py-3">
+        <p className="type-group-title text-ageing">{actions.bannerTitle}</p>
+        <p className="type-caption text-strong">{actions.banner}</p>
       </div>
 
-      <div className="flex items-center gap-16 border-t border-n30 pt-4">
-        <p className="flex-1 text-xs text-n400">{actions.footnote}</p>
+      <div className="flex items-center gap-16 border-t border-card pt-4">
+        <p className="flex-1 type-caption text-muted">{actions.footnote}</p>
         <Button variant="primary" onClick={startOverturn}>
           Overturn decision
         </Button>
@@ -124,8 +124,8 @@ export function OverridePanel({ app, actions }: { app: Application; actions: Ove
 function Pair({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-n400">{label}</span>
-      <span className="text-[13px] text-n900">{value}</span>
+      <span className="type-caption text-muted">{label}</span>
+      <span className="type-body text-strong">{value}</span>
     </div>
   );
 }

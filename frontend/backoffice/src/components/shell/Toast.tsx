@@ -55,13 +55,13 @@ export function ToastHost() {
 
   if (!msg) return null;
   return (
-    <div role="status" className="fixed top-[94px] right-8 z-40 flex w-[380px] items-start gap-3 rounded-xl border border-n30 bg-white px-4 py-3 shadow-lg">
+    <div role="status" className="fixed top-24 right-8 z-40 flex w-toast items-start gap-3 rounded-card border border-card bg-white px-4 py-3 shadow-overlay">
       <Icon name="check-circle" size={20} className="mt-0.5 text-valid" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-[13px] font-semibold text-n900">{msg.title}</p>
-        <p className="text-xs text-n400">{msg.body}</p>
+        <p className="type-group-title text-strong">{msg.title}</p>
+        <p className="type-caption text-muted">{msg.body}</p>
       </div>
-      <button type="button" onClick={() => setMsg(null)} aria-label="Dismiss" className="cursor-pointer text-n400 hover:text-n900">
+      <button type="button" onClick={() => setMsg(null)} aria-label="Dismiss" className="cursor-pointer text-muted hover:text-strong">
         ×
       </button>
     </div>
