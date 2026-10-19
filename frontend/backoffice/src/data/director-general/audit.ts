@@ -35,7 +35,7 @@ const a = (id: string, timestamp: string, actor: string, actedAs: string, action
 
 const DG = "DG / Registrar";
 
-export const auditEntries: AuditEntry[] = [
+const entries: AuditEntry[] = [
   // Figma had TRX-2024-00891 here — an item that is still undecided. The overturn the other screens show is Kano Homes' licence.
   a("aud-0901", "11 Oct 2026, 09:42", "Adaeze Nwosu", DG, "Decision overturned", "Override", "Licensing", "LIC-2023-0044", "Licence issued on a forged incorporation certificate"),
   // Figma: "Credential issued CRED/LIC/26/0412" — but the register shows it issued in January.
@@ -43,7 +43,7 @@ export const auditEntries: AuditEntry[] = [
   a("aud-0898", "10 Oct 2026, 17:03", "Adaeze Nwosu", DG, "Role assigned", "Access", "Access", "b.adewale@rera.gov.ng", "State Liaison Coordinator"),
   // Figma: "Rejected" — the Work Queue shows TRX-2024-0858 as Returned.
   a("aud-0897", "10 Oct 2026, 14:20", "Chukwuemeka Obi", "C&E Auditor", "Returned for correction", "Decision", "Transaction", "TRX-2024-0858", "Title deed mismatch"),
-  a("aud-0896", "10 Oct 2026, 11:48", "Amaka Okeke", "Revenue & Finance", "Schedule published", "Config", "Finance", "FEE-2026-v4", "—"),
+  a("aud-0896", "30 Sep 2026, 11:48", "Amaka Okeke", "Revenue & Finance", "Schedule published", "Config", "Finance", "FEE-2026-v3", "Takes effect 1 Oct 2026"), // was v4 on 10 Oct, but Revenue shows v3 in force from 1 Oct
   a("aud-0895", "10 Oct 2026, 09:05", "Adaeze Nwosu", DG, "Account suspended", "Access", "Access", "s.okon@rera.gov.ng", "Pending investigation"),
   // Figma: Funke Adeyemi on 09 Oct — the Entry Detail records the DG cancelling it on 11 Oct, after the overturn above.
   a("aud-0902", "11 Oct 2026, 09:44", "Adaeze Nwosu", DG, "Credential cancelled", "Override", "Licensing", "CRED/LIC/23/0044", "Overturn — OVR/2026/0044"),
@@ -65,6 +65,10 @@ export const auditEntries: AuditEntry[] = [
   a("aud-0868", "03 Oct 2026, 16:40", "Amaka Okeke", "Revenue & Finance", "Period marked Filed", "Config", "Finance", "Sep 2026", "VAT return submitted to FIRS"),
   a("aud-0865", "02 Oct 2026, 10:15", "Adaeze Nwosu", DG, "Account suspended", "Access", "Access", "t.bankole@rera.gov.ng", "Repeated failed sign-in"),
 ];
+
+/** Newest first, by timestamp — the trail reads in time order whatever order the samples were written in (2026-10-19 review). */
+const at = (t: string) => Date.parse(t.replace(",", ""));
+export const auditEntries: AuditEntry[] = [...entries].sort((x, y) => at(y.timestamp) - at(x.timestamp));
 
 // Newest first.
 const key = (t: string) => new Date(t.replace(",", "") + " UTC").getTime();

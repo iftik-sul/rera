@@ -7,12 +7,6 @@
 import type { Status } from "@/components/ui/Badge";
 import { daysAgo } from "@/data/sample-date";
 
-export const registerKpis = [
-  { label: "Active credentials", value: "1,284", caption: "Across all categories" },
-  { label: "Suspended", value: "7", caption: "Under review" },
-  { label: "Expiring in 30 days", value: "23", caption: "Renewal due" },
-  { label: "Cancelled (YTD)", value: "11", caption: "This year" },
-];
 
 const ACTIVE: Status = { label: "Active", tone: "success" };
 const SUSPENDED: Status = { label: "Suspended", tone: "error" };
@@ -35,8 +29,19 @@ export type RegisterEntry = {
 /** Page id for an entry's detail. */
 export const entryId = (credentialNo: string) => credentialNo.toLowerCase().replace(/\//g, "-");
 
+/**
+ * A credential still marked Active past its valid-to date is Expired — the status follows the
+ * date, so the Status and Expiry filters can't disagree (2026-10-19 review: Eko Realty's
+ * licence read Active although it lapsed on 01 Apr 2026).
+ */
 const e = (credentialNo: string, holder: string, practitionerType: string, status: Status, issued: string, validTo: string): RegisterEntry => ({
-  credentialNo, holder, practitionerType, status, issued, validTo, detail: entryId(credentialNo),
+  credentialNo,
+  holder,
+  practitionerType,
+  status: status === ACTIVE && validTo !== "—" && daysAgo(validTo) > 0 ? EXPIRED : status,
+  issued,
+  validTo,
+  detail: entryId(credentialNo),
 });
 
 export const registerEntries: RegisterEntry[] = [
@@ -96,7 +101,7 @@ export type EntryDetail = {
   meta: [{ label: string; value: string }, { label: string; value: string }];
   groups: { title: string; fields: { label: string; value: string }[] }[];
   history: { date: string; event: string; by: string; type: Status; reference: string }[];
-  withdrawal?: { cause: string; authorisedBy: string; date: string; decisionRef: string };
+  withdrawal?: { cause: string; authorisedBy: string; date: string; decisionRef: string; /** When the DG authorised it, if earlier than the withdrawal itself. */ authorisedOn?: string };
   footer: string;
 };
 
@@ -157,8 +162,8 @@ const KIND: Record<string, { type: string; category: string; short: string }> = 
 };
 
 /** Sign-off matters that changed an entry (kept here so the register and the Sign-off Queue agree). */
-const SIGNED_OFF: Record<string, { cause: string; date: string; ref: string }> = {
-  "CRED/LIC/22/0019": { cause: "Revocation", date: "10 Oct 2026", ref: "RRA/SO/2026/0231" }, // authorised 09 Oct (audit aud-0893), executed by Licensing next day
+const SIGNED_OFF: Record<string, { cause: string; date: string; ref: string; authorisedOn?: string }> = {
+  "CRED/LIC/22/0019": { cause: "Revocation", date: "10 Oct 2026", ref: "RRA/SO/2026/0231", authorisedOn: "09 Oct 2026" }, // authorised 09 Oct (audit aud-0893), executed by Licensing next day
 };
 
 const SUSPENSIONS: Record<string, { date: string; ref: string }> = {
@@ -208,7 +213,7 @@ function buildEntry(r: RegisterEntry): EntryDetail {
     const so = SIGNED_OFF[r.credentialNo];
     history.push({ date: so.date, event: `Cancelled — cause: ${so.cause}`, by: OFFICER, type: CANCELLED, reference: so.ref });
     validity.push({ label: "Cancelled on", value: so.date });
-    withdrawal = { cause: so.cause, authorisedBy: "Director-General / Registrar", date: so.date, decisionRef: so.ref };
+    withdrawal = { cause: so.cause, authorisedBy: "Director-General / Registrar", date: so.date, decisionRef: so.ref, authorisedOn: so.authorisedOn };
     footer = "This credential is cancelled and can no longer be amended. Register entries change only through a licensing decision.";
   } else {
     validity.push({ label: "Valid to", value: r.validTo });
@@ -260,3 +265,11 @@ const featuredIds = new Set(featuredEntries.map((d) => d.id));
 export const entryDetails: EntryDetail[] = [...featuredEntries, ...registerEntries.filter((r) => !featuredIds.has(entryId(r.credentialNo))).map(buildEntry)];
 
 export const findEntry = (id: string) => entryDetails.find((d) => d.id === id);
+
+/** Register cards, counted from the entries (were hand-typed 1,284 / 7 / 23 / 11 — 2026-10-19 review). */
+export const registerKpis = [
+  { label: "Active credentials", value: String(registerEntries.filter((r) => r.status.label === "Active").length), caption: "Across all categories" },
+  { label: "Suspended", value: String(registerEntries.filter((r) => r.status.label === "Suspended").length), caption: "Under enforcement review" },
+  { label: "Expiring in 30 days", value: String(registerEntries.filter((r) => r.status.label === "Active" && expiryState(r.validTo) === "Expires within 30 days").length), caption: "Renewal due" },
+  { label: "Cancelled", value: String(registerEntries.filter((r) => r.status.label === "Cancelled").length), caption: "Withdrawn from the register" },
+];

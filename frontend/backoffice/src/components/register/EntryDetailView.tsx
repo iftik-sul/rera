@@ -42,7 +42,9 @@ export function EntryDetailView({ entry }: { entry: EntryDetail }) {
             {[
               ["Cause", entry.withdrawal.cause],
               ["Authorised by", entry.withdrawal.authorisedBy],
-              ["Date", entry.withdrawal.date],
+              // Authorised and carried out can be different days (Crestview: authorised 09 Oct, withdrawn 10 Oct).
+              ...(entry.withdrawal.authorisedOn ? [["Authorised on", entry.withdrawal.authorisedOn]] : []),
+              [entry.withdrawal.authorisedOn ? "Withdrawn on" : "Date", entry.withdrawal.date],
               ["Decision ref.", entry.withdrawal.decisionRef],
             ].map(([label, value]) => (
               <div key={label} className="flex items-center justify-between gap-2 type-body">

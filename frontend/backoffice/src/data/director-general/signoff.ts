@@ -115,7 +115,7 @@ export function withSignoffChanges(matters: SignoffMatter[], changes: Record<str
 /** Decided in the sample month — the KPI cards count the same rows the Completed side lists. */
 const thisMonth = (s: SignoffMatter) => / Oct 2026$/.test(signoffDecided(s));
 const isPending = (s: SignoffMatter) => s.status.label === PENDING.label;
-const byAge = (a: SignoffMatter, b: SignoffMatter) => daysAgo(b.escalated) - daysAgo(a.escalated);
+export const byAge = (a: SignoffMatter, b: SignoffMatter) => daysAgo(b.escalated) - daysAgo(a.escalated);
 
 /** Sign-off Queue cards, counted from the matters on screen (sample data + this session's decisions). */
 export function signoffKpisFor(matters: SignoffMatter[]) {

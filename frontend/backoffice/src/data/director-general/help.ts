@@ -64,5 +64,5 @@ export const systemInfo = [
   { label: "Application", value: "RERAN Back-Office" },
   { label: "Version", value: "1.0.0" },
   { label: "Environment", value: "Staging" },
-  { label: "Last updated", value: "19 October 2026" },
+  { label: "Last updated", value: "11 Oct 2026" },
 ];

@@ -25,7 +25,7 @@ import {
 import { AdminBlockerModal } from "./AdminBlockerModal";
 import { RoleScopeFields } from "./RoleScopeFields";
 
-type Step = "role" | "mfa" | "suspend" | "reactivate" | "deactivate" | "stepup" | null;
+type Step = "role" | "mfa" | "unlock" | "suspend" | "reactivate" | "deactivate" | "stepup" | null;
 
 const list = (items: string[]) => (items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`);
 
@@ -41,7 +41,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
   // so the Admin Console list, the Dashboard and the Audit Trail all see them.
   const demo = useDemo();
   const current = applyStaff(member, demo.staff[member.id]);
-  const { roles, scope, status, mfa } = current;
+  const { roles, scope, status, mfa, lockedOut, mfaRequest } = current;
   const [step, setStep] = useState<Step>(null);
   const [blocked, setBlocked] = useState<"category" | "separation" | null>(null);
   // Draft values inside the pop-ups
@@ -98,6 +98,12 @@ export function AccountEditor({ member }: { member: StaffMember }) {
 
       {member.self && <Notice>This is your own account. Your role and account status can&apos;t be changed from your own session.</Notice>}
       {closed && <Notice>This account is deactivated. Deactivation is permanent — nothing on it can be changed.</Notice>}
+      {!locked && lockedOut && (
+        <Notice>
+          Sign-in locked on {lockedOut} after repeated failed attempts. The account is still {status} — only sign-in is blocked until you unlock it.
+        </Notice>
+      )}
+      {!locked && mfaRequest && <Notice>{first} asked for an MFA reset on {mfaRequest}. Reset MFA below to send a new enrolment link.</Notice>}
 
       <Section title="Role" rows={[["Assigned role", list(roles)]]}>
         {!locked && <Button onClick={() => open("role")}>Change role</Button>}
@@ -119,7 +125,13 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         </Section>
       )}
 
-      <Section title="Multi-factor authentication" rows={[["Status", mfa]]}>
+      {!locked && lockedOut && (
+        <Section title="Sign-in" rows={[["Status", `Locked out since ${lockedOut}`]]}>
+          <Button variant="primary" onClick={() => open("unlock")}>Unlock sign-in</Button>
+        </Section>
+      )}
+
+      <Section title="Multi-factor authentication" rows={[["Status", mfaRequest ? `${mfa} · reset requested` : mfa]]}>
         {!locked && <Button onClick={() => open("mfa")}>{mfa === "Enrolled" ? "Reset MFA" : "Resend enrolment link"}</Button>}
       </Section>
 
@@ -174,7 +186,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
             <Button
               variant="primary"
               onClick={() => {
-                recordStaff(member.id, { mfa: "Not enrolled" }, { action: mfa === "Enrolled" ? "MFA reset" : "Enrolment link resent", type: "Access", subsystem: "Access", subject: member.email, reason: "—" });
+                recordStaff(member.id, { mfa: "Not enrolled", ...(mfaRequest ? { mfaRequest: null } : {}) }, { action: mfa === "Enrolled" ? "MFA reset" : "Enrolment link resent", type: "Access", subsystem: "Access", subject: member.email, reason: "—" });
                 close();
                 showToast({ title: mfa === "Enrolled" ? "MFA reset" : "Enrolment link sent", body: `${member.name} has been sent a new enrolment link.` });
               }}
@@ -185,6 +197,32 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         }
       >
         <Notice>Only the MFA factor is reset — roles and category scope are unchanged.</Notice>
+      </Modal>
+
+      {/* M-ADM-08 — Unlock sign-in. Proposed (open-questions A16); not yet drawn in Figma. */}
+      <Modal
+        open={step === "unlock"}
+        onClose={close}
+        width={480}
+        title="Unlock sign-in?"
+        description={<p>{member.name} can sign in again straight away. Role, category scope and MFA are unchanged.</p>}
+        actions={
+          <>
+            <Button onClick={close}>Cancel</Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                recordStaff(member.id, { lockedOut: null }, { action: "Sign-in unlocked", type: "Access", subsystem: "Access", subject: member.email, reason: "—" });
+                close();
+                showToast({ title: "Sign-in unlocked", body: `${first} can sign in again. Recorded in the audit trail.` });
+              }}
+            >
+              Unlock sign-in
+            </Button>
+          </>
+        }
+      >
+        <Notice>If you don&apos;t recognise the failed attempts, suspend the account instead and reset MFA.</Notice>
       </Modal>
 
       {/* M-ADM-05 — Suspend (destructive, tick box) */}
