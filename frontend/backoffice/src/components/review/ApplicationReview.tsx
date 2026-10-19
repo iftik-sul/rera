@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Page } from "@/components/shell/Page";
 import { useRole } from "@/components/shell/RoleContext";
 import { Icon } from "@/components/shell/Icon";
@@ -12,6 +13,7 @@ import type { Application, Doc } from "@/data/director-general/applications";
 import { DecisionPanel } from "./DecisionPanel";
 import { OverridePanel } from "./OverridePanel";
 import { ClaimStrip, DraftNote } from "./Claim";
+import { DocumentViewer, type DocMark } from "./DocumentViewer";
 
 /**
  * Application Review (Figma "Application Review — …").
@@ -67,7 +69,7 @@ export function ApplicationReview({ app }: { app: Application }) {
               <FieldGroup key={g.title} title={g.title} fields={g.fields} />
             ))}
           </Card>
-          <Documents docs={app.documents} />
+          <Documents app={app} />
         </div>
 
         <div className="flex w-panel shrink-0 flex-col gap-4">
@@ -137,16 +139,51 @@ function Pairs({ fields }: { fields: { label: string; value: string }[] }) {
   );
 }
 
-/** Supporting Documents table. "Review" opens a document viewer that isn't designed for the DG yet. */
+/**
+ * Supporting Documents table. "Review" opens the document viewer (KB application-review.md §3).
+ * Seen / flagged marks are the officer's own, kept with the claim, so only an item the DG holds
+ * and can decide offers them; a read-only review opens the viewer to read only.
+ */
 // Widths are % of the row (design standard §A5a.0 rule 5). Row count = the documents the service requires (rule 7 exception).
-const docColumns: Column<Doc>[] = [
-  { header: "Document", width: 44, cell: (d) => <span className="type-group-title">{d.name}</span> },
-  { header: "Type", width: 11, tone: "muted", cell: (d) => d.type },
-  { header: "Uploaded", width: 14, tone: "muted", cell: (d) => d.uploaded },
-  { header: "Status", width: 17, cell: (d) => <StatusBadge status={d.status} /> },
-  { header: "Action", width: 14, cell: () => <Button variant="link">Review</Button> },
-];
-
-function Documents({ docs }: { docs: Doc[] }) {
-  return <TableCard title="Supporting documents" titleSize="md" columns={docColumns} rows={docs} rowKey={(d) => d.name} />;
+function Documents({ app }: { app: Application }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const [marks, setMarks] = useState<Record<string, DocMark>>({});
+  const canMark = !!app.decide && app.claim?.mine !== false;
+  const docs = app.documents;
+  const columns: Column<Doc>[] = [
+    { header: "Document", width: 44, cell: (d) => <span className="type-group-title">{d.name}</span> },
+    { header: "Type", width: 11, tone: "muted", cell: (d) => d.type },
+    { header: "Uploaded", width: 14, tone: "muted", cell: (d) => d.uploaded },
+    { header: "Status", width: 17, cell: (d) => <StatusBadge status={d.status} /> },
+    {
+      header: "Action",
+      width: 14,
+      cell: (d) => (
+        <span className="flex items-center gap-2">
+          <Button variant="link" onClick={() => setOpen(docs.indexOf(d))}>
+            Review
+          </Button>
+          {marks[d.name] && (
+            <span className={`type-caption ${marks[d.name].kind === "seen" ? "text-valid" : "text-ageing"}`}>{marks[d.name].kind === "seen" ? "Seen" : "Flagged"}</span>
+          )}
+        </span>
+      ),
+    },
+  ];
+  return (
+    <>
+      <TableCard title="Supporting documents" titleSize="md" columns={columns} rows={docs} rowKey={(d) => d.name} />
+      <DocumentViewer
+        docs={docs}
+        index={open}
+        onIndex={setOpen}
+        onClose={() => setOpen(null)}
+        marks={marks}
+        onMark={(name, m) => setMarks((x) => ({ ...x, [name]: m }))}
+        canMark={canMark}
+        reference={app.title.split(" — ")[0]}
+        applicant={app.subtitle.startsWith("Stage") || app.subtitle.startsWith("Decided") ? app.metaSubtitle.split(" · ")[0] : app.subtitle}
+      />
+    </>
+  );
 }

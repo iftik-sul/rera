@@ -34,15 +34,17 @@ const filters: FilterDef<LicensingRow>[] = [
 
 export default function LicensingQueue() {
   const role = useRole();
+  const [exportCount, setExportCount] = useState(0);
   const [held, setHeld] = useState<LicensingRow | null>(null);
   return (
-    <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={licensingKpis}>
+    <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={licensingKpis} exportCount={exportCount}>
       <TableCard
         title="Applications awaiting final sign-off"
         filters={filters}
         columns={columns}
         rows={licensingRows}
         rowKey={(r) => r.reference}
+        onMatchedChange={(rs) => setExportCount(rs.length)}
         rowAction={(r) => (heldByOther(r) ? { onClick: () => setHeld(r) } : rowAction(role, r.opens))}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.service} ${r.claimedBy ?? ""}`}
         paginate={{ one: "application", many: "applications" }}

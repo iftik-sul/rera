@@ -3,7 +3,7 @@
 import { Page } from "@/components/shell/Page";
 import { directorGeneral, href } from "@/config/roles";
 import { StatusBadge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { ExportMenu } from "@/components/ui/ExportMenu";
 import { Breadcrumb, Card, DetailHeader, FieldGroup } from "@/components/ui/Cards";
 import { TableCard, type Column } from "@/components/ui/Table";
 import type { EntryDetail } from "@/data/director-general/register";
@@ -57,8 +57,12 @@ export function EntryDetailView({ entry }: { entry: EntryDetail }) {
       {/* Closing panel — at the end of the content, never pinned. */}
       <div className="flex items-center gap-6 rounded-card border border-control bg-white px-6 py-4">
         <p className="flex-1 type-caption text-muted">{entry.footer}</p>
-        {/* Export isn't designed beyond the button yet. */}
-        <Button>Export record</Button>
+        <ExportMenu
+          label="Export record"
+          formats={["PDF"]}
+          title="Record exported"
+          message={() => `${entry.title.split(" — ")[0]} and its history, as a PDF register extract. Recorded in the audit trail.`}
+        />
       </div>
     </Page>
   );

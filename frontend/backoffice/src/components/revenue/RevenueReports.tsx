@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Page } from "@/components/shell/Page";
-import { showToast } from "@/components/shell/Toast";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ExportMenu } from "@/components/ui/ExportMenu";
 import { Banner } from "@/components/ui/Cards";
-import { PopoverItem, PopoverList, usePopover } from "@/components/ui/Popover";
 import { Select } from "@/components/ui/Select";
 import { Tabs } from "@/components/ui/Tabs";
 import { FilterDropdown } from "@/components/ui/Filters";
@@ -116,7 +115,7 @@ export function RevenueReports() {
             </Badge>
           )}
           <span className="flex-1" />
-          <ExportMenu />
+          <ExportMenu title="Report exported" message={(kind) => `The ${kind === "PDF" ? "PDF" : "spreadsheet"} is recorded in the audit trail.`} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="pr-1 type-caption text-muted">Segment by</span>
@@ -199,31 +198,6 @@ function PeriodPicker({ period, onChange }: { period: Period; onChange: (id: str
 }
 
 /** Export menu (PDF · Spreadsheet). DEMO: no file is produced; the real export is written to the audit trail. */
-function ExportMenu() {
-  const p = usePopover();
-  const pick = (kind: string) => {
-    p.close();
-    showToast({ title: "Report exported", body: `The ${kind} is recorded in the audit trail.` });
-  };
-  return (
-    <div ref={p.ref} className="relative">
-      <Button aria-haspopup="menu" aria-expanded={p.open} onClick={p.toggle}>
-        Export
-      </Button>
-      {p.open && (
-        <PopoverList role="menu" align="right">
-          <PopoverItem role="menuitem" tick={false} onClick={() => pick("PDF")}>
-            PDF
-          </PopoverItem>
-          <PopoverItem role="menuitem" tick={false} onClick={() => pick("spreadsheet")}>
-            Spreadsheet
-          </PopoverItem>
-        </PopoverList>
-      )}
-    </div>
-  );
-}
-
 // ── Tabs ──
 
 type ServiceRow = { service: string; module: string; ls: Line[] };

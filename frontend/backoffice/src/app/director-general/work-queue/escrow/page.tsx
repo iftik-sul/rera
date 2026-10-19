@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRole } from "@/components/shell/RoleContext";
 import { StatusBadge } from "@/components/ui/Badge";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
@@ -26,14 +27,16 @@ const filters: FilterDef<EscrowRow>[] = [
 
 export default function EscrowQueue() {
   const role = useRole();
+  const [exportCount, setExportCount] = useState(0);
   return (
-    <WorkQueueFrame title="Work Queue — Escrow" subtitle="Review escrow and trust account requests." kpis={escrowKpis}>
+    <WorkQueueFrame title="Work Queue — Escrow" subtitle="Review escrow and trust account requests." kpis={escrowKpis} exportCount={exportCount}>
       <TableCard
         title="All applications"
         filters={filters}
         columns={columns}
         rows={escrowRows}
         rowKey={(r) => r.reference}
+        onMatchedChange={(rs) => setExportCount(rs.length)}
         rowAction={(r) => rowAction(role, r.opens)}
         searchText={(r) => `${r.reference} ${r.applicant} ${r.subject}`}
         paginate={{ one: "application", many: "applications" }}

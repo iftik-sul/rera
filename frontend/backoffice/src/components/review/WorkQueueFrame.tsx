@@ -3,13 +3,29 @@
 import { Page } from "@/components/shell/Page";
 import { useRole } from "@/components/shell/RoleContext";
 import { href } from "@/config/roles";
-import { Button } from "@/components/ui/Button";
+import { ExportMenu } from "@/components/ui/ExportMenu";
 import { KpiCard, KpiRow } from "@/components/ui/KpiCard";
 import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import type { Kpi } from "@/data/director-general/work-queue";
 
-/** Everything the three Work Queue tabs share: top bar, tab switcher + Export, KPI row. */
-export function WorkQueueFrame({ title, subtitle, kpis, children }: { title: string; subtitle: string; kpis: Kpi[]; children: React.ReactNode }) {
+/**
+ * Everything the three Work Queue tabs share: top bar, tab switcher + Export, KPI row.
+ * Export covers the queue as currently filtered and searched, every page (KB work-queue.md, Layout).
+ */
+export function WorkQueueFrame({
+  title,
+  subtitle,
+  kpis,
+  exportCount,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  kpis: Kpi[];
+  /** How many items the queue holds as currently filtered — what Export covers. */
+  exportCount: number;
+  children: React.ReactNode;
+}) {
   const role = useRole();
   return (
     <Page title={title} subtitle={subtitle} bodyClassName="gap-6 p-8">
@@ -22,8 +38,12 @@ export function WorkQueueFrame({ title, subtitle, kpis, children }: { title: str
           ]}
         />
         <span className="flex-1" />
-        {/* Export isn't designed beyond the button yet. */}
-        <Button variant="secondary">Export</Button>
+        <ExportMenu
+          title="Queue exported"
+          message={(kind) =>
+            `${exportCount} ${exportCount === 1 ? "item" : "items"} — the queue as filtered, every page — as a ${kind === "PDF" ? "PDF" : "spreadsheet"}. Recorded in the audit trail.`
+          }
+        />
       </div>
       <KpiRow>
         {kpis.map((k) => (
