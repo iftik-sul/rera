@@ -57,6 +57,9 @@ export const auditEntries: AuditEntry[] = [
   a("aud-0881", "07 Oct 2026, 10:47", "Amaka Okeke", "Revenue & Finance", "Manual payment recorded", "Config", "Finance", "PAY-2026-01187", "Cash at the Lagos office"),
   a("aud-0879", "06 Oct 2026, 14:18", "Adaeze Nwosu", DG, "Account deactivated", "Access", "Access", "f.adebayo@rera.gov.ng", "Left the authority"),
   a("aud-0877", "05 Oct 2026, 16:20", "Funke Adeyemi", "Licensing Officer", "Escalated for sign-off", "Decision", "Licensing", "RRA/SO/2026/0218", "Licence lapsed; renewal window closed"),
+  // Batch 6: the overturn behind TRX-2024-0878's two badges (Approved → Rejected, mortgage certificate revoked).
+  a("aud-0875", "05 Oct 2026, 15:48", "Adaeze Nwosu", DG, "Decision overturned", "Override", "Transaction", "TRX-2024-0878", "Mortgage registered against a title the lender does not hold"),
+  a("aud-0876", "05 Oct 2026, 15:50", "Adaeze Nwosu", DG, "Output revoked", "Override", "Transaction", "RERA/MC/2026/04712", "Overturn — OVR/2026/0878"),
   a("aud-0874", "05 Oct 2026, 15:31", "Adaeze Nwosu", DG, "Role assigned", "Access", "Access", "g.etim@rera.gov.ng", "Licensing Reviewer — Individual Practitioner Credentials"),
   a("aud-0861", "02 Oct 2026, 11:42", "Chukwuemeka Obi", "C&E Auditor", "Approved", "Decision", "Transaction", "TRX-2024-0887", "Registry checks clear; title deed issued"), // matches the recorded decision on its Application Review
   a("aud-0868", "03 Oct 2026, 16:40", "Amaka Okeke", "Revenue & Finance", "Period marked Filed", "Config", "Finance", "Sep 2026", "VAT return submitted to FIRS"),

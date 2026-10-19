@@ -108,3 +108,46 @@ export function Checkbox({ checked, onChange, children }: { checked: boolean; on
     </label>
   );
 }
+
+/**
+ * Choose one of a few options, each with a line of explanation (e.g. which stage an item
+ * returns to). Shown as bordered rows; the chosen row takes the action outline.
+ */
+export function RadioGroup<T extends string>({
+  name,
+  value,
+  onChange,
+  options,
+}: {
+  name: string;
+  value: T | null;
+  onChange: (v: T) => void;
+  options: { value: T; label: string; hint?: string }[];
+}) {
+  return (
+    <div role="radiogroup" className="flex flex-col gap-2">
+      {options.map((o) => {
+        const chosen = value === o.value;
+        return (
+          <label
+            key={o.value}
+            className={`flex cursor-pointer items-start gap-2.5 rounded-control border px-4 py-3 ${chosen ? "border-action" : "border-control"}`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              checked={chosen}
+              onChange={() => onChange(o.value)}
+              className="mt-0.5 size-4 shrink-0 cursor-pointer accent-action focus-ring"
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="type-body-strong text-strong">{o.label}</span>
+              {o.hint && <span className="type-caption text-muted">{o.hint}</span>}
+            </span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}

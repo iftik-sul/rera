@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRole } from "@/components/shell/RoleContext";
 import { StatusBadge } from "@/components/ui/Badge";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { WorkQueueFrame } from "@/components/review/WorkQueueFrame";
-import { BlockerModal } from "@/components/review/BlockerModal";
 import { AgeText } from "@/components/review/cells";
 import { rowAction } from "@/components/review/rowAction";
-import { AGE_ORDER, STATUS_ORDER, ageState, statusFilterValue, transactionKpis, transactionRows, type BlockerId, type TransactionRow } from "@/data/director-general/work-queue";
+import { AGE_ORDER, STATUS_ORDER, ageState, statusFilterValue, transactionKpis, transactionRows, type TransactionRow } from "@/data/director-general/work-queue";
 
 // Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<TransactionRow>[] = [
@@ -29,7 +27,6 @@ const filters: FilterDef<TransactionRow>[] = [
 
 export default function TransactionQueue() {
   const role = useRole();
-  const [blocker, setBlocker] = useState<BlockerId | null>(null);
   return (
     <WorkQueueFrame title="Work Queue — Transaction" subtitle="Review and decide submitted applications." kpis={transactionKpis}>
       <TableCard
@@ -38,11 +35,10 @@ export default function TransactionQueue() {
         columns={columns}
         rows={transactionRows}
         rowKey={(r) => r.reference}
-        rowAction={(r) => rowAction(role, r.opens, setBlocker)}
+        rowAction={(r) => rowAction(role, r.opens)}
         searchText={(r) => `${r.reference} ${r.service} ${r.applicant} ${r.subject}`}
         paginate={{ one: "application", many: "applications" }}
       />
-      <BlockerModal id={blocker} onClose={() => setBlocker(null)} />
     </WorkQueueFrame>
   );
 }

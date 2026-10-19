@@ -9,6 +9,10 @@
  *   Approved / Rejected                     → Override panel (§6c)
  *   Licensing, claimed by another officer   → read-only (claim-on-open, §5b)
  *   Escrow, trustee assessment not received → Approve / Reject explain M-BLK-02 instead of acting
+ *   Overturned                              → read-only: final, no undo and no second overturn (§6c)
+ *
+ * Every item the DG can decide opens claimed to the DG ("Claimed by you"), with Release item —
+ * the same claim-on-open the role-holders get (application-review.md, Role Variations).
  *
  * Wording follows the hand-drawn reviews; only the facts change.
  */
@@ -30,6 +34,7 @@ import { freeCredential, registerEntries } from "./register";
 import {
   escrowRows,
   licensingRows,
+  claimSince,
   reviewId,
   transactionRows,
   type Age,
@@ -68,7 +73,20 @@ const ageDays = (a: Age) => parseInt(a.text.replace(/\D/g, ""), 10) || 1;
 const UR: Status = { label: "Under Review", tone: "info" };
 const APPROVED: Status = { label: "Approved", tone: "success" };
 const REJECTED: Status = { label: "Rejected", tone: "error" };
-const isDecided = (s: Status) => s.label === "Approved" || s.label === "Rejected";
+const isDecided = (s: Status) => !s.overturned && (s.label === "Approved" || s.label === "Rejected");
+const MY_CLAIM = { held: "Claimed by you", detail: "· since you opened it · lapses after 30 minutes of inactivity", mine: true };
+
+/** Overturns already on record (kept in step with the Audit Trail, aud-0875 / aud-0876). */
+const OVERTURNS: Record<string, { on: string; original: string; by: string; decidedOn: string; revoked: string; reason: string }> = {
+  "TRX-2024-0878": {
+    on: "5 Oct 2026",
+    original: "Approved",
+    by: "Chukwuemeka Obi (Compliance & Escrow Auditor)",
+    decidedOn: "2 Oct 2026",
+    revoked: "e-Certificate of Mortgage Registration RERA/MC/2026/04712",
+    reason: "Mortgage registered against a title the lender does not hold",
+  },
+};
 const slaState = (a: Age) => (a.tone === "breach" ? "Breaching SLA" : a.tone === "warning" ? "Ageing" : "Within SLA");
 
 const AUDITORS = ["Chukwuemeka Obi", "Bola Ogunleye"];
@@ -264,7 +282,9 @@ function transactionReview(row: TransactionRow, i: number): Application {
   const n = seed(ref);
   const output = trxOutput(row.service);
   const days = ageDays(row.age);
-  const submitted = before(days);
+  // Decided rows count "Decided day N" from submission, so submission is N days before the decision.
+  const trxDecidedAgo = row.status.overturned ? 9 : Math.max(1, 14 - (i % 5));
+  const submitted = before(isDecided(row.status) || row.status.overturned ? trxDecidedAgo + days : days);
   const { project, unit } = splitSubject(row.subject);
   const price = (90 + (n % 41) * 11) * 1_000_000;
   const decided = isDecided(row.status);
@@ -302,8 +322,16 @@ function transactionReview(row: TransactionRow, i: number): Application {
     checks: grandeurChecks,
   };
 
-  if (decided) {
-    const decidedOn = before(Math.max(1, 14 - (i % 5)));
+  const overturn = OVERTURNS[ref];
+  if (row.status.overturned && overturn) {
+    app.meta[1] = { label: "SLA", value: `Met — ${row.age.text.toLowerCase()}` };
+    app.held = {
+      tone: "neutral",
+      title: `Overturned by Adaeze Nwosu on ${overturn.on} — this is final`,
+      body: `${overturn.original} by ${overturn.by} on ${overturn.decidedOn}, replaced by ${row.status.label}. Reason: “${overturn.reason}”. ${overturn.revoked} was revoked. Both decisions stay on record. There is no undo and no second overturn — if ${who} disputes the outcome, they submit a fresh application.`,
+    };
+  } else if (decided) {
+    const decidedOn = before(trxDecidedAgo);
     app.override = overrideActions({
       ref, title, who, output, outcome: row.status,
       decidedBy: AUDITORS[i % 2], role: "Compliance & Escrow Auditor", decidedOn,
@@ -322,6 +350,7 @@ function transactionReview(row: TransactionRow, i: number): Application {
       reEntry: "comes back to your queue",
       rejectRule: "State the registry rule or check the application fails, in terms the applicant can act on.",
     });
+    app.claim = MY_CLAIM;
   }
   return app;
 }
@@ -346,7 +375,8 @@ function escrowReview(row: EscrowRow, i: number): Application {
   const output = escrowOutput(op);
   const developer = DEVELOPERS[n % DEVELOPERS.length];
   const days = ageDays(row.age);
-  const submitted = before(days);
+  const escDecidedAgo = 10 + (i % 4);
+  const submitted = before(isDecided(row.status) ? escDecidedAgo + days : days);
   const received = row.escrowFlag.label === "Received";
   const releasing = /Release/.test(op);
   const amount = (25 + (n % 23) * 7) * 1_000_000;
@@ -354,7 +384,7 @@ function escrowReview(row: EscrowRow, i: number): Application {
   const decided = isDecided(row.status);
   const title = `${ref} — ${op}`;
   const accountNo = `ESC-${2026}-${String(400 + (n % 500)).padStart(4, "0")}`;
-  const assessed = before(Math.max(1, days - 1));
+  const assessed = new Date(Math.min(submitted.getTime() + 86_400_000, before(0).getTime()));
 
   const app: Application = {
     id: reviewId(ref),
@@ -425,7 +455,7 @@ function escrowReview(row: EscrowRow, i: number): Application {
         { label: "Account", value: accountNo },
         { label: "Held at", value: who },
         { label: "Balance", value: naira(balance) },
-        { label: "Last movement", value: `${dayMonYear(before(days + 6))} · deposit` },
+        { label: "Last movement", value: `${dayMonYear(new Date(submitted.getTime() - 6 * 86_400_000))} · deposit` },
         { label: "Account status", value: /Closure/.test(op) && decided && row.status.label === "Approved" ? "Closed" : "Active" },
       ],
     },
@@ -434,7 +464,7 @@ function escrowReview(row: EscrowRow, i: number): Application {
   if (decided) {
     app.override = overrideActions({
       ref, title, who, output, outcome: row.status,
-      decidedBy: AUDITORS[(i + 1) % 2], role: "Compliance & Escrow Auditor", decidedOn: before(10 + (i % 4)),
+      decidedBy: AUDITORS[(i + 1) % 2], role: "Compliance & Escrow Auditor", decidedOn: before(escDecidedAgo),
       reason:
         row.status.label === "Approved"
           ? "Trustee assessment recommends approval; account movements reconcile to the statement and both signatories were verified. Approved."
@@ -450,6 +480,7 @@ function escrowReview(row: EscrowRow, i: number): Application {
       reEntry: "comes back to your queue",
       rejectRule: "State the escrow check the request fails, in terms the trustee can act on.",
     });
+    app.claim = MY_CLAIM;
     if (!received) {
       // M-BLK-02 (modals.md §8): explain, don't silently disable.
       app.decideBlock = {
@@ -671,8 +702,8 @@ function licensingReview(row: LicensingRow, i: number): Application {
     claim: decided
       ? undefined
       : claimedByOther
-        ? { held: `Claimed by ${row.claimedBy}`, detail: "· Licensing & Registration Officer · read-only for you", mine: false }
-        : { held: "Claimed by you", detail: "· since you opened it · lapses after 30 minutes of inactivity", mine: true },
+        ? { held: `Claimed by ${row.claimedBy}`, detail: `· since ${claimSince(row)} · read-only for you`, mine: false }
+        : MY_CLAIM,
     chain: {
       stages,
       path: decided

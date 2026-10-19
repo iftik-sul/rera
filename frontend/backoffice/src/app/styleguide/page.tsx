@@ -6,7 +6,9 @@ import { Badge, StatusBadge, type BadgeTone } from "@/components/ui/Badge";
 import { Button, ButtonLink, type ButtonSize, type ButtonVariant } from "@/components/ui/Button";
 import { Banner, Card, DetailHeader, FieldGroup, Notice } from "@/components/ui/Cards";
 import { FilterDropdown, SearchBox } from "@/components/ui/Filters";
-import { Checkbox, CodeInput, Field, TextArea, TextInput } from "@/components/ui/Form";
+import { Checkbox, CodeInput, Field, RadioGroup, TextArea, TextInput } from "@/components/ui/Form";
+import { BlockerModal } from "@/components/review/BlockerModal";
+import type { BlockerId } from "@/data/director-general/blockers";
 import { KpiCard, KpiRow } from "@/components/ui/KpiCard";
 import { Acknowledge, HelpBox, Modal, ReasonField } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
@@ -118,6 +120,8 @@ export default function StyleGuide() {
   const [text, setText] = useState("");
   const [code, setCode] = useState("");
   const [tick, setTick] = useState(true);
+  const [radio, setRadio] = useState<"1" | "2" | null>("2");
+  const [guard, setGuard] = useState<BlockerId | null>(null);
   const [modal, setModal] = useState<null | "p1" | "p2" | "p3" | "p4" | "p5" | "stepup">(null);
   const [reason, setReason] = useState("");
   const [ack, setAck] = useState(false);
@@ -247,6 +251,15 @@ export default function StyleGuide() {
                 Licensing Authorizer
               </Checkbox>
             </div>
+            <RadioGroup
+              name="sg-radio"
+              value={radio}
+              onChange={setRadio}
+              options={[
+                { value: "1", label: "Stage 1 — Reviewer", hint: "One choice, with a line of explanation." },
+                { value: "2", label: "Stage 2 — Authorizer", hint: "The chosen row takes the blue outline." },
+              ]}
+            />
           </div>
           <div className="flex items-center gap-3">
             <SearchBox value={text} onChange={setText} />
@@ -291,6 +304,19 @@ export default function StyleGuide() {
             <Button onClick={() => setModal("stepup")}>Step-up</Button>
             <Button onClick={() => showToast({ title: "Sign-off authorised", body: "RRA/SO/2026/0218 has returned to Licensing to execute the revocation." })}>Toast</Button>
           </div>
+          <div className="flex flex-col gap-2 pt-2">
+            <p className="type-group-title text-strong">Overturn guards (M-BLK-22 · 23 · 24)</p>
+            <p className="type-caption text-muted">
+              These fire only from a stale tab or a direct link — in normal use the Overturn action is simply absent on such items — so no click in the app
+              reaches them. They are kept here so the design is visible.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => setGuard("not-decided")}>Not decided</Button>
+              <Button onClick={() => setGuard("already-overturned")}>Already overturned</Button>
+              <Button onClick={() => setGuard("not-an-application")}>Not an application</Button>
+            </div>
+          </div>
+          <BlockerModal id={guard} onClose={() => setGuard(null)} />
         </Section>
       </main>
 

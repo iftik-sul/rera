@@ -1,9 +1,10 @@
 /**
- * "You can't overturn this" pop-ups, copied from Figma
- * M-BLK-22 / M-BLK-23 / M-BLK-24. In the Figma prototype each is opened from
- * a Work Queue row (TRX-2024-0882 / 0878 / 0871) so reviewers can see them.
+ * "You can't overturn this" pop-ups, copied from Figma M-BLK-22 / M-BLK-23 / M-BLK-24.
+ * They guard the Overturn action against stale tabs and direct links; in normal use the action
+ * is simply absent (modals.md §8), so no click in the app reaches them. Figma opened them from
+ * three Work Queue rows; from batch 6 they are shown on the style guide instead.
  */
-import type { BlockerId } from "./work-queue";
+export type BlockerId = "not-decided" | "already-overturned" | "not-an-application";
 
 export const blockers: Record<BlockerId, { title: string; body: string; helpTitle: string; help: string }> = {
   "not-decided": {
@@ -14,7 +15,7 @@ export const blockers: Record<BlockerId, { title: string; body: string; helpTitl
   },
   "already-overturned": {
     title: "This item is already overturned",
-    body: "This decision was overturned by Adaeze Nwosu (Director-General / Registrar) on 5 Oct 2026. Overturned is final — a decision can't be reversed twice, or the record could never say what it currently stands at.",
+    body: "TRX-2024-0878 was overturned by Adaeze Nwosu (Director-General / Registrar) on 5 Oct 2026. Overturned is final — a decision can't be reversed twice, or the record could never say what it currently stands at.",
     helpTitle: "What happens instead",
     help: "There is no second overturn. If the applicant disputes the outcome, they submit a fresh application.",
   },

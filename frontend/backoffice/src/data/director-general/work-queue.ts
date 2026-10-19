@@ -3,7 +3,8 @@
  * "Work Queue — Transaction / Escrow / Licensing".
  * `opens` says what clicking the row does, matching the Figma prototype links:
  *   review:<id>  → Application Review page for that sample application
- *   blocker:<id> → a "you can't overturn this" pop-up on top of the queue
+ * (Figma also linked three rows to the "you can't overturn this" pop-ups. Those guards fire on
+ * the Overturn action, which is absent on such items, so they moved to the style guide — batch 6.)
  * Rows Figma didn't link open their own review, built from the row (reviews.ts), so no row is a
  * dead end. `reviewId` turns a reference into that review's page id.
  *
@@ -19,8 +20,7 @@ import type { Status } from "@/components/ui/Badge";
 export type Kpi = { label: string; value: string; caption: string };
 /** normal = grey, warning = amber (ageing), breach = red (past SLA) */
 export type Age = { text: string; tone: "normal" | "warning" | "breach" };
-export type Opens = `review:${string}` | `blocker:${BlockerId}`;
-export type BlockerId = "not-decided" | "already-overturned" | "not-an-application";
+export type Opens = `review:${string}`;
 
 /** Page id of the review built for a row: "TRX-2024-0865" → "trx-2024-0865". */
 export const reviewId = (reference: string) => reference.toLowerCase();
@@ -35,9 +35,11 @@ const SLA: Status = { label: "Breaching SLA", tone: "error" };
 // Decided items: listed for the DG only, hidden until the Status filter picks "Decided" (spec §4c).
 const APPROVED: Status = { label: "Approved", tone: "success" };
 const REJECTED: Status = { label: "Rejected", tone: "error" };
+/** Overturned by the DG: two badges, "Overturned" then the replacement outcome (status-badges.md §1). */
+const OVERTURNED_REJECTED: Status = { label: "Rejected", tone: "error", overturned: true };
 
 /** Status filter value: Approved / Rejected group under "Decided"; everything else is its own label. */
-export const statusFilterValue = (s: Status) => (s.label === "Approved" || s.label === "Rejected" ? "Decided" : s.label);
+export const statusFilterValue = (s: Status) => (s.overturned || s.label === "Approved" || s.label === "Rejected" ? "Decided" : s.label);
 export const STATUS_ORDER = ["Awaiting Review", "Under Review", "Information Requested", "Returned", "Breaching SLA", "Decided"];
 
 /** Age / SLA state filter value, from the colour the age is shown in. */
@@ -67,9 +69,10 @@ export const transactionRows: TransactionRow[] = linked([
   { reference: "TRX-2024-0891", service: "Register Initial Sale", applicant: "Adron Homes & Properties", subject: "Victoria Island Plot A-12", status: UR, age: { text: "3 days", tone: "normal" }, opens: "review:trx-undecided" },
   { reference: "TRX-2024-0887", service: "Register Resale", applicant: "Mixta Nigeria Ltd", subject: "Eko Atlantic Tower Unit 2304", status: APPROVED, age: { text: "Decided day 4", tone: "normal" }, opens: "review:trx-decided" }, // was "Information Requested" in Figma, but it opens the decided-item screen
 
-  { reference: "TRX-2024-0882", service: "Register Initial Sale", applicant: "Brains & Hammers Ltd", subject: "Banana Island Plot C-05", status: UR, age: { text: "5 days", tone: "normal" }, opens: "blocker:not-decided" },
-  { reference: "TRX-2024-0878", service: "Register Mortgage", applicant: "Lekki Gardens Estate Ltd", subject: "Lekki Phase 1 Villa 18", status: RET, age: { text: "12 days", tone: "warning" }, opens: "blocker:already-overturned" },
-  { reference: "TRX-2024-0871", service: "Register Resale", applicant: "RevolutionPlus Property", subject: "Ikoyi Crescent Unit 801", status: UR, age: { text: "9 days", tone: "normal" }, opens: "blocker:not-an-application" },
+  { reference: "TRX-2024-0882", service: "Register Initial Sale", applicant: "Brains & Hammers Ltd", subject: "Banana Island Plot C-05", status: UR, age: { text: "5 days", tone: "normal" } },
+  // Figma: Returned, linked to the "already overturned" pop-up. It IS the overturned item now (overturned 05 Oct — audit aud-0875).
+  { reference: "TRX-2024-0878", service: "Register Mortgage", applicant: "Lekki Gardens Estate Ltd", subject: "Lekki Phase 1 Villa 18", status: OVERTURNED_REJECTED, age: { text: "Decided day 3", tone: "normal" } },
+  { reference: "TRX-2024-0871", service: "Register Resale", applicant: "RevolutionPlus Property", subject: "Ikoyi Crescent Unit 801", status: UR, age: { text: "9 days", tone: "normal" } },
   { reference: "TRX-2024-0865", service: "Register Initial Sale", applicant: "Palton Morgan Holdings", subject: "Maitama District Plot G-3", status: UR, age: { text: "2 days", tone: "normal" } },
   { reference: "TRX-2024-0858", service: "Register Mortgage", applicant: "Landwey Investment Ltd", subject: "Jabi Lake Tower B", status: RET, age: { text: "15 days", tone: "breach" } },
   { reference: "TRX-2024-0852", service: "Register Resale", applicant: "UPDC Plc", subject: "Ikeja GRA Block 4 Unit 12", status: IR, age: { text: "10 days", tone: "warning" } },
@@ -87,6 +90,8 @@ export const transactionRows: TransactionRow[] = linked([
   { reference: "TRX-2024-0814", service: "Register Resale", applicant: "Ocean Crest Realty", subject: "Oniru Waterfront Unit 7A", status: UR, age: { text: "5 days", tone: "normal" } },
   { reference: "TRX-2024-0811", service: "Register Mortgage", applicant: "Deluxe Homes Ibadan", subject: "Bodija Estate House 22", status: SLA, age: { text: "19 days", tone: "breach" } },
   { reference: "TRX-2024-0807", service: "Register Initial Sale", applicant: "Kano Heritage Developers", subject: "Nassarawa GRA Plot 15", status: AR, age: { text: "2 days", tone: "normal" } },
+  // Added in batch 6, when TRX-2024-0878 became decided — keeps 20 open rows (two full pages).
+  { reference: "TRX-2024-0803", service: "Register Resale", applicant: "Skyview Properties Ltd", subject: "Wuse Zone 4 Unit 2C", status: UR, age: { text: "3 days", tone: "normal" } },
   // ── Decided items (hidden until Status → Decided) ──
   { reference: "TRX-2024-0796", service: "Register Initial Sale", applicant: "Victoria Crest Homes", subject: "Chevron Drive Terrace 12", status: APPROVED, age: { text: "Decided day 2", tone: "normal" } },
   { reference: "TRX-2024-0792", service: "Register Mortgage", applicant: "Enugu Royal Estates", subject: "Independence Layout Villa 9", status: REJECTED, age: { text: "Decided day 5", tone: "normal" } },
@@ -163,6 +168,12 @@ export type LicensingCategory = "Company Licensing & Permits" | "Individual Prac
 export const CATEGORY_ORDER: LicensingCategory[] = ["Company Licensing & Permits", "Individual Practitioner Credentials", "Institutional Accreditation"];
 const categoryOf = (service: string): LicensingCategory =>
   /Practice Card/.test(service) ? "Individual Practitioner Credentials" : /Accreditation/.test(service) ? "Institutional Accreditation" : "Company Licensing & Permits";
+
+/** When another officer took the claim — shown on the "already claimed" pop-up and the review. */
+export const claimSince = (r: Pick<LicensingRow, "reference">) => {
+  const n = parseInt(r.reference.slice(-3), 10);
+  return `${String(8 + (n % 3)).padStart(2, "0")}:${String((n * 7) % 60).padStart(2, "0")} today`;
+};
 
 const lic = (reference: string, applicant: string, service: string, submitted: string, atStage: string, claimedBy: string | null, opens?: Opens, status: Status = UR): LicensingRow => ({
   reference, applicant, service, status, submitted, atStage, claimedBy, category: categoryOf(service), opens,
