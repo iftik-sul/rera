@@ -246,7 +246,7 @@ export const featuredApplications: Application[] = [
     id: "lic-stage3",
     queue: "licensing",
     title: "LIC-2026-00412 — Real Estate Licensing Application",
-    subtitle: "Stage 3 of 3 — your decision issues the licence.",
+    subtitle: "Stage 3 of 3 — accepting sends a notice; the licence issues on payment.",
     status: { label: "Under Final Sign-off", tone: "purple" }, // Review Stage badge, in place of the status (status-badges.md §6)
     metaSubtitle: "Sahara Estates Development Co · Company Licensing & Permits",
     meta: [
@@ -270,8 +270,9 @@ export const featuredApplications: Application[] = [
         },
       ],
       path: "Stage 1 Reviewer ✓  →  Stage 2 Authorizer ✓  →  Stage 3 Final sign-off (you)",
-      noticeTitle: "Approving issues the licence immediately.",
-      notice: "The register is written at this stage and there is no undo.",
+      // RED #22 is paid after the decision (open-questions A12): nothing is issued at this stage.
+      noticeTitle: "Accepting doesn't issue the licence yet.",
+      notice: "A notice of acceptance goes to the applicant; the licence issues and the register is written when they pay. There is no undo.",
     },
     summary: [
       {

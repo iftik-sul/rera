@@ -161,6 +161,8 @@ function overrideActions(o: {
   decidedBy: string;
   role: string;
   decidedOn: Date;
+  /** "2 Oct 2026, 14:55" — when the decision's time is already shown elsewhere (the licensing chain), pass it so the two agree. */
+  recordedAt?: string;
   reason: string;
   issuedRef: string;
   /** For a credential: the register entry is withdrawn with cause "Overturn" (M-LIC-03). */
@@ -170,7 +172,7 @@ function overrideActions(o: {
 }): OverrideActions {
   const approved = o.outcome.label !== "Rejected"; // Approved, or Accepted (RED #22)
   const when = dayMonYear(o.decidedOn);
-  const recordedAt = `${when}, ${10 + (seed(o.ref) % 7)}:${String(seed(o.ref) % 60).padStart(2, "0")}`;
+  const recordedAt = o.recordedAt ?? `${when}, ${10 + (seed(o.ref) % 7)}:${String(seed(o.ref) % 60).padStart(2, "0")}`;
   const onRecord = `On record: ${o.title}, filed by ${o.who}. ${o.outcome.label} by ${o.decidedBy} (${o.role}) on ${when}.`;
   const credentialNote = o.credential ? " and withdraws the register entry, recording the cause as Overturn" : "";
 
@@ -697,11 +699,13 @@ function licensingReview(row: LicensingRow, i: number): Application {
           reason: "Reason given: none required for an endorsement. Reviewer's checks confirmed against the register.",
         },
   ];
+  // One time for the stage-3 decision, shown in the chain and in the Override panel alike.
+  const stage3At = at(before(daysIn - 6), 14, (n * 11) % 60);
   if (decided) {
     stages.push({
       name: "Stage 3 · Officer",
       outcome: row.status,
-      recorded: `Funke Adeyemi recorded this on ${at(before(daysIn - 6), 14, (n * 11) % 60)}.`,
+      recorded: `Funke Adeyemi recorded this on ${stage3At}.`,
       reason: row.status.label === "Approved" ? "Reason given: none required for an approval." : "Reason given: the qualifying certificate could not be verified with the issuing body.",
     });
   }
@@ -739,12 +743,16 @@ function licensingReview(row: LicensingRow, i: number): Application {
           ? "The Authorizer dissented — your decision settles it."
           : shape.kind === "practitioner" && "cancel" in shape && shape.cancel
             ? "Approving cancels the card immediately."
-            : `Approving issues the ${shape.output.noun.toLowerCase()} immediately.`,
+            : row.service === "Real Estate Licensing Application"
+              ? `Accepting doesn't issue the ${shape.output.noun.toLowerCase()} yet.`
+              : `Approving issues the ${shape.output.noun.toLowerCase()} immediately.`,
       notice: decided
         ? "It can't be decided again; an overturn replaces the decision and keeps it on record."
         : dissent
           ? "Both positions are on record. A dissent doesn't block — the item reaches you carrying both."
-          : "The register is written at this stage and there is no undo.",
+          : row.service === "Real Estate Licensing Application"
+            ? "A notice of acceptance goes to the applicant; the licence issues and the register is written when they pay. There is no undo."
+            : "The register is written at this stage and there is no undo.",
     },
     summary: shape.groups,
     documents: shape.docs.map((d, k) => ({ name: d, type: "PDF", uploaded: dayMonYear(before(daysIn - (k > 2 ? 1 : 0))), status: k === shape.docs.length - 1 && n % 2 && !decided ? pending : verified })),
@@ -756,7 +764,7 @@ function licensingReview(row: LicensingRow, i: number): Application {
   if (decided) {
     app.override = overrideActions({
       ref, title: app.title, who, output: shape.output, outcome: row.status,
-      decidedBy: "Funke Adeyemi", role: "Licensing & Registration Officer", decidedOn: before(daysIn - 6),
+      decidedBy: "Funke Adeyemi", role: "Licensing & Registration Officer", decidedOn: before(daysIn - 6), recordedAt: stage3At,
       reason: stages[2].reason.replace("Reason given: ", ""),
       issuedRef: freeCredential(shape.kind === "institution" ? "ACC" : shape.kind === "practitioner" ? "PCC" : "LIC", "26", 500 + n),
       credential: true,

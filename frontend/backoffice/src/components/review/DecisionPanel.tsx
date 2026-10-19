@@ -71,7 +71,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
     <>
       <div className="flex items-center gap-3 rounded-card border border-control bg-white px-6 py-4">
         <Button variant="primary" onClick={() => show("approve")}>
-          Approve
+          {actions.approve.outcome === "Accepted" ? "Accept" : "Approve"}
         </Button>
         <Button onClick={() => show("request")}>{actions.requestLabel}</Button>
         <Button onClick={() => show("return")}>Return</Button>
@@ -99,7 +99,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
         <Notice>{actions.approve.callout}</Notice>
         {unverified.length > 0 && (
           <Notice>
-            Not yet verified: {unverified.join(", ")}. You can still approve — the documents are recorded as they stand.
+            Not yet verified: {unverified.join(", ")}. You can still {actions.approve.outcome === "Accepted" ? "accept" : "approve"} — the documents are recorded as they stand.
           </Notice>
         )}
       </Modal>

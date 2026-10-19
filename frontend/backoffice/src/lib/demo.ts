@@ -30,6 +30,8 @@ export type AppChange = {
   kind: "decided" | "overturned" | "with-applicant" | "chain";
   /** For an overturn: the outcome that was replaced. */
   replaced?: string;
+  /** "11 Oct 2026, 14:07" — set when recorded. */
+  at?: string;
 };
 export type SignoffChange = { status: "Authorised" | "Declined"; on: string; reason?: string };
 export type StaffChange = Partial<{
@@ -114,7 +116,7 @@ export const DG_ROLE = "Director-General / Registrar";
 /** Record a change to an application, and its audit entry. */
 export function recordApp(id: string, change: AppChange, entry: Omit<AuditEntry, "id" | "timestamp" | "actor" | "actedAs">) {
   const d = read();
-  write({ ...d, apps: { ...d.apps, [id]: change }, audit: [audit({ actor: change.by, actedAs: change.role, ...entry }), ...d.audit] });
+  write({ ...d, apps: { ...d.apps, [id]: { at: demoStamp(), ...change } }, audit: [audit({ actor: change.by, actedAs: change.role, ...entry }), ...d.audit] });
 }
 
 export function recordSignoff(id: string, change: SignoffChange, entry: Omit<AuditEntry, "id" | "timestamp" | "actor" | "actedAs">) {
