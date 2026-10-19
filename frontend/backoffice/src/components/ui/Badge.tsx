@@ -25,18 +25,18 @@ export function Badge({ tone, children }: { tone: BadgeTone; children: React.Rea
 }
 
 /**
- * A status as stored in sample data. `overturned` adds the grey "Overturned"
- * badge in front of the outcome — Figma reference "A13 — Overturned status
- * pattern": two badges, Overturned first, 6px apart.
+ * A status as stored in sample data. `overturned` marks a decision the DG replaced: the
+ * replacement outcome takes the badge, followed by the word "Overturned" in muted text —
+ * one badge, never two (KB shared-ui/status-badges.md, display rule revised 2026-10-19).
  */
 export type Status = { label: string; tone: BadgeTone; overturned?: boolean };
 
 export function StatusBadge({ status }: { status: Status }) {
   if (!status.overturned) return <Badge tone={status.tone}>{status.label}</Badge>;
   return (
-    <span className="inline-flex gap-1.5">
-      <Badge tone="neutral">Overturned</Badge>
+    <span className="inline-flex items-center gap-2 whitespace-nowrap">
       <Badge tone={status.tone}>{status.label}</Badge>
+      <span className="type-caption text-muted">Overturned</span>
     </span>
   );
 }
