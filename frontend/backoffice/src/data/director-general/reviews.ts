@@ -74,7 +74,7 @@ const ageDays = (a: Age) => parseInt(a.text.replace(/\D/g, ""), 10) || 1;
 
 const APPROVED: Status = { label: "Approved", tone: "success" };
 const REJECTED: Status = { label: "Rejected", tone: "error" };
-const isDecided = (s: Status) => !s.overturned && (s.label === "Approved" || s.label === "Rejected");
+const isDecided = (s: Status) => !s.overturned && (s.label === "Approved" || s.label === "Accepted" || s.label === "Rejected");
 const MY_CLAIM = { held: "Claimed by you", detail: "· since you opened it · lapses after 30 minutes of inactivity", mine: true };
 
 /** Overturns already on record (kept in step with the Audit Trail, aud-0875 / aud-0876). */
@@ -167,8 +167,10 @@ function overrideActions(o: {
   issuedRef: string;
   /** For a credential: the register entry is withdrawn with cause "Overturn" (M-LIC-03). */
   credential?: boolean;
+  /** Mortgage registration (FTI #3): RED #6 sales validated against it, raised for review on overturn (A-1 §16a). */
+  dependentSales?: number;
 }): OverrideActions {
-  const approved = o.outcome.label === "Approved";
+  const approved = o.outcome.label !== "Rejected"; // Approved, or Accepted (RED #22)
   const when = dayMonYear(o.decidedOn);
   const recordedAt = `${when}, ${10 + (seed(o.ref) % 7)}:${String(seed(o.ref) % 60).padStart(2, "0")}`;
   const onRecord = `On record: ${o.title}, filed by ${o.who}. ${o.outcome.label} by ${o.decidedBy} (${o.role}) on ${when}.`;
@@ -196,7 +198,9 @@ function overrideActions(o: {
       title: "Overturn this decision?",
       body: onRecord,
       callout: approved
-        ? `Replacement outcome: Rejected. Overturning revokes ${o.output.artefact} ${o.issuedRef} and issues the rejection dated today. The item will then read Rejected, marked Overturned — final, with no undo and no second overturn.`
+        ? `Replacement outcome: Rejected. Overturning revokes ${o.output.artefact} ${o.issuedRef} and issues the rejection dated today.${
+            o.dependentSales ? ` It also raises ${o.dependentSales} registered ${o.dependentSales === 1 ? "sale" : "sales"} that relied on this mortgage for an auditor's review (A-1 §16a).` : ""
+          } The item will then read Rejected, marked Overturned — final, with no undo and no second overturn.`
         : `Replacement outcome: Approved. Overturning issues the ${o.output.artefact} dated today. The item will then read Approved, marked Overturned — final, with no undo and no second overturn.`,
       label: "Why was this decision wrong?",
       placeholder: "Explain why the decision should not have been made — not simply that you would have decided differently.",
@@ -246,6 +250,17 @@ function withApplicant(status: Status, ref: string, who: string, age: Age, i: nu
         title: "Waiting on the applicant",
         body: `${by} requested additional information from ${who} on ${since}.${reason} The item comes back to the queue when they respond — nothing can be decided while it is with them.`,
       };
+}
+
+
+/** An A-1 item another auditor holds: read-only for the DG, as on licensing (claim-on-open, §5b). */
+function heldByAuditor(app: Application, by: string) {
+  app.claim = { held: `Claimed by ${by}`, detail: "· read-only for you · returns to the pool when released or after 30 minutes of inactivity", mine: false };
+  app.held = {
+    tone: "neutral",
+    title: `${by} is working on this item`,
+    body: `It's claimed by ${by} (Compliance & Escrow Auditor), so you can read it but not decide it. It returns to the pool when they release it, or after 30 minutes of inactivity.`,
+  };
 }
 
 // ── Transaction items ───────────────────────────────────────
@@ -336,6 +351,7 @@ function transactionReview(row: TransactionRow, i: number): Application {
     app.override = overrideActions({
       ref, title, who, output, outcome: row.status,
       decidedBy: AUDITORS[i % 2], role: "Compliance & Escrow Auditor", decidedOn,
+      dependentSales: isMortgage(row.service) && row.status.label === "Approved" ? 1 + (n % 3) : undefined,
       reason:
         row.status.label === "Approved"
           ? `Registry checks returned clear on all five points; the documents were verified against the register. Approved for ${output.noun.toLowerCase()} issuance.`
@@ -344,9 +360,11 @@ function transactionReview(row: TransactionRow, i: number): Application {
     });
   } else if (row.status.label === "Information Requested" || row.status.label === "Returned") {
     app.held = withApplicant(row.status, ref, who, row.age, i);
+  } else if (row.claimedBy && row.claimedBy !== "Adaeze Nwosu") {
+    heldByAuditor(app, row.claimedBy);
   } else {
     app.decide = decideActions({
-      ref, who, output, requestLabel: "Request Info",
+      ref, who, output, requestLabel: "Request additional information",
       issueLine: `This issues the ${output.artefact} to ${who} immediately. Issuance is instant and final.`,
       reEntry: "comes back to your queue",
       rejectRule: "State the registry rule or check the application fails, in terms the applicant can act on.",
@@ -474,9 +492,11 @@ function escrowReview(row: EscrowRow, i: number): Application {
     });
   } else if (row.status.label === "Information Requested" || row.status.label === "Returned") {
     app.held = withApplicant(row.status, ref, who, row.age, i);
+  } else if (row.claimedBy && row.claimedBy !== "Adaeze Nwosu") {
+    heldByAuditor(app, row.claimedBy);
   } else {
     app.decide = decideActions({
-      ref, who, output, requestLabel: "Request Info",
+      ref, who, output, requestLabel: "Request additional information",
       issueLine: `This issues the ${output.artefact} to ${who} immediately${releasing ? `, authorising release of ${naira(amount)} from ${accountNo}` : ""}. Issuance is instant and final.`,
       reEntry: "comes back to your queue",
       rejectRule: "State the escrow check the request fails, in terms the trustee can act on.",
@@ -746,19 +766,27 @@ function licensingReview(row: LicensingRow, i: number): Application {
       body: `It's claimed at Stage 3 by ${row.claimedBy} (Licensing & Registration Officer), so you can read it but not decide it. It returns to the pool when they release it, or after 30 minutes of inactivity.`,
     };
   } else {
+    // RED #22 is paid after the decision: stage 3 accepts, the licence issues on payment (KB A-2 §9).
+    const payAfter = row.service === "Real Estate Licensing Application";
     app.decide = decideActions({
       ref, who, output: shape.output, requestLabel: "Request additional information",
       issueLine: shape.issueLine,
       approveExtra: dissent ? ["The Reviewer recommended approval; the Authorizer dissented."] : ["Both prior stages recommended approval."],
-      approveTitle: cancel ? "Approve the cancellation?" : undefined,
-      approveConfirm: cancel ? "Approve cancellation" : undefined,
-      approveToast: cancel
+      approveTitle: cancel ? "Approve the cancellation?" : payAfter ? "Accept this application?" : undefined,
+      approveConfirm: cancel ? "Approve cancellation" : payAfter ? "Accept application" : undefined,
+      approveToast: payAfter
+        ? { title: "Application accepted", body: `${ref} — ${who} has been sent a notice of acceptance. The ${shape.output.artefact} issues when the fee is paid.` }
+        : cancel
         ? { title: "Practice card cancelled", body: `${ref} — Practice Card ${"card" in shape ? shape.card : ""} for ${who} is cancelled and its register entry withdrawn.` }
         : { title: `${shape.output.noun} issued`, body: `${ref} — ${shape.output.artefact} issued to ${who}.` },
       reEntry: "re-enters the queue at Stage 1",
       rejectRule: "State the eligibility rule the application fails, in terms the applicant can act on.",
     });
-    if (cancel) app.decide.approve.callout = "There is no undo. The card is cancelled and the register entry withdrawn the moment you approve.";
+    if (payAfter) {
+      app.decide.approve.body[0] = `A notice of acceptance goes to ${who}. The ${shape.output.artefact} issues — and its register entry is written — when they pay the licence fee, not now.`;
+      app.decide.approve.outcome = "Accepted";
+      app.decide.approve.callout = "There is no undo. The application is accepted now; the licence follows payment.";
+    } else if (cancel) app.decide.approve.callout = "There is no undo. The card is cancelled and the register entry withdrawn the moment you approve.";
     else app.decide.approve.callout = "There is no undo. Issuance is immediate and the register is written at this stage.";
     app.decide.request.body.push("The review chain starts again from the Reviewer.");
     app.decide.return.body.push("The review chain starts again from the Reviewer.");

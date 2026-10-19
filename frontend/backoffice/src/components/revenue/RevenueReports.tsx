@@ -115,7 +115,7 @@ export function RevenueReports() {
             </Badge>
           )}
           <span className="flex-1" />
-          <ExportMenu title="Report exported" message={(kind) => `The ${kind === "PDF" ? "PDF" : "spreadsheet"} is recorded in the audit trail.`} />
+          <ExportMenu title="Report exported" audit={{ subsystem: "Finance", subject: "Revenue report" }} message={(kind) => `The ${kind === "PDF" ? "PDF" : "spreadsheet"} is recorded in the audit trail.`} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="pr-1 type-caption text-muted">Segment by</span>

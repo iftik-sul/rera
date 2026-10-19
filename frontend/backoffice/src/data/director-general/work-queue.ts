@@ -19,7 +19,8 @@
  */
 import type { Status } from "@/components/ui/Badge";
 
-export type Kpi = { label: string; value: string; caption: string };
+/** `filter` = the table filters choosing the card applies (work-queue.md §1: "selecting one filters the table"). */
+export type Kpi = { label: string; value: string; caption: string; filter?: Record<string, string> };
 /** normal = grey, warning = amber (ageing), breach = red (past SLA) */
 export type Age = { text: string; tone: "normal" | "warning" | "breach" };
 export type Opens = `review:${string}`;
@@ -35,38 +36,83 @@ const UR: Status = { label: "Under Review", tone: "info" };
 // or Dissent Recorded, where the Authorizer dissented (the exception wins).
 export const FINAL_SIGNOFF: Status = { label: "Under Final Sign-off", tone: "purple" };
 export const DISSENT: Status = { label: "Dissent Recorded", tone: "orange" };
-const AR: Status = { label: "Awaiting Review", tone: "info" };
+// "Awaiting Review" and "Breaching SLA" were local status words (status-badges §1 forbids them,
+// 2026-10-19 review): a waiting item is Under Review, and a breach shows in the Age / SLA column.
+const AR: Status = UR;
 const IR: Status = { label: "Information Requested", tone: "warning" };
 const RET: Status = { label: "Returned", tone: "warning" };
-const SLA: Status = { label: "Breaching SLA", tone: "error" };
+const SLA: Status = UR;
 // Decided items: the Completed side of the switch (spec §4d).
 const APPROVED: Status = { label: "Approved", tone: "success" };
+/** RED #22 only — decided in the applicant's favour; the licence issues on payment (KB A-2 §9). */
+const ACCEPTED: Status = { label: "Accepted", tone: "success" };
 const REJECTED: Status = { label: "Rejected", tone: "error" };
 /** Overturned by the DG: two badges, "Overturned" then the replacement outcome (status-badges.md §1). */
 const OVERTURNED_REJECTED: Status = { label: "Rejected", tone: "error", overturned: true };
 
 /** Approved / Rejected (and overturned) items are "Decided" — they belong on the Completed side. */
-export const statusFilterValue = (s: Status) => (s.overturned || s.label === "Approved" || s.label === "Rejected" ? "Decided" : s.label);
-export const STATUS_ORDER = ["Awaiting Review", "Under Review", "Information Requested", "Returned", "Breaching SLA"];
+export const statusFilterValue = (s: Status) => (s.overturned || s.label === "Approved" || s.label === "Accepted" || s.label === "Rejected" ? "Decided" : s.label);
+export const STATUS_ORDER = ["Under Review", "Information Requested", "Returned"];
 export const isCompleted = (r: { status: Status }) => statusFilterValue(r.status) === "Decided";
 /** Outcome filter on the Completed side. */
 export const outcomeValue = (s: Status) => (s.overturned ? "Overturned" : s.label);
-export const OUTCOME_ORDER = ["Approved", "Rejected", "Overturned"];
+export const OUTCOME_ORDER = ["Approved", "Accepted", "Rejected", "Overturned"];
 
 /** Age / SLA state filter value, from the colour the age is shown in. */
 export const ageState = (a: Age) => (a.tone === "breach" ? "Breaching SLA" : a.tone === "warning" ? "Ageing" : "Within SLA");
 export const AGE_ORDER = ["Within SLA", "Ageing", "Breaching SLA"];
 
+/**
+ * Claims and query history for the A-1 queues (work-queue.md §3–§4). Items with the applicant
+ * are released, so they carry no claim. The DG holds the two its sample reviews open as "yours".
+ */
+const A1_CLAIMS: Record<string, string> = {
+  "TRX-2024-0891": "Adaeze Nwosu", "TRX-2024-0882": "Chukwuemeka Obi", "TRX-2024-0871": "Bola Ogunleye",
+  "TRX-2024-0846": "Chukwuemeka Obi", "TRX-2024-0832": "Bola Ogunleye", "TRX-2024-0821": "Adaeze Nwosu",
+  "REF-ESC-1001": "Bola Ogunleye", "REF-ESC-1004": "Chukwuemeka Obi", "REF-ESC-1011": "Adaeze Nwosu", "REF-ESC-1015": "Bola Ogunleye",
+};
+/** Resubmitted items: round, and the days spent in earlier rounds (added to Total elapsed). */
+const A1_RESUB: Record<string, { round: number; earlier: number }> = {
+  "TRX-2024-0871": { round: 2, earlier: 7 }, "TRX-2024-0814": { round: 2, earlier: 6 }, "TRX-2024-0807": { round: 3, earlier: 11 },
+  "REF-ESC-1008": { round: 2, earlier: 7 }, "REF-ESC-1018": { round: 2, earlier: 5 },
+};
+const dayCount = (a: Age) => parseInt(a.text, 10) || 0;
+function a1<T extends { reference: string; status: Status; age: Age }>(rows: T[]): T[] {
+  return rows.map((r) => {
+    if (statusFilterValue(r.status) === "Decided") return r;
+    const resub = A1_RESUB[r.reference];
+    const withApplicant = r.status.label === "Information Requested" || r.status.label === "Returned";
+    const total = dayCount(r.age) + (resub?.earlier ?? 0);
+    return { ...r, claimedBy: withApplicant ? null : (A1_CLAIMS[r.reference] ?? null), resubmission: resub?.round, totalElapsed: `${total} ${total === 1 ? "day" : "days"}` };
+  });
+}
+/** Most urgent deadline first (A-1, §1): past the window, then ageing, then the rest — oldest first in each. */
+const URGENCY = { breach: 0, warning: 1, normal: 2 } as const;
+export const byUrgency = (a: { age: Age }, b: { age: Age }) => URGENCY[a.age.tone] - URGENCY[b.age.tone] || dayCount(b.age) - dayCount(a.age);
+
+/** The four A-1 triage cards (work-queue.md §1), counted from the open rows on screen. */
+export function a1KpisFor(open: { age: Age; status: Status; claimedBy?: string | null }[]): Kpi[] {
+  const inPool = open.filter((r) => r.status.label === "Under Review");
+  return [
+    { label: "Breaching deadline", value: String(open.filter((r) => r.age.tone === "breach").length), caption: "Past the service's window — act now", filter: { age: "Breaching SLA" } },
+    { label: "Due soon", value: String(open.filter((r) => r.age.tone === "warning").length), caption: "Approaching the deadline", filter: { age: "Ageing" } },
+    { label: "Waiting to be picked up", value: String(inPool.filter((r) => !r.claimedBy).length), caption: "Unclaimed in the pool", filter: { claimed: "Unclaimed", status: "Under Review" } },
+    { label: "My open items", value: String(inPool.filter((r) => r.claimedBy === "Adaeze Nwosu").length), caption: "Claimed by you", filter: { claimed: "Claimed by you" } },
+  ];
+}
+
 // ── Transaction ─────────────────────────────────────────────
 // "Decided This Month" was dropped 2026-10-19: decided work lives on the Completed side (spec §4d), and §1 excludes it.
-export const transactionKpis: Kpi[] = [
-  { label: "Awaiting Review", value: "38", caption: "New submissions" },
-  { label: "Under Review", value: "24", caption: "Assigned to reviewers" },
-  { label: "Information Requested", value: "11", caption: "Waiting on applicants" },
-  { label: "Breaching SLA", value: "7", caption: "Needs immediate attention" },
-];
+/** Counted from the rows (were hand-typed 38 / 24 / 11 / 7, which matched no row — 2026-10-19 review). */
+export const transactionKpis: Kpi[] = [];
 
 export type TransactionRow = {
+  /** Who holds the item (claim-on-open, work-queue.md §4). null = in the pool. */
+  claimedBy?: string | null;
+  /** Round number when the item came back after Information Requested / Returned (G9). */
+  resubmission?: number;
+  /** Time since first submission, across query rounds — never resets (§3). */
+  totalElapsed?: string;
   reference: string;
   service: string;
   applicant: string;
@@ -78,7 +124,7 @@ export type TransactionRow = {
   decidedAgo?: number;
 };
 
-export const transactionRows: TransactionRow[] = linked([
+export const transactionRows: TransactionRow[] = a1(linked([
   { reference: "TRX-2024-0891", service: "Register Initial Sale", applicant: "Adron Homes & Properties", subject: "Victoria Island Plot A-12", status: UR, age: { text: "3 days", tone: "normal" }, opens: "review:trx-undecided" },
   { reference: "TRX-2024-0887", service: "Register Resale", applicant: "Mixta Nigeria Ltd", subject: "Eko Atlantic Tower Unit 2304", status: APPROVED, age: { text: "Decided day 4", tone: "normal" }, opens: "review:trx-decided" }, // was "Information Requested" in Figma, but it opens the decided-item screen
 
@@ -119,17 +165,18 @@ export const transactionRows: TransactionRow[] = linked([
   { reference: "TRX-2024-0757", service: "Register Mortgage", applicant: "Abbey Mortgage Bank", subject: "Wuse II Crescent Flat 3C", status: APPROVED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 74 },
   { reference: "TRX-2024-0752", service: "Register Resale", applicant: "Paramount Estates Ltd", subject: "Ikeja GRA Villa 11", status: REJECTED, age: { text: "Decided day 5", tone: "normal" }, decidedAgo: 130 },
   { reference: "TRX-2024-0748", service: "Register Initial Sale", applicant: "Royal Gardens Developers", subject: "Ajah Sangotedo Plot 205", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 320 },
-]);
+]));
 
 // ── Escrow ──────────────────────────────────────────────────
-export const escrowKpis: Kpi[] = [
-  { label: "Awaiting Review", value: "9", caption: "New submissions" },
-  { label: "Under Review", value: "6", caption: "Assigned to reviewers" },
-  { label: "Information Requested", value: "2", caption: "Waiting on applicants" },
-  { label: "Breaching SLA", value: "1", caption: "Needs immediate attention" },
-];
+export const escrowKpis: Kpi[] = [];
 
 export type EscrowRow = {
+  /** Who holds the item (claim-on-open, work-queue.md §4). null = in the pool. */
+  claimedBy?: string | null;
+  /** Round number when the item came back after Information Requested / Returned (G9). */
+  resubmission?: number;
+  /** Time since first submission, across query rounds — never resets (§3). */
+  totalElapsed?: string;
   reference: string;
   escrowFlag: Status;
   applicant: string;
@@ -144,7 +191,7 @@ export type EscrowRow = {
 const RECEIVED: Status = { label: "Received", tone: "success" };
 const AWAIT_TRUSTEE: Status = { label: "Awaiting Trustee", tone: "warning" };
 
-export const escrowRows: EscrowRow[] = linked([
+export const escrowRows: EscrowRow[] = a1(linked([
   { reference: "REF-ESC-1001", escrowFlag: RECEIVED, applicant: "Access Bank Trustees Ltd", subject: "Escrow Release — Plot 7, Lekki Phase 1", status: UR, age: { text: "3 days", tone: "normal" } }, // Figma linked this to the TRANSACTION review; it opens its own escrow review
   { reference: "REF-ESC-1002", escrowFlag: AWAIT_TRUSTEE, applicant: "Zenith Trust Services", subject: "New Escrow Account — Block A, Banana Island", status: AR, age: { text: "7 days", tone: "normal" } },
   { reference: "REF-ESC-1003", escrowFlag: RECEIVED, applicant: "GTBank Trustee Division", subject: "Escrow Amendment — Tower B, Victoria Island", status: IR, age: { text: "12 days", tone: "warning" } },
@@ -180,9 +227,12 @@ export const escrowRows: EscrowRow[] = linked([
   { reference: "REF-ESC-0961", escrowFlag: RECEIVED, applicant: "Meristem Trustees", subject: "Escrow Release — Unit 4, Ikeja GRA", status: APPROVED, age: { text: "Decided day 2", tone: "normal" }, decidedAgo: 112 },
   { reference: "REF-ESC-0957", escrowFlag: RECEIVED, applicant: "Afrinvest Trustees", subject: "Escrow Amendment — Block C, Maitama", status: REJECTED, age: { text: "Decided day 5", tone: "normal" }, decidedAgo: 160 },
   { reference: "REF-ESC-0952", escrowFlag: RECEIVED, applicant: "Union Trustees Nigeria", subject: "New Escrow Account — Phase 1, Ibeju-Lekki", status: APPROVED, age: { text: "Decided day 3", tone: "normal" }, decidedAgo: 340 },
-]);
+]));
 
 // ── Licensing (stage 3 of 3) ────────────────────────────────
+// Applicants checked against the Practitioner Register (2026-10-19 review): no stage-3 applicant
+// already holds the credential it asks for or has a live sanction, so "No conflict / No
+// sanctions: Valid" is true; individual credentials (Practice Cards) go to individuals.
 
 export type LicensingRow = {
   reference: string;
@@ -222,8 +272,8 @@ export const licensingRows: LicensingRow[] = linked([
   lic("LIC-2026-00369", "Zenith Realty Partners Ltd", "Real Estate Permit Application", "14 days ago", "1 day", "Funke Adeyemi"),
   lic("LIC-2026-00394", "Mainland Realty Consulting Ltd", "Real Estate Licensing Application", "9 days ago", "2 days", null, undefined, DISSENT),
   lic("LIC-2026-00398", "Lagos Institute of Property Studies", "Accreditation of Training Entities", "8 days ago", "1 day", "Funke Adeyemi"),
-  lic("LIC-2026-00387", "Heritage Valuations & Surveyors", "Cancel Professional Practice Card", "12 days ago", "6 hours", null),
-  lic("LIC-2026-00376", "Okafor & Sons Properties Ltd", "Issue Professional Practice Card", "4 days ago", "1 day", null),
+  lic("LIC-2026-00387", "Halima Danjuma", "Cancel Professional Practice Card", "12 days ago", "6 hours", null),
+  lic("LIC-2026-00376", "Ifeoma Nnaji", "Issue Professional Practice Card", "4 days ago", "1 day", null),
   lic("LIC-2026-00381", "Amara Investments Ltd", "Accreditation of Training Entities", "7 days ago", "1 day", null),
   lic("LIC-2026-00374", "Pinnacle Realty Consulting Ltd", "Real Estate Licensing Application", "10 days ago", "3 hours", "Funke Adeyemi"),
   lic("LIC-2026-00368", "Tunde Akinwale", "Amend Professional Practice Card", "15 days ago", "1 day", null),
@@ -234,13 +284,13 @@ export const licensingRows: LicensingRow[] = linked([
   lic("LIC-2026-00351", "Abuja School of Estate Management", "Accreditation of Training Entities", "5 days ago", "5 hours", null),
   lic("LIC-2026-00347", "Ifeanyi Obi & Partners", "Real Estate Permit Application", "2 days ago", "1 day", null),
   lic("LIC-2026-00344", "Bolaji Adewale", "Amend Professional Practice Card", "6 days ago", "3 days", null),
-  lic("LIC-2026-00340", "Delta Valuers Association", "Accreditation of Training Entities", "4 days ago", "2 hours", "Funke Adeyemi"),
+  lic("LIC-2026-00340", "Niger Delta School of Valuation", "Accreditation of Training Entities", "4 days ago", "2 hours", "Funke Adeyemi"),
   lic("LIC-2026-00337", "Cornerstone Realty Agents Ltd", "Real Estate Licensing Application", "11 days ago", "1 day", null),
-  lic("LIC-2026-00333", "Musa Ibrahim", "Issue Professional Practice Card", "7 days ago", "2 days", null),
+  lic("LIC-2026-00333", "Yakubu Danladi", "Issue Professional Practice Card", "7 days ago", "2 days", null),
   lic("LIC-2026-00329", "Eastgate Property Developers", "Real Estate Permit Application", "3 days ago", "1 day", null),
   lic("LIC-2026-00326", "Kemi Adeyinka", "Cancel Professional Practice Card", "9 days ago", "4 hours", null),
   // ── Decided items (the Completed side). Decided 6 days after submission (reviews.ts). ──
-  lic("LIC-2026-00298", "Greenfield Developers Ltd", "Real Estate Licensing Application", "26 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00298", "Greenfield Developers Ltd", "Real Estate Licensing Application", "26 days ago", "—", null, undefined, ACCEPTED),
   lic("LIC-2026-00291", "Yemi Olatunji", "Issue Professional Practice Card", "27 days ago", "—", null, undefined, REJECTED),
   lic("LIC-2026-00286", "Lagos School of Valuation", "Accreditation of Training Entities", "29 days ago", "—", null, undefined, APPROVED),
   // Added with the Completed side (2026-10-19).
@@ -252,17 +302,27 @@ export const licensingRows: LicensingRow[] = linked([
   lic("LIC-2026-00248", "Seyi Bankole", "Issue Professional Practice Card", "90 days ago", "—", null, undefined, REJECTED),
   lic("LIC-2026-00231", "Oasis Homes & Realty", "Real Estate Permit Application", "128 days ago", "—", null, undefined, APPROVED),
   lic("LIC-2026-00214", "Chukwudi Eze", "Cancel Professional Practice Card", "171 days ago", "—", null, undefined, APPROVED),
-  lic("LIC-2026-00196", "Lekki Realty Partners", "Real Estate Licensing Application", "360 days ago", "—", null, undefined, APPROVED),
+  lic("LIC-2026-00196", "Lekki Realty Partners", "Real Estate Licensing Application", "360 days ago", "—", null, undefined, ACCEPTED),
 ]);
 
 // Counted from the rows above, so the cards and the table can't disagree (Figma's said
 // "Longest waiting 12 days" while three of its own rows had waited longer).
 const openLic = licensingRows.filter((r) => statusFilterValue(r.status) !== "Decided");
 const daysOf = (r: LicensingRow) => parseInt(r.submitted, 10);
-const longest = [...openLic].sort((a, b) => daysOf(b) - daysOf(a))[0];
-export const licensingKpis: Kpi[] = [
-  { label: "Dissents to resolve", value: String(openLic.filter((r) => r.status.label === DISSENT.label).length), caption: "Authorizer disagreed" },
-  { label: "Longest waiting", value: `${daysOf(longest)} days`, caption: longest.reference },
-  { label: "Waiting to be picked up", value: String(openLic.filter((r) => !r.claimedBy).length), caption: "Unclaimed at your stage" },
-  { label: "My open items", value: String(openLic.filter((r) => r.claimedBy === "Adaeze Nwosu").length), caption: "Claimed by you" },
-];
+/** The licensing cards, counted from whichever open rows are on screen (sample data + this session's changes). */
+export function licensingKpisFor(open: LicensingRow[]): Kpi[] {
+  const longest = [...open].sort((a, b) => daysOf(b) - daysOf(a))[0];
+  return [
+    { label: "Dissents to resolve", value: String(open.filter((r) => r.status.label === DISSENT.label).length), caption: "Authorizer disagreed", filter: { status: DISSENT.label } },
+    { label: "Longest waiting", value: longest ? `${daysOf(longest)} days` : "—", caption: longest?.reference ?? "Nothing waiting" },
+    { label: "Waiting to be picked up", value: String(open.filter((r) => !r.claimedBy).length), caption: "Unclaimed at your stage", filter: { claimed: "Unclaimed" } },
+    { label: "My open items", value: String(open.filter((r) => r.claimedBy === "Adaeze Nwosu").length), caption: "Claimed by you", filter: { claimed: "Claimed by you" } },
+  ];
+}
+export const licensingKpis: Kpi[] = licensingKpisFor(openLic);
+
+/** "Claimed by" filter value for any queue row (cards "Waiting" and "My open items" choose it). */
+export const claimedValue = (r: { claimedBy?: string | null }) => (!r.claimedBy ? "Unclaimed" : r.claimedBy === "Adaeze Nwosu" ? "Claimed by you" : "Claimed by others");
+export const CLAIMED_ORDER = ["Unclaimed", "Claimed by you", "Claimed by others"];
+/** Licensing: oldest first — no SLA, so first-come-first-served (work-queue.md §1). */
+export const byOldest = (a: { submitted: string }, b: { submitted: string }) => (parseInt(b.submitted, 10) || 0) - (parseInt(a.submitted, 10) || 0);

@@ -61,6 +61,7 @@ export function EntryDetailView({ entry }: { entry: EntryDetail }) {
           label="Export record"
           formats={["PDF"]}
           title="Record exported"
+          audit={{ subsystem: "Licensing", subject: entry.title.split(" — ")[0] }}
           message={() => `${entry.title.split(" — ")[0]} and its history, as a PDF register extract. Recorded in the audit trail.`}
         />
       </div>

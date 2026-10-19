@@ -8,6 +8,8 @@ import { SAMPLE_TODAY } from "@/data/sample-date";
 import { completedRecord, type CompletedRecord } from "@/data/director-general/reviews";
 import { isCompleted, OUTCOME_ORDER, outcomeValue } from "@/data/director-general/work-queue";
 import type { Status } from "@/components/ui/Badge";
+import type { AppChange, Demo } from "@/lib/demo";
+import { applyRow, leftStage } from "./demoApply";
 
 /**
  * The Work Queue's Open · Completed switch (KB work-queue.md §4d).
@@ -48,13 +50,18 @@ export function QueueSwitch({ side, onChange }: { side: Side; onChange: (s: Side
 
 export type Completed<T> = T & CompletedRecord;
 
-/** Split a queue's rows: open work, and decided items with their decision date and decider, newest first. */
-export function splitQueue<T extends { status: Status; opens?: string }>(rows: T[]): { open: T[]; completed: Completed<T>[] } {
+/**
+ * Split a queue's rows, with this session's changes applied (lib/demo.ts): open work, and
+ * decided items with their decision date and decider, newest first. A licensing item sent back
+ * down the chain leaves the stage-3 pool and appears on neither side.
+ */
+export function splitQueue<T extends { status: Status; opens?: string }>(rows: T[], demo: Demo): { open: (T & { demo?: AppChange })[]; completed: Completed<T & { demo?: AppChange }>[] } {
+  const all = rows.map((r) => applyRow(r, demo)).filter((r) => !leftStage(r));
   return {
-    open: rows.filter((r) => !isCompleted(r)),
-    completed: rows
+    open: all.filter((r) => !isCompleted(r)),
+    completed: all
       .filter(isCompleted)
-      .map((r) => ({ ...r, ...completedRecord(r.opens) }))
+      .map((r) => ({ ...r, ...(r.demo ? { decided: r.demo.on, at: Date.parse(r.demo.on), by: r.demo.by } : completedRecord(r.opens)) }))
       .sort((a, b) => b.at - a.at),
   };
 }
@@ -94,3 +101,19 @@ export function completedFilters<T>(): FilterDef<Completed<T>>[] {
 
 export const COMPLETED_NOUN = { one: "completed item", many: "completed items" };
 export const COMPLETED_EMPTY = "Nothing completed yet.";
+
+/**
+ * Apply a card's filters to the Open table: rewrite the address (keeping the side), then
+ * remount the table so it reads them — the table keeps filters in the address (Table.tsx).
+ */
+export function useCardFilter(): [number, (filter: Record<string, string>) => void] {
+  const [key, setKey] = useState(0);
+  const apply = (filter: Record<string, string>) => {
+    const url = new URL(window.location.href);
+    url.search = "";
+    for (const [k, v] of Object.entries(filter)) url.searchParams.set(k, v);
+    window.history.replaceState(window.history.state, "", url);
+    setKey((n) => n + 1);
+  };
+  return [key, apply];
+}

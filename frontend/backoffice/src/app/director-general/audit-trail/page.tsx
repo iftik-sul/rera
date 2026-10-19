@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDemo } from "@/lib/demo";
 import { Page } from "@/components/shell/Page";
 import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -28,6 +29,9 @@ const filters: FilterDef<AuditEntry>[] = [
 /** Audit Trail (Figma "Audit Trail") — append-only; nobody, including the DG, can edit or delete an entry. */
 export default function AuditTrail() {
   const [open, setOpen] = useState<AuditEntry | null>(null);
+  // This session's actions (lib/demo.ts) come first — newest first, like the rest of the trail.
+  const demo = useDemo();
+  const entries = [...demo.audit, ...auditEntries];
   const link = open && subjectLink(open.subject);
   return (
     <Page title="Audit Trail" subtitle="Every recorded action in the back office.">
@@ -36,7 +40,7 @@ export default function AuditTrail() {
         titleSize="md"
         filters={filters}
         columns={columns}
-        rows={auditEntries}
+        rows={entries}
         rowKey={(e) => e.id}
         rowAction={(e) => ({ onClick: () => setOpen(e) })}
         searchText={(e) => `${e.actor} ${e.actedAs} ${e.action} ${e.subject} ${e.reason}`}

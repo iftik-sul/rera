@@ -40,10 +40,10 @@ const e = (credentialNo: string, holder: string, practitionerType: string, statu
 });
 
 export const registerEntries: RegisterEntry[] = [
-  e("CRED/LIC/26/0412", "Sahara Estates Development Co", "Real Estate Developer", ACTIVE, "12 Jan 2026", "11 Jan 2029"),
+  e("CRED/LIC/26/0412", "Crestline Homes Development Co", "Real Estate Developer", ACTIVE, "12 Jan 2026", "11 Jan 2029"),
   e("CRED/PCC/26/0388", "Adeyemi Okonkwo", "Estate Surveyor & Valuer", ACTIVE, "03 Feb 2026", "02 Feb 2027"),
   e("CRED/ACC/26/0101", "Lagos Institute of Property Studies", "Training Institution", ACTIVE, "20 Mar 2026", "19 Mar 2028"),
-  e("CRED/LIC/25/0298", "Zenith Realty Partners Ltd", "Estate Agency Firm", SUSPENDED, "15 Jun 2025", "14 Jun 2028"),
+  e("CRED/LIC/25/0298", "Coastline Realty Partners Ltd", "Estate Agency Firm", SUSPENDED, "15 Jun 2025", "14 Jun 2028"),
   e("CRED/PCC/24/0177", "Funmilayo Bello", "Estate Agent", EXPIRED, "01 Aug 2024", "31 Jul 2025"),
   e("CRED/PMT/26/0233", "Brains & Hammers Ltd", "Real Estate Developer", ACTIVE, "09 Apr 2026", "08 Apr 2027"),
   e("CRED/PCC/26/0201", "Chukwuemeka Nwankwo", "Estate Surveyor & Valuer", ACTIVE, "11 May 2026", "10 May 2027"),
@@ -54,8 +54,8 @@ export const registerEntries: RegisterEntry[] = [
   // ── Beyond the Figma frame: sample entries for page 2 ──
   e("CRED/LIC/24/0231", "Eko Realty Ltd", "Estate Agency Firm", ACTIVE, "14 Mar 2024", "01 Apr 2026"),
   e("CRED/PCC/25/0412", "Tunde Akinwale", "Estate Agent", ACTIVE, "29 Oct 2025", "28 Oct 2026"),
-  e("CRED/LIC/26/0356", "Mainland Realty Consulting Ltd", "Estate Agency Firm", ACTIVE, "02 Jul 2026", "01 Jul 2029"),
-  e("CRED/PCC/25/0390", "Ngozi Eze", "Estate Agent", ACTIVE, "21 Nov 2025", "20 Nov 2026"),
+  e("CRED/LIC/26/0356", "Harbourline Realty Consulting Ltd", "Estate Agency Firm", ACTIVE, "02 Jul 2026", "01 Jul 2029"),
+  e("CRED/PCC/25/0390", "Nkem Achebe", "Estate Agent", ACTIVE, "21 Nov 2025", "20 Nov 2026"),
   e("CRED/PMT/25/0144", "Okafor & Sons Properties Ltd", "Real Estate Developer", SUSPENDED, "05 May 2025", "04 May 2026"),
   e("CRED/ACC/24/0052", "Abuja School of Estate Management", "Training Institution", EXPIRED, "12 Sep 2024", "11 Sep 2026"),
   e("CRED/PCC/26/0274", "Kemi Adeyinka", "Facilities Manager", ACTIVE, "17 Aug 2026", "16 Aug 2027"),

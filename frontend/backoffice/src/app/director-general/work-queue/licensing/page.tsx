@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useDemo } from "@/lib/demo";
 import { useRole } from "@/components/shell/RoleContext";
-import { href } from "@/config/roles";
-import { Button, ButtonLink } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { ClaimedModal } from "@/components/review/ClaimedModal";
 import { StatusBadge } from "@/components/ui/Badge";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { WorkQueueFrame } from "@/components/review/WorkQueueFrame";
 import { rowAction } from "@/components/review/rowAction";
-import { COMPLETED_EMPTY, COMPLETED_NOUN, QueueSwitch, completedFilters, splitQueue, useQueueSide, type Completed } from "@/components/review/queueSide";
-import { CATEGORY_ORDER, LICENSING_STATUS_ORDER, claimSince, licensingKpis, licensingRows, reviewId, type LicensingRow } from "@/data/director-general/work-queue";
+import { COMPLETED_EMPTY, COMPLETED_NOUN, QueueSwitch, completedFilters, splitQueue, useCardFilter, useQueueSide, type Completed } from "@/components/review/queueSide";
+import { CATEGORY_ORDER, CLAIMED_ORDER, LICENSING_STATUS_ORDER, byOldest, claimSince, claimedValue, licensingKpisFor, licensingRows, type LicensingRow } from "@/data/director-general/work-queue";
 
 /** Rows another officer holds: opening one raises "Item already claimed" first (M-QUE-03). */
 const heldByOther = (r: LicensingRow) => !!r.claimedBy && r.claimedBy !== "Adaeze Nwosu";
@@ -41,6 +40,7 @@ const filters: FilterDef<LicensingRow>[] = [
   { label: "Service", key: "service", value: (r) => r.service },
   { label: "Status", key: "status", value: (r) => r.status.label, order: LICENSING_STATUS_ORDER },
   { label: "Category", key: "category", value: (r) => r.category, order: CATEGORY_ORDER },
+  { label: "Claimed by", key: "claimed", value: claimedValue, order: CLAIMED_ORDER },
 ];
 const doneFilters: FilterDef<Completed<LicensingRow>>[] = [
   { label: "Service", key: "service", value: (r) => r.service },
@@ -48,16 +48,21 @@ const doneFilters: FilterDef<Completed<LicensingRow>>[] = [
   ...completedFilters<LicensingRow>(),
 ];
 
-const { open, completed } = splitQueue(licensingRows);
 
 export default function LicensingQueue() {
   const role = useRole();
   const [exportCount, setExportCount] = useState(0);
   const [held, setHeld] = useState<LicensingRow | null>(null);
   const [side, setSide] = useQueueSide();
+  const demo = useDemo();
+  const [preset, applyCard] = useCardFilter();
+  const { open, completed } = useMemo(() => {
+    const q = splitQueue(licensingRows, demo);
+    return { ...q, open: [...q.open].sort(byOldest) };
+  }, [demo]);
   const lead = side && <QueueSwitch side={side} onChange={setSide} />;
   return (
-    <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={side === "completed" ? undefined : licensingKpis} exportCount={exportCount}>
+    <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={side === "completed" ? undefined : licensingKpisFor(open)} onCard={applyCard} exportCount={exportCount}>
       {side === "completed" && (
         <TableCard
           key="completed"
@@ -76,9 +81,10 @@ export default function LicensingQueue() {
       )}
       {side === "open" && (
       <TableCard
-        key="open"
+        key={`open-${preset}`}
         lead={lead}
         title="Applications awaiting final sign-off"
+        empty="Nothing at your stage — no item is waiting for a final decision."
         filters={filters}
         columns={columns}
         rows={open}
@@ -90,30 +96,7 @@ export default function LicensingQueue() {
       />
       )}
 
-      <Modal
-        open={!!held}
-        onClose={() => setHeld(null)}
-        width={480}
-        title="This item is already claimed"
-        description={
-          held && (
-            <p>
-              {held.reference} is claimed by {held.claimedBy} (Licensing &amp; Registration Officer), since {held && claimSince(held)}. You can open it read-only.
-              To decide it, wait until they release it or the claim lapses after 30 minutes of inactivity.
-            </p>
-          )
-        }
-        actions={
-          <>
-            <Button onClick={() => setHeld(null)}>Cancel</Button>
-            {held && (
-              <ButtonLink variant="primary" href={href(role, `application-review/${reviewId(held.reference)}`)}>
-                Open read-only
-              </ButtonLink>
-            )}
-          </>
-        }
-      />
+      <ClaimedModal item={held} holderRole="Licensing & Registration Officer" since={held ? claimSince(held) : undefined} onClose={() => setHeld(null)} />
     </WorkQueueFrame>
   );
 }

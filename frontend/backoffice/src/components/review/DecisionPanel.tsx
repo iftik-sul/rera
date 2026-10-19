@@ -10,13 +10,26 @@ import { Notice } from "@/components/ui/Cards";
 import { RadioGroup } from "@/components/ui/Form";
 import { HelpBox, Modal, ReasonField } from "@/components/ui/Modal";
 import type { Application, DecideActions } from "@/data/director-general/applications";
+import { DG_NAME, DG_ROLE, demoToday, recordApp } from "@/lib/demo";
+import type { Status } from "@/components/ui/Badge";
+
+type Outcome = "approve" | "request" | "return" | "reject" | "chain";
+const RESULT: Record<Exclude<Outcome, "chain">, { status: Status; kind: "decided" | "with-applicant"; action: string }> = {
+  approve: { status: { label: "Approved", tone: "success" }, kind: "decided", action: "Application approved" },
+  reject: { status: { label: "Rejected", tone: "error" }, kind: "decided", action: "Application rejected" },
+  request: { status: { label: "Information Requested", tone: "warning" }, kind: "with-applicant", action: "Information requested" },
+  return: { status: { label: "Returned", tone: "warning" }, kind: "with-applicant", action: "Returned for correction" },
+};
+const SUBSYSTEM = { transaction: "Transaction", escrow: "Escrow", licensing: "Licensing" } as const;
 
 type Which = "approve" | "request" | "return" | "reject" | "blocked" | "chain" | null;
 
 /**
  * Decision bar pinned to the bottom of Application Review, plus its four
- * pop-ups (Figma M-DEC-01 … M-DEC-04). Confirming goes to the Dashboard
- * (as in the Figma prototype) and shows a confirmation toast there.
+ * pop-ups (Figma M-DEC-01 … M-DEC-04). Confirming records the decision for the session
+ * (lib/demo.ts — it shows on the queue, its Completed side and the Audit Trail), returns to
+ * the queue, and shows a toast naming the outcome with a read-only link back to the item
+ * (KB application-review.md §6b — the queue never auto-advances).
  * Request / Return / Reject need a reason before they can be confirmed.
  * A guard on the item (app.decideBlock — e.g. M-BLK-02, no trustee assessment) makes
  * Approve and Reject explain why instead of acting; Request and Return still work.
@@ -39,9 +52,16 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
     setOpen(app.decideBlock && (w === "approve" || w === "reject") ? "blocked" : w);
   };
   const close = () => setOpen(null);
-  const done = (toast: { title: string; body: string }) => {
-    showToastOnNextPage(toast);
-    router.push(href(role, "dashboard"));
+  const done = (what: Outcome, toast: { title: string; body: string }) => {
+    const why = reason.trim() || undefined;
+    if (what === "chain") {
+      recordApp(app.id, { status: { label: stage === "1" ? "Returned to Reviewer" : "Returned to Authorizer", tone: "warning" }, kind: "chain", on: demoToday(), by: DG_NAME, role: DG_ROLE, reason: why }, { action: `Returned to stage ${stage}`, type: "Decision", subsystem: SUBSYSTEM[app.queue], subject: ref, reason: why ?? "—" });
+    } else {
+      const r = what === "approve" && actions.approve.outcome ? { ...RESULT.approve, status: { label: actions.approve.outcome, tone: "success" } as Status, action: "Application accepted" } : RESULT[what];
+      recordApp(app.id, { status: r.status, kind: r.kind, on: demoToday(), by: DG_NAME, role: DG_ROLE, reason: why }, { action: r.action, type: "Decision", subsystem: SUBSYSTEM[app.queue], subject: ref, reason: why ?? "—" });
+    }
+    showToastOnNextPage({ ...toast, link: { label: `View ${ref}`, href: href(role, `application-review/${app.id}`) } });
+    router.push(href(role, `work-queue/${app.queue}`));
   };
   const hasReason = reason.trim().length > 0;
 
@@ -70,7 +90,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="primary" onClick={() => done(actions.approve.toast)}>
+            <Button variant="primary" onClick={() => done("approve", actions.approve.toast)}>
               {actions.approve.confirm ?? "Approve and issue"}
             </Button>
           </>
@@ -113,7 +133,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
                 variant="primary"
                 disabled={!stage || !hasReason}
                 onClick={() =>
-                  done({ title: `Returned to stage ${stage}`, body: `${ref} is back in the stage ${stage} pool with your reason.` })
+                  done("chain", { title: `Returned to stage ${stage}`, body: `${ref} is back in the stage ${stage} pool with your reason.` })
                 }
               >
                 Return item
@@ -156,7 +176,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
             actions={
               <>
                 <Button onClick={close}>Cancel</Button>
-                <Button variant="primary" disabled={!hasReason} onClick={() => done(d.toast)}>
+                <Button variant="primary" disabled={!hasReason} onClick={() => done(w, d.toast)}>
                   {d.confirm}
                 </Button>
               </>
@@ -175,7 +195,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
         actions={
           <>
             <Button onClick={close}>Cancel</Button>
-            <Button variant="danger" disabled={!hasReason} onClick={() => done(actions.reject.toast)}>
+            <Button variant="danger" disabled={!hasReason} onClick={() => done("reject", actions.reject.toast)}>
               {actions.reject.confirm}
             </Button>
           </>
