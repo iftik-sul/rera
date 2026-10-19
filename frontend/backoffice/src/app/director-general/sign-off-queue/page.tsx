@@ -8,6 +8,7 @@ import { KpiCard, KpiRow } from "@/components/ui/KpiCard";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { QueueSwitch, decidedPeriodFilter, useQueueSide } from "@/components/review/queueSide";
 import { AGE_BUCKETS, ageBucket, byAge, pendingOf, signoffDecided, signoffKpisFor, signoffMatters, withSignoffChanges, type SignoffMatter } from "@/data/director-general/signoff";
+import { toTime } from "@/lib/dates";
 
 // Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<SignoffMatter>[] = [
@@ -35,7 +36,7 @@ const filters: FilterDef<SignoffMatter>[] = [
 const doneFilters: FilterDef<SignoffMatter>[] = [
   { label: "Source", key: "source", value: (r) => r.source },
   { label: "Outcome", key: "outcome", value: (r) => r.status.label, order: ["Authorised", "Declined"] },
-  decidedPeriodFilter<SignoffMatter>((r) => Date.parse(signoffDecided(r))),
+  decidedPeriodFilter<SignoffMatter>((r) => toTime(signoffDecided(r))),
 ];
 
 /**
@@ -49,7 +50,7 @@ export default function SignoffQueue() {
   const matters = withSignoffChanges(signoffMatters, demo.signoffs);
   // Open side: longest-waiting first, as every work queue sorts (work-queue.md §4).
   const pending = pendingOf(matters).sort(byAge);
-  const decided = matters.filter((s) => s.status.label !== "Pending Sign-off").sort((a, b) => Date.parse(signoffDecided(b)) - Date.parse(signoffDecided(a)));
+  const decided = matters.filter((s) => s.status.label !== "Pending Sign-off").sort((a, b) => toTime(signoffDecided(b)) - toTime(signoffDecided(a)));
   const lead = side && <QueueSwitch side={side} onChange={setSide} />;
   return (
     <Page title="Sign-off Queue" subtitle="Matters escalated for your executive sign-off.">

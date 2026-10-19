@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shell/Icon";
+import { dayOf, toTime } from "@/lib/dates";
 
 /** One line of an item's history: when, who (and as which role), what happened, and any reason. */
 export type ActivityItem = { at: string; who: string; role?: string; what: string; note?: string };
 
-const time = (at: string) => Date.parse(at.replace(",", "")) || 0;
+const time = toTime;
 
 /**
  * Newest first. The same person doing the same thing on the same day is one line, however many
@@ -17,7 +18,7 @@ export function sortActivity(items: ActivityItem[]): ActivityItem[] {
   return [...items]
     .sort((a, b) => time(b.at) - time(a.at))
     .filter((i) => {
-      const k = `${i.who}|${i.at.split(",")[0]}|${i.what.replace(/^Stage \d — /, "").toLowerCase()}`;
+      const k = `${i.who}|${dayOf(i.at)}|${i.what.replace(/^Stage \d — /, "").toLowerCase()}`;
       if (seen.has(k)) return false;
       seen.add(k);
       return true;

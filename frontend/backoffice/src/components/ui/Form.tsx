@@ -109,6 +109,17 @@ export function Checkbox({ checked, onChange, children }: { checked: boolean; on
   );
 }
 
+/** One choice from a set, same look as Checkbox (e.g. the one role an account holds). */
+export function Radio({ name, checked, onChange, children }: { name: string; checked: boolean; onChange: () => void; children: React.ReactNode }) {
+  const id = useId();
+  return (
+    <label htmlFor={id} className="flex cursor-pointer items-start gap-2.5 type-body text-strong">
+      <input id={id} type="radio" name={name} checked={checked} onChange={onChange} className="mt-0.5 size-4 shrink-0 cursor-pointer accent-action focus-ring" />
+      <span>{children}</span>
+    </label>
+  );
+}
+
 /**
  * Choose one of a few options, each with a line of explanation (e.g. which stage an item
  * returns to). Shown as bordered rows; the chosen row takes the action outline.

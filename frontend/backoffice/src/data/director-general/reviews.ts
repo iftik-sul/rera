@@ -45,15 +45,15 @@ import {
   type LicensingRow,
   type TransactionRow,
 } from "./work-queue";
+import { fmtDate, fmtStamp, toTime } from "@/lib/dates";
 
 // ── Small helpers ───────────────────────────────────────────
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const SHORT = MONTHS.map((m) => m.slice(0, 3));
 
 /** A date `days` before the sample "today". */
 const before = (days: number) => new Date(SAMPLE_TODAY.getTime() - days * 86_400_000);
-const dayMonYear = (d: Date) => `${d.getUTCDate()} ${SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+// DD/MM/YYYY (design standard D0.7). The name is kept so the builders below read unchanged.
+const dayMonYear = fmtDate;
 
 /** "none required…" → "None required…" when the text stands on its own. */
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
@@ -81,10 +81,10 @@ const MY_CLAIM = { held: "Claimed by you", detail: "· since you opened it · la
 /** Overturns already on record (kept in step with the Audit Trail, aud-0875 / aud-0876). */
 const OVERTURNS: Record<string, { on: string; original: string; by: string; decidedOn: string; revoked: string; reason: string }> = {
   "TRX-2024-0878": {
-    on: "5 Oct 2026",
+    on: "05/10/2026",
     original: "Approved",
     by: "Chukwuemeka Obi (Compliance & Escrow Auditor)",
-    decidedOn: "2 Oct 2026",
+    decidedOn: "02/10/2026",
     revoked: "e-Certificate of Mortgage Registration RERA/MC/2026/04712",
     reason: "Mortgage registered against a title the lender does not hold",
   },
@@ -164,7 +164,7 @@ function overrideActions(o: {
   decidedBy: string;
   role: string;
   decidedOn: Date;
-  /** "2 Oct 2026, 14:55" — when the decision's time is already shown elsewhere (the licensing chain), pass it so the two agree. */
+  /** "02/10/2026, 02:55:18PM" — when the decision's time is already shown elsewhere (the licensing chain), pass it so the two agree. */
   recordedAt?: string;
   reason: string;
   issuedRef: string;
@@ -175,7 +175,7 @@ function overrideActions(o: {
 }): OverrideActions {
   const approved = o.outcome.label !== "Rejected"; // Approved, or Accepted (RED #22)
   const when = dayMonYear(o.decidedOn);
-  const recordedAt = o.recordedAt ?? `${when}, ${10 + (seed(o.ref) % 7)}:${String(seed(o.ref) % 60).padStart(2, "0")}`;
+  const recordedAt = o.recordedAt ?? fmtStamp(o.decidedOn, 10 + (seed(o.ref) % 7), seed(o.ref) % 60, (seed(o.ref) * 7) % 60);
   const onRecord = `On record: ${o.title}, filed by ${o.who}. ${o.outcome.label} by ${o.decidedBy} (${o.role}) on ${when}.`;
   const credentialNote = o.credential ? " and withdraws the register entry, recording the cause as Overturn" : "";
 
@@ -687,7 +687,7 @@ function licensingShape(row: LicensingRow) {
       { title: "Company standing", fields: [
         { label: "CAC status", value: "Active" },
         { label: "Directors verified", value: `${2 + (n % 3)} of ${2 + (n % 3)}` },
-        { label: "Last annual filing", value: "30 Jun 2026" },
+        { label: "Last annual filing", value: "30/06/2026" },
       ] },
     ],
     docs: ["Certificate of Incorporation (CAC)", "Board Resolution authorising portal use", "Company Letterhead", "Directors' NIN Verification", ...(permit ? ["Project Approval Letter"] : [])],
@@ -697,7 +697,7 @@ function licensingShape(row: LicensingRow) {
   };
 }
 
-const at = (d: Date, h: number, m: number) => `${dayMonYear(d)}, ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+const at = (d: Date, h: number, m: number) => fmtStamp(d, h, m, (h * 17 + m * 7) % 60);
 
 function licensingReview(row: LicensingRow, i: number): Application {
   const ref = row.reference;
@@ -870,9 +870,9 @@ export function completedRecord(opens: string | undefined): CompletedRecord {
   const app = opens ? findApplication(opens.slice("review:".length)) : undefined;
   const ref = app?.title.split(" — ")[0] ?? "";
   const over = OVERTURNS[ref];
-  if (over) return { decided: over.on, at: Date.parse(over.on), by: OVERTURNED_BY };
+  if (over) return { decided: over.on, at: toTime(over.on), by: OVERTURNED_BY };
   const rec = app?.override?.recorded;
   if (!rec) return { decided: "—", at: 0, by: "—" };
   const day = rec.recordedAt.split(",")[0];
-  return { decided: day, at: Date.parse(day), by: rec.decidedBy };
+  return { decided: day, at: toTime(day), by: rec.decidedBy };
 }

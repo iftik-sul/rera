@@ -85,18 +85,18 @@ export const months: Month[] = [
   {
     id: "2026-08", label: "August 2026", short: "August", status: "Filed", scale: 1.1, inTransit: 0, failed: 16,
     cost: { absorbed: 0, mismatches: 0, shortfalls: 5_000 }, vatRemitted: true,
-    version: { name: "v2", from: "1 Apr 2026" }, filedBy: "Amaka Okeke · 4 Sep 2026",
+    version: { name: "v2", from: "01/04/2026" }, filedBy: "Amaka Okeke · 04/09/2026",
   },
   {
     id: "2026-09", label: "September 2026", short: "September", status: "Filed", scale: 0.9, inTransit: 0, failed: 11,
     cost: { absorbed: 0, mismatches: 1_500, shortfalls: 0 }, vatRemitted: true,
-    version: { name: "v2", from: "1 Apr 2026" }, filedBy: "Amaka Okeke · 3 Oct 2026",
+    version: { name: "v2", from: "01/04/2026" }, filedBy: "Amaka Okeke · 03/10/2026",
   },
   {
     // Open, not Reconciled: on 11 Oct the month is still running (2026-10-19 review).
     id: "2026-10", label: "October 2026", short: "October", status: "Open", scale: 1, inTransit: 2_372_000, failed: 14,
     cost: { absorbed: 0, mismatches: 2_832.5, shortfalls: 10_000 }, vatRemitted: false,
-    version: { name: "v3", from: "1 Oct 2026" },
+    version: { name: "v3", from: "01/10/2026" },
   },
 ];
 

@@ -100,12 +100,12 @@ export function parseRange(v: string): { from: string; to: string } {
   const [from = "", to = ""] = v.split(RANGE_SEP);
   return { from, to };
 }
-const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** "2026-09-01" (what a date box holds) → "01/09/2026" (how the platform writes it). */
 const nice = (iso: string) => {
-  const [y, m, d] = iso.split("-").map(Number);
-  return `${d} ${MON[m - 1]} ${y}`;
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
 };
-/** How a chosen range reads on the button: "1 Sep 2026 – 30 Sep 2026", "From 1 Sep 2026", "Up to 30 Sep 2026". */
+/** How a chosen range reads on the button: "01/09/2026 – 30/09/2026", "From 01/09/2026", "Up to 30/09/2026". */
 export function rangeLabel(v: string) {
   const { from, to } = parseRange(v);
   return from && to ? `${nice(from)} – ${nice(to)}` : from ? `From ${nice(from)}` : `Up to ${nice(to)}`;

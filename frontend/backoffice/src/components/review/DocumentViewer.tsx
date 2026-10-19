@@ -5,11 +5,12 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal, ReasonField } from "@/components/ui/Modal";
 import type { Doc } from "@/data/director-general/applications";
+import { clockTime } from "@/lib/dates";
 
 /** The reviewing officer's verdict on one document, made this session (KB application-review.md §3). */
 export type DocVerdict = { status: "Verified" | "Rejected" | "Pending"; reason?: string; at?: string };
 
-const now = () => new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+const now = () => clockTime();
 
 /**
  * Document viewer (KB application-review.md §3): a pop-up over Application Review, never its
