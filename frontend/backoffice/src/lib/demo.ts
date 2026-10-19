@@ -26,7 +26,7 @@ export type AppChange = {
   by: string;
   role: string;
   reason?: string;
-  /** decided = Approve/Reject/Accept · overturned = DG override · with-applicant = Request Info / Return · chain = sent back to stage 1 or 2 */
+  /** decided = Approve/Reject/Accept · overturned = DG override · with-applicant = Request additional information / Return · chain = sent back to stage 1 or 2 */
   kind: "decided" | "overturned" | "with-applicant" | "chain";
   /** For an overturn: the outcome that was replaced. */
   replaced?: string;

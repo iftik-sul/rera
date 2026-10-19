@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { StatusBadge, type Status } from "./Badge";
 import { Icon } from "@/components/shell/Icon";
+import { CrumbLink } from "./CrumbLink";
 
 /** Breadcrumb trail (Figma "Breadcrumb"): earlier steps are blue links, the current one grey. */
 export function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
@@ -9,9 +9,7 @@ export function Breadcrumb({ items }: { items: { label: string; href?: string }[
       {items.map((it, i) => (
         <span key={it.label} className="flex items-center gap-2">
           {it.href ? (
-            <Link href={it.href} className="type-body-strong text-link hover:underline">
-              {it.label}
-            </Link>
+            <CrumbLink href={it.href}>{it.label}</CrumbLink>
           ) : (
             <span className="text-muted">{it.label}</span>
           )}

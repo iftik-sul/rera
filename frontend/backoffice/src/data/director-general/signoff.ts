@@ -40,33 +40,33 @@ const m = (reference: string, matter: string, recommendation: string, status: St
 });
 
 export const signoffMatters: SignoffMatter[] = [
-  m("RRA/SO/2026/0218", "Licence revocation — Eko Realty Ltd", "Recommend revoke — licence lapsed", PENDING, "05 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0224", "Permit revocation — Zenith Estates Plc", "Recommend revoke — unresolved breach", PENDING, "07 Oct 2026", "Abuja"),
-  m("RRA/SO/2026/0229", "Accreditation revocation — Delta Valuers", "Recommend revoke accreditation", PENDING, "08 Oct 2026", "Port Harcourt"),
+  m("RRA/SO/2026/0218", "Licence revocation — Eko Realty Ltd", "Recommend revoke — licence lapsed", PENDING, "5 Oct 2026", "Lagos"),
+  m("RRA/SO/2026/0224", "Permit revocation — Zenith Estates Plc", "Recommend revoke — unresolved breach", PENDING, "7 Oct 2026", "Abuja"),
+  m("RRA/SO/2026/0229", "Accreditation revocation — Delta Valuers", "Recommend revoke accreditation", PENDING, "8 Oct 2026", "Port Harcourt"),
   // Figma: Kano Homes — but Kano Homes' licence was withdrawn by OVERTURN (its register entry), not revocation.
-  m("RRA/SO/2026/0231", "Licence revocation — Crestview Property Managers Ltd", "Recommend revoke", AUTHORISED, "02 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0235", "Practice card revocation — Adeyemi O.", "Recommend revoke", PENDING, "09 Oct 2026", "Ibadan"),
+  m("RRA/SO/2026/0231", "Licence revocation — Crestview Property Managers Ltd", "Recommend revoke", AUTHORISED, "2 Oct 2026", "Lagos"),
+  m("RRA/SO/2026/0235", "Practice card revocation — Adeyemi O.", "Recommend revoke", PENDING, "9 Oct 2026", "Ibadan"),
   m("RRA/SO/2026/0209", "Licence revocation — Lagos Prime Ltd", "Recommend revoke", DECLINED, "28 Sep 2026", "Lagos"),
   m("RRA/SO/2026/0241", "Permit revocation — Suru Group Ltd", "Recommend revoke", PENDING, "10 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0244", "Practice card revocation — Bello F.", "Recommend revoke", PENDING, "10 Oct 2026", "Kaduna"),
   m("RRA/SO/2026/0198", "Licence revocation — Mixta Nigeria Ltd", "Recommend revoke", AUTHORISED, "24 Sep 2026", "Lagos"),
   m("RRA/SO/2026/0251", "Accreditation revocation — PGD Institute", "Recommend revoke", PENDING, "11 Oct 2026", "Abuja"),
   // ── Beyond the Figma frame: sample matters for page 2 ──
-  m("RRA/SO/2026/0220", "Licence revocation — Sapphire Realty Consultants", "Recommend revoke — repeated breach", PENDING, "06 Oct 2026", "Abuja"),
-  m("RRA/SO/2026/0226", "Permit revocation — Lakeside Homes Ltd", "Recommend revoke — escrow default", PENDING, "07 Oct 2026", "Lagos"),
-  m("RRA/SO/2026/0233", "Practice card revocation — Okeke C.", "Recommend revoke — false declaration", PENDING, "08 Oct 2026", "Enugu"),
-  m("RRA/SO/2026/0237", "Accreditation revocation — Northern Surveyors Guild", "Recommend revoke — curriculum lapsed", PENDING, "09 Oct 2026", "Kaduna"),
-  m("RRA/SO/2026/0239", "Licence revocation — Niger Delta Estates Ltd", "Recommend revoke — licence lapsed", PENDING, "09 Oct 2026", "Port Harcourt"),
+  m("RRA/SO/2026/0220", "Licence revocation — Sapphire Realty Consultants", "Recommend revoke — repeated breach", PENDING, "6 Oct 2026", "Abuja"),
+  m("RRA/SO/2026/0226", "Permit revocation — Lakeside Homes Ltd", "Recommend revoke — escrow default", PENDING, "7 Oct 2026", "Lagos"),
+  m("RRA/SO/2026/0233", "Practice card revocation — Okeke C.", "Recommend revoke — false declaration", PENDING, "8 Oct 2026", "Enugu"),
+  m("RRA/SO/2026/0237", "Accreditation revocation — Northern Surveyors Guild", "Recommend revoke — curriculum lapsed", PENDING, "9 Oct 2026", "Kaduna"),
+  m("RRA/SO/2026/0239", "Licence revocation — Niger Delta Estates Ltd", "Recommend revoke — licence lapsed", PENDING, "9 Oct 2026", "Port Harcourt"),
   m("RRA/SO/2026/0243", "Permit revocation — Eastgate Property Developers", "Recommend revoke", PENDING, "10 Oct 2026", "Onitsha"),
   m("RRA/SO/2026/0247", "Practice card revocation — Ibrahim K.", "Recommend revoke", PENDING, "11 Oct 2026", "Kano"),
   m("RRA/SO/2026/0249", "Licence revocation — Royal Crest Facility Managers", "Recommend revoke", PENDING, "11 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0187", "Licence revocation — Haven Homes Nigeria Ltd", "Recommend revoke", AUTHORISED, "19 Sep 2026", "Lagos"),
   m("RRA/SO/2026/0179", "Permit revocation — Garden City Homes Ltd", "Recommend revoke", AUTHORISED, "15 Sep 2026", "Port Harcourt"),
   // Added with the Completed side (2026-10-19) — sign-off history, spread over the year.
-  m("RRA/SO/2026/0171", "Practice card revocation — Nwachukwu A.", "Recommend revoke — false declaration", AUTHORISED, "03 Sep 2026", "Enugu"),
+  m("RRA/SO/2026/0171", "Practice card revocation — Nwachukwu A.", "Recommend revoke — false declaration", AUTHORISED, "3 Sep 2026", "Enugu"),
   m("RRA/SO/2026/0164", "Accreditation revocation — Coastal Valuers Institute", "Recommend revoke accreditation", DECLINED, "21 Aug 2026", "Lagos"),
   m("RRA/SO/2026/0152", "Licence revocation — Prime Acres Ltd", "Recommend revoke — licence lapsed", AUTHORISED, "29 Jul 2026", "Abuja"),
-  m("RRA/SO/2026/0138", "Permit revocation — Westfield Estates Ltd", "Recommend revoke — escrow default", AUTHORISED, "02 Jul 2026", "Ibadan"),
+  m("RRA/SO/2026/0138", "Permit revocation — Westfield Estates Ltd", "Recommend revoke — escrow default", AUTHORISED, "2 Jul 2026", "Ibadan"),
   m("RRA/SO/2026/0121", "Practice card revocation — Danjuma S.", "Recommend revoke", DECLINED, "11 May 2026", "Kano"),
   m("RRA/SO/2026/0097", "Licence revocation — Harbour View Realty", "Recommend revoke — repeated breach", AUTHORISED, "16 Feb 2026", "Port Harcourt"),
   m("RRA/SO/2025/0412", "Permit revocation — Sunrise Homes Ltd", "Recommend revoke", AUTHORISED, "20 Nov 2025", "Lagos"),
@@ -87,15 +87,15 @@ export const AGE_BUCKETS = ["0–2 days", "3–5 days", "6 days or more"];
 
 /** Decisions already on record (kept in step with the audit trail where it names them). */
 const DECIDED_ON: Record<string, { date: string; reason?: string }> = {
-  "RRA/SO/2026/0231": { date: "09 Oct 2026" },
+  "RRA/SO/2026/0231": { date: "9 Oct 2026" },
   "RRA/SO/2026/0198": { date: "26 Sep 2026" },
   "RRA/SO/2026/0187": { date: "22 Sep 2026" },
   "RRA/SO/2026/0179": { date: "17 Sep 2026" },
   "RRA/SO/2026/0209": { date: "30 Sep 2026", reason: "The renewal application was lodged inside the window; Licensing should decide the renewal before any revocation." },
-  "RRA/SO/2026/0171": { date: "05 Sep 2026" },
+  "RRA/SO/2026/0171": { date: "5 Sep 2026" },
   "RRA/SO/2026/0164": { date: "24 Aug 2026", reason: "The institute's curriculum review is still open with Licensing; revoke only once it concludes." },
   "RRA/SO/2026/0152": { date: "31 Jul 2026" },
-  "RRA/SO/2026/0138": { date: "06 Jul 2026" },
+  "RRA/SO/2026/0138": { date: "6 Jul 2026" },
   "RRA/SO/2026/0121": { date: "13 May 2026", reason: "The complaint behind the recommendation was withdrawn; there is no remaining ground to revoke the card." },
   "RRA/SO/2026/0097": { date: "19 Feb 2026" },
   "RRA/SO/2025/0412": { date: "24 Nov 2025" },
@@ -171,7 +171,8 @@ const featuredSignoffs: SignoffDetail[] = [
         fields: [
           { label: "Escalated by", value: "Funke Adeyemi" },
           { label: "Role", value: "Licensing & Registration Officer" },
-          { label: "Date", value: "05 Oct 2026" },
+          { label: "Date", value: "5 Oct 2026" },
+          { label: "Office", value: "Lagos" },
         ],
       },
       {
@@ -194,14 +195,14 @@ const featuredSignoffs: SignoffDetail[] = [
     ],
     recommendation: {
       badge: "Revoke",
-      headline: "Revoke licence LIC-2024-0231 — Eko Realty Ltd.",
-      body: "The company's operating licence lapsed on 01 Apr 2026 and the renewal window closed unremedied. Two notices were served (last on 20 Sep 2026) with no response. The Licensing Officer recommends revocation and withdrawal of the register entry.",
-      by: "Funke Adeyemi · Licensing Officer · 05 Oct 2026",
+      headline: "Revoke licence CRED/LIC/24/0231 — Eko Realty Ltd.",
+      body: "The company's operating licence lapsed on 1 Apr 2026 and the renewal window closed unremedied. Two notices were served (last on 20 Sep 2026) with no response. The Licensing & Registration Officer recommends revocation and withdrawal of the register entry.",
+      by: "Funke Adeyemi · Licensing & Registration Officer · 5 Oct 2026",
     },
     panelNote: "Authorising requires re-authentication and returns the revocation to Licensing to execute.",
     authorise: {
       title: "Authorise this revocation?",
-      body: "This authorises revocation of licence LIC-2024-0231 — Eko Realty Ltd — and returns it to Licensing to execute. The register entry will be withdrawn with the cause recorded as Revocation.",
+      body: "This authorises revocation of licence CRED/LIC/24/0231 — Eko Realty Ltd — and returns it to Licensing to execute. The register entry will be withdrawn with the cause recorded as Revocation.",
       callout: "This is final. Once Licensing executes it, the licence is revoked and the holder is notified.",
       confirm: "Authorise revocation",
       toast: { title: "Sign-off authorised", body: "RRA/SO/2026/0218 has returned to Licensing to execute the revocation." },
@@ -283,6 +284,7 @@ function buildSignoff(row: SignoffMatter): SignoffDetail {
           { label: "Escalated by", value: "Funke Adeyemi" },
           { label: "Role", value: "Licensing & Registration Officer" },
           { label: "Date", value: row.escalated },
+          { label: "Office", value: row.origin },
         ],
       },
       {
@@ -291,7 +293,6 @@ function buildSignoff(row: SignoffMatter): SignoffDetail {
           { label: "Practitioner / Company", value: subject },
           { label: "Credential", value: credential },
           { label: "Original decision", value: decisionRef },
-          { label: "Office", value: row.origin },
         ],
       },
       {
@@ -306,8 +307,8 @@ function buildSignoff(row: SignoffMatter): SignoffDetail {
     recommendation: {
       badge: k.badge,
       headline: `${k.badge} ${kindName === "Licence revocation" ? "licence " : ""}${credential} — ${subjectShort.replace(/\.$/, "")}.`,
-      body: `${reason}. The Licensing Officer recommends that RERA ${k.verb} ${subjectShort.replace(/\.$/, "")}'s credential. ${k.effect}`,
-      by: `Funke Adeyemi · Licensing Officer · ${row.escalated}`,
+      body: `${reason}. The Licensing & Registration Officer recommends that RERA ${k.verb} ${subjectShort.replace(/\.$/, "")}'s credential. ${k.effect}`,
+      by: `Funke Adeyemi · Licensing & Registration Officer · ${row.escalated}`,
     },
     panelNote: `Authorising requires re-authentication and returns the ${k.noun} to Licensing to execute.`,
     authorise: {

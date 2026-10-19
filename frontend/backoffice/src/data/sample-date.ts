@@ -9,7 +9,7 @@ export const SAMPLE_TODAY = new Date("2026-10-11T12:00:00Z");
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** "05 Oct 2026" → Date */
+/** "5 Oct 2026" → Date */
 export function parseDay(s: string): Date {
   const [d, m, y] = s.split(" ");
   return new Date(Date.UTC(Number(y), MONTHS.indexOf(m), Number(d), 12));

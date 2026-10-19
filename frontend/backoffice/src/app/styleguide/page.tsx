@@ -293,7 +293,7 @@ export default function StyleGuide() {
             <KpiCard label="Oldest pending" value="6 days" caption="RRA/SO/2026/0218" />
           </KpiRow>
           <DetailHeader title="Licence revocation — Eko Realty Ltd" subtitle="RRA/SO/2026/0218" status={{ label: "Pending Sign-off", tone: "warning" }} meta={[{ label: "Source", value: "Licensing" }, { label: "Escalated", value: "6 days ago" }]} />
-          <FieldGroup title="Applicant information" fields={[{ label: "Entity name", value: "Adron Homes & Properties" }, { label: "License number", value: "RC-20198" }, { label: "Contact", value: "registry@adronhomes.ng" }]} />
+          <FieldGroup title="Applicant information" fields={[{ label: "Entity name", value: "Adron Homes & Properties" }, { label: "CAC registration (RC)", value: "RC-20198" }, { label: "Contact", value: "registry@adronhomes.ng" }]} />
           <Banner tone="success">Reconciled — these figures are final unless the period is reopened.</Banner>
           <Banner tone="warning">Provisional — this period has not been reconciled. Figures may change.</Banner>
           <Banner tone="neutral">Filed — locked.</Banner>

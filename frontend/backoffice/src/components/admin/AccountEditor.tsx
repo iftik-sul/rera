@@ -199,7 +199,7 @@ export function AccountEditor({ member }: { member: StaffMember }) {
         <Notice>Only the MFA factor is reset — roles and category scope are unchanged.</Notice>
       </Modal>
 
-      {/* M-ADM-08 — Unlock sign-in. Proposed (open-questions A16); not yet drawn in Figma. */}
+      {/* M-ADM-08 — Unlock sign-in (open-questions A16, decided 2026-10-19). */}
       <Modal
         open={step === "unlock"}
         onClose={close}

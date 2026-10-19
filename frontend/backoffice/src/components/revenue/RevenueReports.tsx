@@ -297,7 +297,7 @@ function Collections({
           label="In transit"
           value={money(totalOf(period, (m) => m.inTransit))}
           caption={
-            wholePeriod ?? "Not yet settled — never added to the figures"
+            wholePeriod ?? "Not yet settled, so not counted"
           }
         />
         <KpiCard

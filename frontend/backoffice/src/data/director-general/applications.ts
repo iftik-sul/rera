@@ -16,7 +16,7 @@ type Toast = { title: string; body: string };
 type ReasonDialog = { title: string; body: string[]; label: string; placeholder: string; confirm: string; toast: Toast };
 
 export type DecideActions = {
-  /** Label on the request button: "Request Info" (transaction) or "Request additional information" (licensing). */
+  /** Label on the request button: "Request additional information" on every queue (2026-10-19 review). */
   requestLabel: string;
   approve: { title: string; body: string[]; callout: string; toast: Toast; /** Confirm button; default "Approve and issue". */ confirm?: string; /** Pay-after service (RED #22): the decision records Accepted, the licence issues on payment (KB A-2 §9). */ outcome?: "Accepted" };
   request: ReasonDialog;
@@ -39,7 +39,14 @@ export type OverrideActions = {
 export type Held = { tone: "warning" | "neutral"; title: string; body: string };
 
 /** A guard on Approve / Reject (e.g. M-BLK-02: escrow item with no trustee assessment). */
-export type DecideBlock = { title: string; body: string; helpTitle: string; help: string };
+export type DecideBlock = {
+  title: string;
+  body: string;
+  helpTitle: string;
+  help: string;
+  /** Which decisions the guard stops. Default both; M-BLK-03 stops only an approval. */
+  blocks?: ("approve" | "reject")[];
+};
 
 export type Queue = "transaction" | "escrow" | "licensing";
 
@@ -69,6 +76,10 @@ export type Application = {
   checks: string[];
   /** Checks still waiting (shown as "Awaiting", and the card reads Attention instead of All Clear). */
   checksPending?: string[];
+  /** What a pending check reads instead of "Awaiting" — "Unavailable" (M-BLK-01), "Not verified" (M-BLK-03). */
+  checksPendingLabel?: string;
+  /** A line under the checks explaining the state. */
+  checksNote?: string;
   /** Escrow items only (application-review.md §5). */
   escrow?: { trustee: { received: boolean; summary: string; fields: Field[] }; account: Field[] };
   decide?: DecideActions;
@@ -85,12 +96,12 @@ export const approved: Status = { label: "Approved", tone: "success" };
 
 // Two transaction screens, one per Work Queue row that opens them (Figma reused one
 // "Grandeur Properties / TRX-2024-00891" frame for both rows — corrected 2026-10-19).
-export const summaryFor = (o: { entity: string; rc: string; contact: string; developer: string; project: string; unit: string; type: string; txn: string; price: string; fee: string }): Application["summary"] => [
+export const summaryFor = (o: { entity: string; rc: string; contact: string; developer: string; project: string; unit: string; type: string; txn: string; price: string; fee: string; submitted?: string }): Application["summary"] => [
   {
     title: "Applicant information",
     fields: [
       { label: "Entity name", value: o.entity },
-      { label: "License number", value: o.rc },
+      { label: "CAC registration (RC)", value: o.rc },
       { label: "Contact", value: o.contact },
     ],
   },
@@ -109,6 +120,8 @@ export const summaryFor = (o: { entity: string; rc: string; contact: string; dev
       { label: "Transaction type", value: o.txn },
       { label: "Sale price", value: o.price },
       { label: "Fee payable", value: o.fee },
+      // The date the application was lodged (2026-10-19 review: transaction reviews showed none).
+      ...(o.submitted ? [{ label: "Submitted", value: o.submitted }] : []),
     ],
   },
 ];
@@ -116,12 +129,12 @@ export const summaryFor = (o: { entity: string; rc: string; contact: string; dev
 const adronSummary = summaryFor({
   entity: "Adron Homes & Properties", rc: "RC-20198", contact: "registry@adronhomes.ng",
   developer: "Adron Homes & Properties", project: "Victoria Island", unit: "Plot A-12", type: "Detached house",
-  txn: "Initial Sale", price: "₦485,000,000", fee: "₦19,400,000",
+  txn: "Initial Sale", price: "₦485,000,000", fee: "₦19,400,000", submitted: "8 Oct 2026",
 });
 const mixtaSummary = summaryFor({
   entity: "Mixta Nigeria Ltd", rc: "RC-114502", contact: "conveyancing@mixtanigeria.com",
   developer: "Eko Atlantic City Developers", project: "Eko Atlantic Tower", unit: "Unit 2304", type: "Apartment",
-  txn: "Resale", price: "₦310,000,000", fee: "₦12,400,000",
+  txn: "Resale", price: "₦310,000,000", fee: "₦12,400,000", submitted: "28 Sep 2026",
 });
 
 const grandeurDocs: Doc[] = [

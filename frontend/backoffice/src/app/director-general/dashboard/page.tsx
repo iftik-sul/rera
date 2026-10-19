@@ -32,7 +32,7 @@ export default function Dashboard() {
   const matters = withSignoffChanges(signoffMatters, demo.signoffs);
   const kpis = dashboardKpis(matters, staff, [...demo.audit, ...auditEntries]);
   return (
-    <Page title="Dashboard" subtitle="Welcome back — here's your governance overview.">
+    <Page title="Dashboard" subtitle="Director-General / Registrar — your work at a glance">
       <KpiRow>
         {kpis.map((k) => (
           <KpiCard key={k.label} {...k} href={withQuery(k.href)} />

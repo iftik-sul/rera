@@ -7,6 +7,21 @@ import { ExportMenu } from "@/components/ui/ExportMenu";
 import { Breadcrumb, Card, DetailHeader, FieldGroup } from "@/components/ui/Cards";
 import { TableCard, type Column } from "@/components/ui/Table";
 import type { EntryDetail } from "@/data/director-general/register";
+import Link from "next/link";
+import { linkRefs } from "@/components/ui/RefLink";
+import { subjectLink } from "@/data/director-general/audit";
+
+/** A reference that has its own screen opens it (2026-10-19 review). */
+const Ref = ({ value, self }: { value: string; self: string }) => {
+  const to = subjectLink(value);
+  return to && !(self && to.includes(self)) ? (
+    <Link href={to} className="type-body-strong text-link hover:underline">
+      {value}
+    </Link>
+  ) : (
+    <>{value}</>
+  );
+};
 
 type HistoryRow = EntryDetail["history"][number];
 
@@ -16,14 +31,14 @@ const historyColumns: Column<HistoryRow>[] = [
   { header: "Event", width: 32, cell: (h) => h.event },
   { header: "By", width: 20, cell: (h) => h.by },
   { header: "Type", width: 14, cell: (h) => <StatusBadge status={h.type} /> },
-  { header: "Reference", width: 20, tone: "muted", cell: (h) => h.reference },
+  { header: "Reference", width: 20, tone: "muted", cell: (h) => <Ref value={h.reference} self="" /> },
 ];
 
 /** Practitioner Register — Entry Detail (Figma). Read-only: entries change only through a licensing decision. */
 export function EntryDetailView({ entry }: { entry: EntryDetail }) {
   return (
     <Page title={entry.title} subtitle={entry.subtitle} bodyClassName="gap-4 px-8 py-5">
-      <Breadcrumb items={[{ label: "Practitioner Register", href: href(directorGeneral, "practitioner-register") }, { label: "Entry Detail" }]} />
+      <Breadcrumb items={[{ label: "Practitioner Register", href: href(directorGeneral, "practitioner-register") }, { label: entry.title.split(" ")[0] }]} />
 
       <DetailHeader title={entry.subtitle} subtitle={entry.title} status={entry.status} meta={entry.meta} />
 
@@ -31,7 +46,7 @@ export function EntryDetailView({ entry }: { entry: EntryDetail }) {
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <Card title="Entry record">
             {entry.groups.map((g) => (
-              <FieldGroup key={g.title} title={g.title} fields={g.fields} />
+              <FieldGroup key={g.title} title={g.title} fields={linkRefs(g.fields, href(directorGeneral, `practitioner-register/${entry.id}`))} />
             ))}
           </Card>
           <TableCard title="History" titleSize="md" columns={historyColumns} rows={entry.history} rowKey={(h) => h.date + h.event} />
@@ -49,7 +64,7 @@ export function EntryDetailView({ entry }: { entry: EntryDetail }) {
             ].map(([label, value]) => (
               <div key={label} className="flex items-center justify-between gap-2 type-body">
                 <span className="text-muted">{label}</span>
-                <span className="type-body-strong text-strong">{value}</span>
+                <span className="type-body-strong text-strong">{label === "Decision ref." ? <Ref value={value} self={entry.id} /> : value}</span>
               </div>
             ))}
           </Card>

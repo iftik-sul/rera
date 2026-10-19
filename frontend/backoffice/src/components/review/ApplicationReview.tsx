@@ -16,11 +16,13 @@ import { ClaimStrip, DraftNote } from "./Claim";
 import { DocumentViewer, type DocVerdict } from "./DocumentViewer";
 import { applyApp } from "./demoApply";
 import { useDemo } from "@/lib/demo";
+import { Activity } from "@/components/ui/Activity";
+import { applicationActivity } from "./activity";
 
 /**
  * Application Review (Figma "Application Review — …").
  * One screen, three states, chosen by the sample data:
- *  - undecided transaction → decision bar (Approve / Request Info / Return / Reject)
+ *  - undecided transaction → decision bar (Approve / Request additional information / Return / Reject)
  *  - licensing at stage 3  → claim strip + review chain + the same decision bar
  *  - decided item          → Override panel (overturn the recorded decision)
  *  - with the applicant, or claimed by another officer → a read-only notice closes the page
@@ -38,7 +40,7 @@ export function ApplicationReview({ app: sample }: { app: Application }) {
     return v ? { ...d, status: v.status === "Verified" ? verified : v.status === "Rejected" ? rejected : pending } : d;
   });
   // A decided item lives on the queue's Completed side (work-queue.md §4d) — the breadcrumb goes back there.
-  const decided = !!app.status.overturned || app.status.label === "Approved" || app.status.label === "Rejected";
+  const decided = !!app.status.overturned || ["Approved", "Accepted", "Rejected"].includes(app.status.label);
   const unverified = docs.filter((d) => d.status.label !== "Verified").map((d) => d.name);
 
   return (
@@ -94,7 +96,7 @@ export function ApplicationReview({ app: sample }: { app: Application }) {
                 <div key={c} className="flex items-center justify-between gap-2 type-body">
                   <span className="text-strong">{c}</span>
                   {waiting ? (
-                    <span className="type-body-strong text-ageing">Awaiting</span>
+                    <span className="type-body-strong text-ageing">{app.checksPendingLabel ?? "Awaiting"}</span>
                   ) : (
                     <span className="flex items-center gap-1 type-body-strong text-valid">
                       <Icon name="check-circle" className="text-valid" />
@@ -104,7 +106,8 @@ export function ApplicationReview({ app: sample }: { app: Application }) {
                 </div>
               );
             })}
-            <span>{app.checksPending?.length ? <Badge tone="warning">Attention</Badge> : <Badge tone="success">All Clear</Badge>}</span>
+            {app.checksNote && <p className="type-caption text-muted">{app.checksNote}</p>}
+            <span>{app.checksPending?.length ? <Badge tone="warning">{app.checksPendingLabel === "Unavailable" ? "Unavailable" : "Attention"}</Badge> : <Badge tone="success">All Clear</Badge>}</span>
           </Card>
 
           {app.escrow && (
@@ -135,6 +138,7 @@ export function ApplicationReview({ app: sample }: { app: Application }) {
           <p className="type-caption text-muted">{app.held.body}</p>
         </div>
       )}
+      <Activity items={applicationActivity(sample, app, demo)} />
     </Page>
   );
 }
@@ -200,7 +204,7 @@ function Documents({
         onVerdict={onVerdict}
         canAct={canAct}
         reference={app.title.split(" — ")[0]}
-        applicant={app.subtitle.startsWith("Stage") || app.subtitle.startsWith("Decided") ? app.metaSubtitle.split(" · ")[0] : app.subtitle}
+        applicant={app.queue === "licensing" ? app.metaSubtitle.split(" · ")[0] : app.subtitle}
       />
     </>
   );

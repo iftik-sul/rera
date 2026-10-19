@@ -49,7 +49,7 @@ export function DecisionPanel({ app, actions, unverified = [] }: { app: Applicat
   const show = (w: Which) => {
     setReason("");
     setStage(null);
-    setOpen(app.decideBlock && (w === "approve" || w === "reject") ? "blocked" : w);
+    setOpen(app.decideBlock && (app.decideBlock.blocks ?? ["approve", "reject"]).includes(w as "approve" | "reject") ? "blocked" : w);
   };
   const close = () => setOpen(null);
   const done = (what: Outcome, toast: { title: string; body: string }) => {

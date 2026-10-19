@@ -1,5 +1,6 @@
 "use client";
 
+import { rememberList } from "@/lib/listMemory";
 import { useEffect, useState } from "react";
 import { SideSwitch } from "@/components/ui/SideSwitch";
 import type { FilterDef } from "@/components/ui/Table";
@@ -29,6 +30,7 @@ export function useQueueSide(): [Side | null, (s: Side) => void] {
     const url = new URL(window.location.href);
     url.search = s === "completed" ? "?view=completed" : "";
     window.history.replaceState(window.history.state, "", url);
+    rememberList();
     setSide(s);
   };
   return [side, change];
@@ -113,6 +115,7 @@ export function useCardFilter(): [number, (filter: Record<string, string>) => vo
     url.search = "";
     for (const [k, v] of Object.entries(filter)) url.searchParams.set(k, v);
     window.history.replaceState(window.history.state, "", url);
+    rememberList();
     setKey((n) => n + 1);
   };
   return [key, apply];

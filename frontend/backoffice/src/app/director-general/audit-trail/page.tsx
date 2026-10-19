@@ -7,12 +7,14 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
+import { ROLE_TAG, type RoleName } from "@/data/director-general/staff";
 import { ACTION_TYPE_ORDER, DATE_ORDER, SUBSYSTEM_ORDER, auditEntries, dateBucket, subjectLink, type AuditEntry } from "@/data/director-general/audit";
 
 // Widths are % of the row (design standard §A5a.0 rule 5).
 const columns: Column<AuditEntry>[] = [
   { header: "Timestamp", width: 15, tone: "strong", cell: (e) => e.timestamp },
-  { header: "Actor", width: 22, cell: (e) => `${e.actor} · ${e.actedAs}` },
+  // The row shows the role tag (status-badges.md §3); the full role name is in the entry's detail.
+  { header: "Actor", width: 22, cell: (e) => `${e.actor} · ${ROLE_TAG[e.actedAs as RoleName] ?? e.actedAs}` },
   { header: "Action", width: 18, cell: (e) => e.action },
   { header: "Subject", width: 17, tone: "link", cell: (e) => e.subject },
   { header: "Reason", width: 28, tone: "muted", cell: (e) => e.reason },
