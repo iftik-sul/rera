@@ -219,14 +219,14 @@ export const featuredApplications: Application[] = [
       ],
       bannerTitle: "What an overturn will do to this item",
       banner:
-        "The replacement outcome available here is Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and writes a revocation entry against it. The recorded decision above is not deleted — the item keeps both, in order, and from then on reads Overturned · Rejected. Overturned is terminal: no undo, and no second overturn.",
+        "The replacement outcome available here is Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and writes a revocation entry against it. The recorded decision above is not deleted — the item keeps both, in order, and from then on reads Rejected, marked Overturned. Overturned is terminal: no undo, and no second overturn.",
       footnote:
         "Requires re-authentication. The audit entry records the Director-General / Registrar with action type override — never the officer whose decision it replaces.",
       overturn: {
         title: "Overturn this decision?",
         body: "On record: TRX-2024-0887 — Register Resale, filed by Mixta Nigeria Ltd. Approved by Chukwuemeka Obi (Compliance & Escrow Auditor) on 2 Oct 2026.",
         callout:
-          "Replacement outcome: Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and issues the rejection dated today. The item will then read Overturned · Rejected — final, with no undo and no second overturn.",
+          "Replacement outcome: Rejected. Overturning revokes e-Title Deed RERA/TD/2026/04418 and issues the rejection dated today. The item will then read Rejected, marked Overturned — final, with no undo and no second overturn.",
         label: "Why was this decision wrong?",
         placeholder: "Explain why the decision should not have been made — not simply that you would have decided differently.",
         acknowledge: "I understand this is final, that I'll re-authenticate to confirm, and that it's recorded against me as Director-General / Registrar.",
@@ -237,7 +237,7 @@ export const featuredApplications: Application[] = [
         callout:
           "e-Title Deed RERA/TD/2026/04418, issued to Mixta Nigeria Ltd on 2 Oct 2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
         confirm: "Revoke title deed",
-        toast: { title: "Decision overturned", body: "TRX-2024-0887 now reads Overturned · Rejected. e-Title Deed RERA/TD/2026/04418 has been revoked." },
+        toast: { title: "Decision overturned", body: "TRX-2024-0887 now reads Rejected, marked Overturned. e-Title Deed RERA/TD/2026/04418 has been revoked." },
       },
     },
   },

@@ -189,15 +189,15 @@ function overrideActions(o: {
         ],
     bannerTitle: "What an overturn will do to this item",
     banner: approved
-      ? `The replacement outcome available here is Rejected. Overturning revokes ${o.output.artefact} ${o.issuedRef}${credentialNote}. The recorded decision above is not deleted — the item keeps both, in order, and from then on reads Overturned · Rejected. Overturned is terminal: no undo, and no second overturn.`
-      : `The replacement outcome available here is Approved. Overturning issues the ${o.output.artefact} to ${o.who} fresh, dated today — never backdated to the original decision. The recorded rejection above is not deleted, and the item then reads Overturned · Approved. Overturned is terminal: no undo, and no second overturn.`,
+      ? `The replacement outcome available here is Rejected. Overturning revokes ${o.output.artefact} ${o.issuedRef}${credentialNote}. The recorded decision above is not deleted — the item keeps both, in order, and from then on reads Rejected, marked Overturned. Overturned is terminal: no undo, and no second overturn.`
+      : `The replacement outcome available here is Approved. Overturning issues the ${o.output.artefact} to ${o.who} fresh, dated today — never backdated to the original decision. The recorded rejection above is not deleted, and the item then reads Approved, marked Overturned. Overturned is terminal: no undo, and no second overturn.`,
     footnote: FOOTNOTE,
     overturn: {
       title: "Overturn this decision?",
       body: onRecord,
       callout: approved
-        ? `Replacement outcome: Rejected. Overturning revokes ${o.output.artefact} ${o.issuedRef} and issues the rejection dated today. The item will then read Overturned · Rejected — final, with no undo and no second overturn.`
-        : `Replacement outcome: Approved. Overturning issues the ${o.output.artefact} dated today. The item will then read Overturned · Approved — final, with no undo and no second overturn.`,
+        ? `Replacement outcome: Rejected. Overturning revokes ${o.output.artefact} ${o.issuedRef} and issues the rejection dated today. The item will then read Rejected, marked Overturned — final, with no undo and no second overturn.`
+        : `Replacement outcome: Approved. Overturning issues the ${o.output.artefact} dated today. The item will then read Approved, marked Overturned — final, with no undo and no second overturn.`,
       label: "Why was this decision wrong?",
       placeholder: "Explain why the decision should not have been made — not simply that you would have decided differently.",
       acknowledge: ACK,
@@ -210,7 +210,7 @@ function overrideActions(o: {
             o.credential ? ". The register entry is withdrawn with the cause recorded as Overturn, not forfeiture" : ". Verification lookups will return that status from now on"
           }.`,
           confirm: o.credential ? "Revoke credential" : `Revoke ${o.output.noun.toLowerCase()}`,
-          toast: { title: "Decision overturned", body: `${o.ref} now reads Overturned · Rejected. ${o.output.artefact} ${o.issuedRef} has been revoked.` },
+          toast: { title: "Decision overturned", body: `${o.ref} now reads Rejected, marked Overturned. ${o.output.artefact} ${o.issuedRef} has been revoked.` },
         }
       : {
           title: `Issue the ${o.output.noun} now?`,
@@ -218,7 +218,7 @@ function overrideActions(o: {
           callout: `The ${o.output.artefact} is issued to ${o.who} dated today${o.credential ? ", and the register entry is written" : ""}. It is never backdated to ${when}.`,
           confirm: `Issue ${o.output.noun.toLowerCase()}`,
           variant: "primary",
-          toast: { title: "Decision overturned", body: `${o.ref} now reads Overturned · Approved. The ${o.output.artefact} has been issued, dated today.` },
+          toast: { title: "Decision overturned", body: `${o.ref} now reads Approved, marked Overturned. The ${o.output.artefact} has been issued, dated today.` },
         },
   };
 }
