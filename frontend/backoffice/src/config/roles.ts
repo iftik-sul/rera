@@ -30,14 +30,14 @@ export type Role = {
   slug: string;
   title: string;
   /** Sample signed-in user shown in the top bar (static build — no login yet). */
-  user: { name: string; avatar: string };
+  user: { name: string; email: string; avatar: string };
   nav: NavItem[];
 };
 
 export const directorGeneral: Role = {
   slug: "director-general",
   title: "Director-General / Registrar",
-  user: { name: "Adaeze Nwosu", avatar: "/brand/avatar.png" },
+  user: { name: "Adaeze Nwosu", email: "a.nwosu@rera.gov.ng", avatar: "/brand/avatar.png" },
   nav: [
     { label: "Dashboard", path: "dashboard", icon: "eye-tracking" },
     { label: "Work Queue", path: "work-queue/transaction", icon: "file-check-02", alsoActiveOn: ["application-review"] },

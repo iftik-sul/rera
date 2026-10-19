@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRole } from "@/components/shell/RoleContext";
 import { StatusBadge } from "@/components/ui/Badge";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
@@ -27,14 +28,16 @@ const filters: FilterDef<TransactionRow>[] = [
 
 export default function TransactionQueue() {
   const role = useRole();
+  const [exportCount, setExportCount] = useState(0);
   return (
-    <WorkQueueFrame title="Work Queue — Transaction" subtitle="Review and decide submitted applications." kpis={transactionKpis}>
+    <WorkQueueFrame title="Work Queue — Transaction" subtitle="Review and decide submitted applications." kpis={transactionKpis} exportCount={exportCount}>
       <TableCard
         title="All applications"
         filters={filters}
         columns={columns}
         rows={transactionRows}
         rowKey={(r) => r.reference}
+        onMatchedChange={(rs) => setExportCount(rs.length)}
         rowAction={(r) => rowAction(role, r.opens)}
         searchText={(r) => `${r.reference} ${r.service} ${r.applicant} ${r.subject}`}
         paginate={{ one: "application", many: "applications" }}

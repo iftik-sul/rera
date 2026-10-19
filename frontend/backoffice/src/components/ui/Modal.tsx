@@ -22,7 +22,8 @@ export function Modal({
   onClose: () => void;
   title: string;
   description?: React.ReactNode;
-  width?: 480 | 520;
+  /** 480 reason / confirm · 520 forms, destructive · 880 document viewer only (design standard D0.3). */
+  width?: 480 | 520 | 880;
   children?: React.ReactNode;
   actions: React.ReactNode;
 }) {
@@ -68,6 +69,7 @@ export function ReasonField({
   value,
   onChange,
   optional = false,
+  hint,
 }: {
   label: string;
   placeholder: string;
@@ -75,10 +77,12 @@ export function ReasonField({
   onChange: (v: string) => void;
   /** Recommended but not required (e.g. a note on Authorise sign-off). */
   optional?: boolean;
+  /** Replaces the default "Recorded against this item in the audit trail." where that isn't true. */
+  hint?: string;
 }) {
   const id = useId();
   return (
-    <Field label={label} htmlFor={id} hint={`${optional ? "Recommended." : "Required."} Recorded against this item in the audit trail.`}>
+    <Field label={label} htmlFor={id} hint={`${optional ? "Recommended." : "Required."} ${hint ?? "Recorded against this item in the audit trail."}`}>
       <TextArea id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
     </Field>
   );

@@ -6,24 +6,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TableCard, type Column, type FilterDef } from "@/components/ui/Table";
 import { DATE_ORDER, TYPE_ORDER, dateBucket, notifications, type Notification } from "@/data/director-general/notifications";
+import { loadRead, saveRead } from "@/lib/notifications";
 
-/** Read/unread is the only change this screen makes. DEMO: remembered for this browser tab only. */
-const KEY = "reran.notifications.read";
-const loadRead = (): string[] => {
-  try {
-    return JSON.parse(sessionStorage.getItem(KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-};
-const saveRead = (ids: string[]) => {
-  try {
-    sessionStorage.setItem(KEY, JSON.stringify(ids));
-  } catch {
-    /* storage blocked — the page still works, it just won't remember */
-  }
-};
-
+/** Read/unread is the only change this screen makes (helpers shared with the top-bar bell). */
 export default function Notifications() {
   const [read, setRead] = useState<string[]>([]);
   useEffect(() => setRead(loadRead()), []);

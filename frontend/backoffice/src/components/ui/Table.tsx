@@ -129,6 +129,7 @@ export function TableCard<T>({
   searchText,
   paginate,
   note,
+  onMatchedChange,
   ...table
 }: {
   title: string;
@@ -147,6 +148,8 @@ export function TableCard<T>({
   paginate?: Noun;
   /** Small grey note under the table (e.g. a report's totals line). */
   note?: React.ReactNode;
+  /** Told the rows that pass the search and filters (every page) — e.g. so Export knows what it covers. */
+  onMatchedChange?: (rows: T[]) => void;
 } & Parameters<typeof Table<T>>[0]) {
   const defs = filters ?? [];
   const [query, setQuery] = useState("");
@@ -167,6 +170,11 @@ export function TableCard<T>({
   };
   const matched = table.rows.filter((r) => passes(r));
   const filtered = q !== "" || Object.values(chosen).some((v) => v !== null);
+  const matchedKey = matched.map((r) => table.rowKey(r)).join("|");
+  useEffect(() => {
+    onMatchedChange?.(matched);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run only when the matched set changes
+  }, [matchedKey]);
 
   // Never sit on a page that no longer exists (e.g. ?page=9 on a 3-page table).
   const current = Math.min(page, pageCount(matched.length));

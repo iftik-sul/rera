@@ -1,5 +1,5 @@
-import { NotBuiltYet } from "@/components/ui/NotBuiltYet";
+import { HelpSupport } from "@/components/help/HelpSupport";
 
-export default function Placeholder() {
-  return <NotBuiltYet title="Help & Support" />;
+export default function HelpPage() {
+  return <HelpSupport />;
 }
