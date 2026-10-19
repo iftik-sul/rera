@@ -60,6 +60,14 @@ export const signoffMatters: SignoffMatter[] = [
   m("RRA/SO/2026/0249", "Licence revocation — Royal Crest Facility Managers", "Recommend revoke", PENDING, "11 Oct 2026", "Lagos"),
   m("RRA/SO/2026/0187", "Licence revocation — Haven Homes Nigeria Ltd", "Recommend revoke", AUTHORISED, "19 Sep 2026", "Lagos"),
   m("RRA/SO/2026/0179", "Developer suspension — Garden City Homes Ltd", "Recommend suspend", AUTHORISED, "15 Sep 2026", "Port Harcourt"),
+  // Added with the Completed side (2026-10-19) — sign-off history, spread over the year.
+  m("RRA/SO/2026/0171", "Practitioner de-listing — Nwachukwu A.", "Recommend de-list — false declaration", AUTHORISED, "03 Sep 2026", "Enugu"),
+  m("RRA/SO/2026/0164", "Accreditation withdrawal — Coastal Valuers Institute", "Recommend withdraw accreditation", DECLINED, "21 Aug 2026", "Lagos"),
+  m("RRA/SO/2026/0152", "Licence revocation — Prime Acres Ltd", "Recommend revoke — licence lapsed", AUTHORISED, "29 Jul 2026", "Abuja"),
+  m("RRA/SO/2026/0138", "Developer suspension — Westfield Estates Ltd", "Recommend suspend — escrow default", AUTHORISED, "02 Jul 2026", "Ibadan"),
+  m("RRA/SO/2026/0121", "Practitioner de-listing — Danjuma S.", "Recommend de-list", DECLINED, "11 May 2026", "Kano"),
+  m("RRA/SO/2026/0097", "Licence revocation — Harbour View Realty", "Recommend revoke — repeated breach", AUTHORISED, "16 Feb 2026", "Port Harcourt"),
+  m("RRA/SO/2025/0412", "Developer suspension — Sunrise Homes Ltd", "Recommend suspend", AUTHORISED, "20 Nov 2025", "Lagos"),
 ];
 
 /** "6 days" / "1 day" / "Today" — how long a matter has waited. */
@@ -75,13 +83,34 @@ export function ageBucket(s: SignoffMatter): string {
 }
 export const AGE_BUCKETS = ["0–2 days", "3–5 days", "6 days or more"];
 
+/** Decisions already on record (kept in step with the audit trail where it names them). */
+const DECIDED_ON: Record<string, { date: string; reason?: string }> = {
+  "RRA/SO/2026/0231": { date: "09 Oct 2026" },
+  "RRA/SO/2026/0198": { date: "26 Sep 2026" },
+  "RRA/SO/2026/0187": { date: "22 Sep 2026" },
+  "RRA/SO/2026/0179": { date: "17 Sep 2026" },
+  "RRA/SO/2026/0209": { date: "30 Sep 2026", reason: "The renewal application was lodged inside the window; Licensing should decide the renewal before any revocation." },
+  "RRA/SO/2026/0171": { date: "05 Sep 2026" },
+  "RRA/SO/2026/0164": { date: "24 Aug 2026", reason: "The institute's curriculum review is still open with Licensing; withdraw only once it concludes." },
+  "RRA/SO/2026/0152": { date: "31 Jul 2026" },
+  "RRA/SO/2026/0138": { date: "06 Jul 2026" },
+  "RRA/SO/2026/0121": { date: "13 May 2026", reason: "The complaint behind the recommendation was withdrawn; there is no remaining ground to de-list." },
+  "RRA/SO/2026/0097": { date: "19 Feb 2026" },
+  "RRA/SO/2025/0412": { date: "24 Nov 2025" },
+};
+
+/** When a decided matter was authorised or declined — the Sign-off Queue's Completed side reads it (signoff-queue.md §2a). */
+export const signoffDecided = (s: SignoffMatter) => DECIDED_ON[s.reference]?.date ?? s.escalated;
+
 const pending = signoffMatters.filter((s) => s.status === PENDING);
+/** Decided in the sample month — the KPI cards count the same rows the Completed side lists. */
+const thisMonth = (s: SignoffMatter) => / Oct 2026$/.test(signoffDecided(s));
 const oldest = [...pending].sort((a, b) => daysAgo(b.escalated) - daysAgo(a.escalated))[0];
 
 export const signoffKpis = [
   { label: "Pending sign-off", value: String(pending.length), caption: "Awaiting your authorisation" },
-  { label: "Authorised", value: String(signoffMatters.filter((s) => s.status === AUTHORISED).length), caption: "This month" },
-  { label: "Declined", value: String(signoffMatters.filter((s) => s.status === DECLINED).length), caption: "This month" },
+  { label: "Authorised", value: String(signoffMatters.filter((s) => s.status === AUTHORISED && thisMonth(s)).length), caption: "This month" },
+  { label: "Declined", value: String(signoffMatters.filter((s) => s.status === DECLINED && thisMonth(s)).length), caption: "This month" },
   { label: "Oldest pending", value: waited(oldest), caption: oldest.reference },
 ];
 
@@ -200,14 +229,6 @@ const KINDS: Record<string, Kind> = {
   },
 };
 
-/** Decisions already on record (kept in step with the audit trail where it names them). */
-const DECIDED_ON: Record<string, { date: string; reason?: string }> = {
-  "RRA/SO/2026/0231": { date: "09 Oct 2026" },
-  "RRA/SO/2026/0198": { date: "26 Sep 2026" },
-  "RRA/SO/2026/0187": { date: "22 Sep 2026" },
-  "RRA/SO/2026/0179": { date: "17 Sep 2026" },
-  "RRA/SO/2026/0209": { date: "30 Sep 2026", reason: "The renewal application was lodged inside the window; Licensing should decide the renewal before any revocation." },
-};
 
 const serial = (ref: string) => parseInt(ref.slice(-4), 10);
 

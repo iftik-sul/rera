@@ -284,7 +284,7 @@ function transactionReview(row: TransactionRow, i: number): Application {
   const output = trxOutput(row.service);
   const days = ageDays(row.age);
   // Decided rows count "Decided day N" from submission, so submission is N days before the decision.
-  const trxDecidedAgo = row.status.overturned ? 9 : Math.max(1, 14 - (i % 5));
+  const trxDecidedAgo = row.status.overturned ? 9 : (row.decidedAgo ?? Math.max(1, 14 - (i % 5)));
   const submitted = before(isDecided(row.status) || row.status.overturned ? trxDecidedAgo + days : days);
   const { project, unit } = splitSubject(row.subject);
   const price = (90 + (n % 41) * 11) * 1_000_000;
@@ -376,7 +376,7 @@ function escrowReview(row: EscrowRow, i: number): Application {
   const output = escrowOutput(op);
   const developer = DEVELOPERS[n % DEVELOPERS.length];
   const days = ageDays(row.age);
-  const escDecidedAgo = 10 + (i % 4);
+  const escDecidedAgo = row.decidedAgo ?? 10 + (i % 4);
   const submitted = before(isDecided(row.status) ? escDecidedAgo + days : days);
   const received = row.escrowFlag.label === "Received";
   const releasing = /Release/.test(op);
@@ -783,3 +783,19 @@ export const applications: Application[] = [
 ];
 
 export const findApplication = (id: string) => applications.find((a) => a.id === id);
+
+// ── Completed side of the Work Queue (work-queue.md §4d) ────
+
+/** Decided date and decider for a completed row — read from its review, so the two agree. */
+export type CompletedRecord = { decided: string; at: number; by: string };
+const OVERTURNED_BY = "Adaeze Nwosu";
+export function completedRecord(opens: string | undefined): CompletedRecord {
+  const app = opens ? findApplication(opens.slice("review:".length)) : undefined;
+  const ref = app?.title.split(" — ")[0] ?? "";
+  const over = OVERTURNS[ref];
+  if (over) return { decided: over.on, at: Date.parse(over.on), by: OVERTURNED_BY };
+  const rec = app?.override?.recorded;
+  if (!rec) return { decided: "—", at: 0, by: "—" };
+  const day = rec.recordedAt.split(",")[0];
+  return { decided: day, at: Date.parse(day), by: rec.decidedBy };
+}

@@ -21,7 +21,8 @@ export function WorkQueueFrame({
 }: {
   title: string;
   subtitle: string;
-  kpis: Kpi[];
+  /** Triage cards — Open side only (work-queue.md §4d); leave out on Completed. */
+  kpis?: Kpi[];
   /** How many items the queue holds as currently filtered — what Export covers. */
   exportCount: number;
   children: React.ReactNode;
@@ -41,15 +42,17 @@ export function WorkQueueFrame({
         <ExportMenu
           title="Queue exported"
           message={(kind) =>
-            `${exportCount} ${exportCount === 1 ? "item" : "items"} — the queue as filtered, every page — as a ${kind === "PDF" ? "PDF" : "spreadsheet"}. Recorded in the audit trail.`
+            `${exportCount} ${exportCount === 1 ? "item" : "items"} — this side of the queue as filtered, every page — as a ${kind === "PDF" ? "PDF" : "spreadsheet"}. Recorded in the audit trail.`
           }
         />
       </div>
-      <KpiRow>
-        {kpis.map((k) => (
-          <KpiCard key={k.label} {...k} />
-        ))}
-      </KpiRow>
+      {kpis && (
+        <KpiRow>
+          {kpis.map((k) => (
+            <KpiCard key={k.label} {...k} />
+          ))}
+        </KpiRow>
+      )}
       {children}
     </Page>
   );
