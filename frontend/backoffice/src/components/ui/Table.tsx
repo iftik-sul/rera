@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Button } from "./Button";
 import { FilterDropdown, SearchBox } from "./Filters";
 import { Pagination, PAGE_SIZE, pageCount, type Noun } from "./Pagination";
 
@@ -30,9 +31,9 @@ export type Column<T> = {
 export type RowAction = { href: string; onClick?: () => void } | { onClick: () => void } | null;
 
 const toneClass = {
-  link: "font-semibold text-blue-600",
-  strong: "text-n900",
-  muted: "text-n400",
+  link: "type-group-title text-link",
+  strong: "text-strong",
+  muted: "text-muted",
 };
 
 export function Table<T>({
@@ -54,7 +55,7 @@ export function Table<T>({
 
   return (
     <div role="table" className="w-full">
-      <div role="row" className="grid items-center gap-3 border-b border-n40 px-5 py-3 text-[13px] leading-5 font-medium text-n400 uppercase" style={grid}>
+      <div role="row" className="grid items-center gap-3 border-b border-control px-5 py-3 type-column-header text-muted" style={grid}>
         {columns.map((c) => (
           <span role="columnheader" key={c.header} className={`truncate ${align(c)}`}>
             {c.header}
@@ -64,21 +65,21 @@ export function Table<T>({
 
       {rows.map((r) => {
         const cells = columns.map((c) => (
-          <span role="cell" key={c.header} className={`min-w-0 truncate text-[13px] ${toneClass[c.tone ?? "strong"]} ${align(c)}`}>
+          <span role="cell" key={c.header} className={`min-w-0 truncate type-body ${toneClass[c.tone ?? "strong"]} ${align(c)}`}>
             {c.cell(r)}
           </span>
         ));
-        const cls = "grid h-12 w-full items-center gap-3 border-b border-n40 px-5 text-left";
+        const cls = "grid h-row w-full items-center gap-3 border-b border-control px-5 text-left";
         const action = rowAction(r);
         if (action && "href" in action)
           return (
-            <Link role="row" key={rowKey(r)} href={action.href} onClick={action.onClick} className={`${cls} hover:bg-n20`} style={grid}>
+            <Link role="row" key={rowKey(r)} href={action.href} onClick={action.onClick} className={`${cls} hover:bg-page focus-ring`} style={grid}>
               {cells}
             </Link>
           );
         if (action && "onClick" in action)
           return (
-            <button role="row" key={rowKey(r)} type="button" onClick={action.onClick} className={`${cls} cursor-pointer hover:bg-n20`} style={grid}>
+            <button role="row" key={rowKey(r)} type="button" onClick={action.onClick} className={`${cls} cursor-pointer hover:bg-page focus-ring`} style={grid}>
               {cells}
             </button>
           );
@@ -89,7 +90,7 @@ export function Table<T>({
         );
       })}
 
-      {rows.length === 0 && <p className="border-b border-n40 px-5 py-6 text-center text-[13px] text-n400">{empty}</p>}
+      {rows.length === 0 && <p className="border-b border-control px-5 py-6 text-center type-body text-muted">{empty}</p>}
     </div>
   );
 }
@@ -248,19 +249,19 @@ export function TableCard<T>({
   const empty = filtered ? (
     <span className="flex flex-col items-center gap-2">
       No {noun.many} match {q && defs.every((f) => !chosen[f.key]) ? `“${query}”` : "these filters"}.
-      <button type="button" onClick={clearAll} className="cursor-pointer font-medium text-blue-600 hover:underline">
+      <Button variant="link" onClick={clearAll}>
         Clear filters
-      </button>
+      </Button>
     </span>
   ) : (
     table.empty
   );
 
   return (
-    <section className="flex w-full flex-col rounded-xl border border-n30 bg-white">
+    <section className="flex w-full flex-col rounded-card border border-card bg-white">
       <div className="flex flex-col gap-4 px-5 pt-5 pb-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className={titleSize === "md" ? "text-base leading-6 font-medium text-n900" : "text-[13px] font-semibold text-n900"}>{title}</h2>
+          <h2 className={titleSize === "md" ? "type-section-title text-strong" : "type-group-title text-strong"}>{title}</h2>
           {action}
         </div>
         {filters && (
@@ -270,21 +271,21 @@ export function TableCard<T>({
               <FilterDropdown key={f.key} label={f.label} options={optionsFor(f)} value={chosen[f.key] ?? null} onChange={(v) => choose(f.key, v)} />
             ))}
             {filtered && (
-              <button type="button" onClick={clearAll} className="cursor-pointer text-[13px] font-medium text-blue-600 hover:underline">
+              <Button variant="link" onClick={clearAll}>
                 Clear filters
-              </button>
+              </Button>
             )}
           </div>
         )}
       </div>
 
       {/* The rounded clip lives here, not on the card, so open filter lists aren't cut off. */}
-      <div className="overflow-hidden rounded-b-xl">
+      <div className="overflow-hidden rounded-b-card">
         <Table {...table} rows={rows} empty={empty} />
         {paginate && (
           <Pagination page={current} total={matched.length} allTotal={table.rows.length} filtered={filtered} noun={paginate} onPage={goTo} />
         )}
-        {note && <p className="px-5 py-4 text-xs text-n400">{note}</p>}
+        {note && <p className="px-5 py-4 type-caption text-muted">{note}</p>}
       </div>
     </section>
   );

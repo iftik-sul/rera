@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 export function SegmentedTabs({ tabs }: { tabs: { label: string; href: string }[] }) {
   const pathname = usePathname();
   return (
-    <nav className="flex shrink-0 rounded-lg bg-n40 p-1">
+    <nav className="flex shrink-0 rounded-control bg-control p-1">
       {tabs.map((t) => {
         const active = pathname === t.href;
         return (
@@ -15,8 +15,8 @@ export function SegmentedTabs({ tabs }: { tabs: { label: string; href: string }[
             key={t.href}
             href={t.href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-lg px-4 py-2 text-[13px] font-medium whitespace-nowrap ${
-              active ? "bg-white text-n900" : "text-n400 hover:text-n900"
+            className={`rounded-control px-4 py-2 type-body-strong whitespace-nowrap focus-ring ${
+              active ? "bg-white text-strong" : "text-muted hover:text-strong"
             }`}
           >
             {t.label}

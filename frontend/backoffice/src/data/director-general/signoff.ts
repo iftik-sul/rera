@@ -125,7 +125,7 @@ export const signoffDetails: SignoffDetail[] = [
         ],
       },
       {
-        title: "Underlying Record",
+        title: "Underlying record",
         fields: [
           { label: "Practitioner / Company", value: "Eko Realty Ltd" },
           { label: "Credential", value: "CRED/LIC/24/0231" },
@@ -153,7 +153,7 @@ export const signoffDetails: SignoffDetail[] = [
       title: "Authorise this revocation?",
       body: "This authorises revocation of licence LIC-2024-0231 — Eko Realty Ltd — and returns it to Licensing to execute. The register entry will be withdrawn with the cause recorded as Revocation.",
       callout: "This is final. Once Licensing executes it, the licence is revoked and the holder is notified.",
-      confirm: "Authorise Revocation",
+      confirm: "Authorise revocation",
       toast: { title: "Sign-off authorised", body: "RRA/SO/2026/0218 has returned to Licensing to execute the revocation." },
     },
     decline: {
@@ -161,7 +161,7 @@ export const signoffDetails: SignoffDetail[] = [
       body: "RRA/SO/2026/0218 returns to Licensing with your reason. Nothing is revoked.",
       label: "Why are you declining?",
       placeholder: "Explain what Licensing should do instead, or what is missing from the recommendation.",
-      confirm: "Decline Sign-off",
+      confirm: "Decline sign-off",
       toast: { title: "Sign-off declined", body: "RRA/SO/2026/0218 has returned to Licensing with your reason." },
     },
   },

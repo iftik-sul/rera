@@ -29,7 +29,7 @@ export default function EscrowQueue() {
   return (
     <WorkQueueFrame title="Work Queue — Escrow" subtitle="Review escrow and trust account requests." kpis={escrowKpis}>
       <TableCard
-        title="All Applications"
+        title="All applications"
         filters={filters}
         columns={columns}
         rows={escrowRows}

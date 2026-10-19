@@ -5,6 +5,7 @@ import { showToast } from "@/components/shell/Toast";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Cards";
 import { Modal } from "@/components/ui/Modal";
+import { Field, TextInput } from "@/components/ui/Form";
 import { assignmentBlocker, type Category, type RoleName } from "@/data/director-general/staff";
 import { AdminBlockerModal } from "./AdminBlockerModal";
 import { RoleScopeFields } from "./RoleScopeFields";
@@ -54,27 +55,16 @@ export function InviteModal({ open, onClose }: { open: boolean; onClose: () => v
           </>
         }
       >
-        <Field label="Full name" value={name} onChange={setName} placeholder="e.g. Amina Bello" />
-        <Field label="Work email" value={email} onChange={setEmail} placeholder="name@rera.gov.ng" hint="Must be a rera.gov.ng address." />
+        <Field label="Full name" htmlFor="invite-name">
+          <TextInput id="invite-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Amina Bello" />
+        </Field>
+        <Field label="Work email" htmlFor="invite-email" hint="Must be a rera.gov.ng address.">
+          <TextInput id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@rera.gov.ng" />
+        </Field>
         <RoleScopeFields roles={roles} scope={scope} onRoles={setRoles} onScope={setScope} />
         <Notice>A licensing role also needs at least one category scope, set here.</Notice>
       </Modal>
       <AdminBlockerModal which={open ? blocked : null} onClose={() => setBlocked(null)} />
     </>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, hint }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; hint?: string }) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-n900">{label}</span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="rounded-lg border border-n40 bg-white px-3 py-2.5 text-[13px] leading-5 text-n900 outline-none placeholder:text-n400 focus:border-blue-600"
-      />
-      {hint && <span className="text-xs text-n400">{hint}</span>}
-    </label>
   );
 }

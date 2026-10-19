@@ -43,7 +43,7 @@ export default function AdminConsole() {
   return (
     <Page title="Admin Console" subtitle="Manage staff accounts, role assignments and MFA.">
       <TableCard
-        title="Staff Directory"
+        title="Staff directory"
         action={
           <Button variant="primary" onClick={() => setInviting(true)}>
             Invite staff

@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Page } from "@/components/shell/Page";
-import { Icon } from "@/components/shell/Icon";
 import { showToast } from "@/components/shell/Toast";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Banner } from "@/components/ui/Cards";
+import { PopoverItem, PopoverList, usePopover } from "@/components/ui/Popover";
+import { Select } from "@/components/ui/Select";
+import { Tabs } from "@/components/ui/Tabs";
 import { FilterDropdown } from "@/components/ui/Filters";
 import { KpiCard, KpiRow } from "@/components/ui/KpiCard";
 import { TableCard, type Column } from "@/components/ui/Table";
@@ -38,7 +41,7 @@ type Tab = "collections" | "revenue" | "tax";
 const TABS: { id: Tab; label: string }[] = [
   { id: "collections", label: "Collections" },
   { id: "revenue", label: "Revenue" },
-  { id: "tax", label: "Tax & Remittance" },
+  { id: "tax", label: "Tax & remittance" },
 ];
 const STATUS_TONE: Record<PeriodStatus, BadgeTone> = {
   Open: "info",
@@ -116,7 +119,7 @@ export function RevenueReports() {
           <ExportMenu />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="pr-1 text-xs text-n400">Segment by</span>
+          <span className="pr-1 type-caption text-muted">Segment by</span>
           {SEGMENT_DEFS.map((d) => {
             const counts = new Map<string, Line[]>();
             for (const l of all)
@@ -139,62 +142,23 @@ export function RevenueReports() {
             );
           })}
           {segmented && (
-            <button
-              type="button"
-              onClick={() => chooseSeg({})}
-              className="cursor-pointer pl-1 text-[13px] font-medium text-blue-600 hover:underline"
-            >
+            <Button variant="link" onClick={() => chooseSeg({})} className="pl-1">
               Clear segments
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
-      <div
-        className={`flex items-center gap-3 rounded-lg px-4 py-3 text-[13px] font-medium text-n900 ${
-          banner.tone === "success"
-            ? "bg-success-bg"
-            : banner.tone === "warning"
-              ? "bg-warning-bg"
-              : "bg-n30"
-        }`}
-      >
-        <Icon
-          name="check-circle"
-          size={20}
-          className={banner.tone === "success" ? "text-valid" : "text-n400"}
-        />
-        {banner.text}
-      </div>
+      <Banner tone={banner.tone}>{banner.text}</Banner>
 
-      <nav className="flex gap-6 border-b border-n40">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => chooseTab(t.id)}
-            aria-current={tab === t.id ? "page" : undefined}
-            className={`-mb-px cursor-pointer border-b-2 px-0.5 pb-2.5 text-[13px] font-medium ${
-              tab === t.id
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-n400 hover:text-n900"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <Tabs tabs={TABS} value={tab} onChange={chooseTab} />
 
       {ls.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-n30 bg-white px-6 py-10 text-[13px] text-n400">
+        <div className="flex flex-col items-center gap-2 rounded-card border border-card bg-white px-6 py-10 type-body text-muted">
           No payments match this segmentation.
-          <button
-            type="button"
-            onClick={() => chooseSeg({})}
-            className="cursor-pointer font-medium text-blue-600 hover:underline"
-          >
+          <Button variant="link" onClick={() => chooseSeg({})}>
             Clear segments
-          </button>
+          </Button>
         </div>
       ) : tab === "collections" ? (
         <Collections
@@ -219,115 +183,42 @@ export function RevenueReports() {
 
 // ── Report bar pieces ──
 
-function useOutside(open: boolean, close: () => void) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const out = (e: MouseEvent) =>
-      ref.current && !ref.current.contains(e.target as Node) && close();
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && close();
-    document.addEventListener("mousedown", out);
-    document.addEventListener("keydown", esc);
-    return () => {
-      document.removeEventListener("mousedown", out);
-      document.removeEventListener("keydown", esc);
-    };
-  }, [open, close]);
-  return ref;
-}
-
-function PeriodPicker({
-  period,
-  onChange,
-}: {
-  period: Period;
-  onChange: (id: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useOutside(open, () => setOpen(false));
+function PeriodPicker({ period, onChange }: { period: Period; onChange: (id: string) => void }) {
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-10 cursor-pointer items-center gap-3 rounded-lg border border-n40 bg-white px-4 text-sm font-medium text-n900"
-      >
-        {period.label}
-        <span className="text-n400">▾</span>
-      </button>
-      {open && (
-        <ul
-          role="listbox"
-          aria-label="Period"
-          className="absolute top-11 left-0 z-30 min-w-64 rounded-lg border border-n40 bg-white py-1 shadow-lg"
-        >
-          {periods.map((p) => (
-            <li key={p.id} role="option" aria-selected={p.id === period.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(p.id);
-                  setOpen(false);
-                }}
-                className={`flex w-full cursor-pointer items-center justify-between gap-4 px-3 py-2 text-left text-[13px] hover:bg-n20 ${
-                  p.id === period.id ? "font-medium text-blue-600" : "text-n900"
-                }`}
-              >
-                {p.label}
-                {p.months.length === 1 && (
-                  <Badge tone={STATUS_TONE[p.months[0].status]}>
-                    {p.months[0].status}
-                  </Badge>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Select
+      label="Period"
+      value={period.id}
+      onChange={onChange}
+      options={periods.map((x) => ({
+        value: x.id,
+        label: x.label,
+        trailing: x.months.length === 1 ? <Badge tone={STATUS_TONE[x.months[0].status]}>{x.months[0].status}</Badge> : undefined,
+      }))}
+    />
   );
 }
 
 /** Export menu (PDF · Spreadsheet). DEMO: no file is produced; the real export is written to the audit trail. */
 function ExportMenu() {
-  const [open, setOpen] = useState(false);
-  const ref = useOutside(open, () => setOpen(false));
+  const p = usePopover();
   const pick = (kind: string) => {
-    setOpen(false);
-    showToast({
-      title: "Report exported.",
-      body: `The ${kind} is recorded in the audit trail.`,
-    });
+    p.close();
+    showToast({ title: "Report exported", body: `The ${kind} is recorded in the audit trail.` });
   };
   return (
-    <div ref={ref} className="relative">
-      <Button
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
+    <div ref={p.ref} className="relative">
+      <Button aria-haspopup="menu" aria-expanded={p.open} onClick={p.toggle}>
         Export
       </Button>
-      {open && (
-        <ul
-          role="menu"
-          className="absolute top-11 right-0 z-30 min-w-44 rounded-lg border border-n40 bg-white py-1 shadow-lg"
-        >
-          {["PDF", "Spreadsheet"].map((k) => (
-            <li key={k} role="none">
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => pick(k === "PDF" ? "PDF" : "spreadsheet")}
-                className="w-full cursor-pointer px-3 py-2 text-left text-[13px] text-n900 hover:bg-n20"
-              >
-                {k}
-              </button>
-            </li>
-          ))}
-        </ul>
+      {p.open && (
+        <PopoverList role="menu" align="right">
+          <PopoverItem role="menuitem" tick={false} onClick={() => pick("PDF")}>
+            PDF
+          </PopoverItem>
+          <PopoverItem role="menuitem" tick={false} onClick={() => pick("spreadsheet")}>
+            Spreadsheet
+          </PopoverItem>
+        </PopoverList>
       )}
     </div>
   );
@@ -358,7 +249,7 @@ function Collections({
     {
       header: "Service",
       width: 27,
-      cell: (r) => <span className="font-semibold">{r.service}</span>,
+      cell: (r) => <span className="type-group-title">{r.service}</span>,
     },
     { header: "Module", width: 23, cell: (r) => r.module },
     {
@@ -395,7 +286,7 @@ function Collections({
     {
       header: "Tender",
       width: 30,
-      cell: (r) => <span className="font-semibold">{r.tender}</span>,
+      cell: (r) => <span className="type-group-title">{r.tender}</span>,
     },
     { header: "Channel", width: 25, cell: (r) => r.channel },
     {
@@ -484,7 +375,7 @@ function Revenue({
     {
       header: "Service",
       width: 22,
-      cell: (r) => <span className="font-semibold">{r.service}</span>,
+      cell: (r) => <span className="type-group-title">{r.service}</span>,
     },
     { header: "Module", width: 19, cell: (r) => r.module },
     {
@@ -523,7 +414,7 @@ function Revenue({
     {
       header: "Service",
       width: 28,
-      cell: (r) => <span className="font-semibold">{r.service}</span>,
+      cell: (r) => <span className="type-group-title">{r.service}</span>,
     },
     {
       header: "Payments",
@@ -547,9 +438,9 @@ function Revenue({
 
   return (
     <>
-      <section className="flex flex-col gap-4 rounded-xl border border-n30 bg-white px-6 py-5">
-        <h2 className="text-base font-medium text-n900">Revenue statement</h2>
-        <div className="flex flex-col gap-2 rounded-lg border border-n40 p-4 text-[13px]">
+      <section className="flex flex-col gap-4 rounded-card border border-card bg-white px-6 py-5">
+        <h2 className="type-section-title text-strong">Revenue statement</h2>
+        <div className="flex flex-col gap-2 rounded-control border border-control p-4 type-body">
           <StatementLine label="Gross collected" value={money(gross)} />
           <StatementLine label="less VAT — owed to FIRS" value={less(vat)} />
           <StatementLine
@@ -585,12 +476,12 @@ function Revenue({
               />
             </>
           )}
-          <div className="mt-1 flex justify-between border-t border-n40 pt-3 font-semibold text-n900">
+          <div className="mt-1 flex justify-between border-t border-control pt-3 type-group-title text-strong">
             <span>Net government revenue</span>
             <span>{money(net)}</span>
           </div>
         </div>
-        <p className="text-xs text-n400">
+        <p className="type-caption text-muted">
           Cleared money only. {money(totalOf(period, (m) => m.inTransit))} in
           transit is not included.
           {segmented &&
@@ -598,8 +489,8 @@ function Revenue({
         </p>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-xl border border-n30 bg-white px-6 py-5">
-        <h2 className="text-base font-medium text-n900">
+      <section className="flex flex-col gap-3 rounded-card border border-card bg-white px-6 py-5">
+        <h2 className="type-section-title text-strong">
           Schedule versions in force
         </h2>
         {versions.map((m) => {
@@ -607,8 +498,8 @@ function Revenue({
             .filter((x) => x.version.name === m.version.name)
             .map((x) => x.short);
           return (
-            <p key={m.version.name} className="text-[13px] text-n400">
-              <span className="pr-2 font-semibold text-n900">
+            <p key={m.version.name} className="type-body text-muted">
+              <span className="pr-2 type-group-title text-strong">
                 {m.version.name}
               </span>
               in force from {m.version.from} — applied to{" "}
@@ -618,7 +509,7 @@ function Revenue({
             </p>
           );
         })}
-        <p className="text-xs text-n400">
+        <p className="type-caption text-muted">
           Each payment is reported under the version it was charged at. Nothing
           here is recomputed against the current schedule, which is why a past
           period reads the same after rates change.
@@ -671,10 +562,10 @@ function StatementLine({
 }) {
   return (
     <div
-      className={`flex justify-between gap-4 ${indent ? "pl-4 text-n400" : "text-n900"}`}
+      className={`flex justify-between gap-4 ${indent ? "pl-4 text-muted" : "text-strong"}`}
     >
       <span>{label}</span>
-      <span className={muted ? "text-n400" : ""}>{value}</span>
+      <span className={muted ? "text-muted" : ""}>{value}</span>
     </div>
   );
 }
@@ -700,7 +591,7 @@ function Tax({ ls, period }: { ls: Line[]; period: Period }) {
       header: "Destination",
       width: 24,
       cell: (r) => (
-        <span className="font-semibold">{DESTINATION[r.component]}</span>
+        <span className="type-group-title">{DESTINATION[r.component]}</span>
       ),
     },
     { header: "Component", width: 12, cell: (r) => r.component },

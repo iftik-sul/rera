@@ -39,7 +39,7 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
 
   return (
     <>
-      <div className="flex items-center gap-3 rounded-xl border border-n40 bg-white px-6 py-4">
+      <div className="flex items-center gap-3 rounded-card border border-control bg-white px-6 py-4">
         <Button variant="primary" onClick={() => show("approve")}>
           Approve
         </Button>
@@ -60,7 +60,7 @@ export function DecisionPanel({ app, actions }: { app: Application; actions: Dec
           <>
             <Button onClick={close}>Cancel</Button>
             <Button variant="primary" onClick={() => done(actions.approve.toast)}>
-              Approve and Issue
+              Approve and issue
             </Button>
           </>
         }

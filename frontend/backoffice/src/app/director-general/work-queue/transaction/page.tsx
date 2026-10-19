@@ -33,7 +33,7 @@ export default function TransactionQueue() {
   return (
     <WorkQueueFrame title="Work Queue — Transaction" subtitle="Review and decide submitted applications." kpis={transactionKpis}>
       <TableCard
-        title="All Applications"
+        title="All applications"
         filters={filters}
         columns={columns}
         rows={transactionRows}

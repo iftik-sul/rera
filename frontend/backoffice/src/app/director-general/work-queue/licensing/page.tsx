@@ -15,7 +15,7 @@ const columns: Column<LicensingRow>[] = [
   { header: "Status", width: 12, cell: (r) => <StatusBadge status={r.status} /> },
   { header: "Submitted", width: 10, cell: (r) => r.submitted },
   { header: "At Stage", width: 8, cell: (r) => r.atStage },
-  { header: "Claimed By", width: 14, cell: (r) => r.claimedBy ?? <span className="text-n400">—</span> },
+  { header: "Claimed By", width: 14, cell: (r) => r.claimedBy ?? <span className="text-muted">—</span> },
 ];
 
 // Category is a filter only, never a column (Work Queue spec §3b). No Age/SLA filter: licensing has no SLA.
@@ -30,7 +30,7 @@ export default function LicensingQueue() {
   return (
     <WorkQueueFrame title="Work Queue — Licensing" subtitle="Stage 3 of 3 — final decisions and completed licensing items" kpis={licensingKpis}>
       <TableCard
-        title="Applications Awaiting Final Sign-off"
+        title="Applications awaiting final sign-off"
         filters={filters}
         columns={columns}
         rows={licensingRows}

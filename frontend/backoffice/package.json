@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "check:design": "node scripts/check-design.mjs",
+    "prebuild": "node scripts/check-design.mjs",
     "build": "next build",
     "lint": "next lint"
   },

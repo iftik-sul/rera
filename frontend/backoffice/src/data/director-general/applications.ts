@@ -16,7 +16,7 @@ type Toast = { title: string; body: string };
 type ReasonDialog = { title: string; body: string[]; label: string; placeholder: string; confirm: string; toast: Toast };
 
 export type DecideActions = {
-  /** Label on the request button: "Request Info" (transaction) or "Request Additional Information" (licensing). */
+  /** Label on the request button: "Request Info" (transaction) or "Request additional information" (licensing). */
   requestLabel: string;
   approve: { title: string; body: string[]; callout: string; toast: Toast };
   request: ReasonDialog;
@@ -68,7 +68,7 @@ const approved: Status = { label: "Approved", tone: "success" };
 // "Grandeur Properties / TRX-2024-00891" frame for both rows — corrected 2026-10-19).
 const summaryFor = (o: { entity: string; rc: string; contact: string; developer: string; project: string; unit: string; type: string; txn: string; price: string; fee: string }): Application["summary"] => [
   {
-    title: "Applicant Information",
+    title: "Applicant information",
     fields: [
       { label: "Entity name", value: o.entity },
       { label: "License number", value: o.rc },
@@ -76,7 +76,7 @@ const summaryFor = (o: { entity: string; rc: string; contact: string; developer:
     ],
   },
   {
-    title: "Property / Project Information",
+    title: "Property / project information",
     fields: [
       { label: "Developer", value: o.developer },
       { label: "Project", value: o.project },
@@ -85,7 +85,7 @@ const summaryFor = (o: { entity: string; rc: string; contact: string; developer:
     ],
   },
   {
-    title: "Transaction Details",
+    title: "Transaction details",
     fields: [
       { label: "Transaction type", value: o.txn },
       { label: "Sale price", value: o.price },
@@ -128,7 +128,7 @@ export const applications: Application[] = [
     ],
     summary: adronSummary,
     documents: grandeurDocs,
-    checksTitle: "Registry Checks",
+    checksTitle: "Registry checks",
     checks: grandeurChecks,
     decide: {
       requestLabel: "Request Info",
@@ -143,7 +143,7 @@ export const applications: Application[] = [
         body: ["TRX-2024-0891 returns to Adron Homes & Properties and comes back to your queue when they respond."],
         label: "What does the applicant need to supply?",
         placeholder: "Name the document or detail that is missing.",
-        confirm: "Send Request",
+        confirm: "Send request",
         toast: { title: "Information requested", body: "TRX-2024-0891 has been sent back to Adron Homes & Properties." },
       },
       return: {
@@ -151,7 +151,7 @@ export const applications: Application[] = [
         body: ["TRX-2024-0891 goes back to Adron Homes & Properties for correction, and returns to your queue when resubmitted."],
         label: "What needs correcting?",
         placeholder: "Describe what the applicant must change before resubmitting.",
-        confirm: "Return Application",
+        confirm: "Return application",
         toast: { title: "Application returned", body: "TRX-2024-0891 has gone back to Adron Homes & Properties for correction." },
       },
       reject: {
@@ -160,7 +160,7 @@ export const applications: Application[] = [
         callout: "This decision is terminal, and it is appealable. It carries the same weight as an approval.",
         label: "Why is this application refused?",
         placeholder: "State the registry rule or check the application fails, in terms the applicant can act on.",
-        confirm: "Reject Application",
+        confirm: "Reject application",
         toast: { title: "Application rejected", body: "TRX-2024-0891 — Adron Homes & Properties has been told the outcome and your reason." },
       },
     },
@@ -177,7 +177,7 @@ export const applications: Application[] = [
     ],
     summary: mixtaSummary,
     documents: decidedDocs,
-    checksTitle: "Registry Checks",
+    checksTitle: "Registry checks",
     checks: grandeurChecks,
     override: {
       recorded: {
@@ -213,7 +213,7 @@ export const applications: Application[] = [
         body: "This follows the rejection you just confirmed. The output issued under the original approval must now be revoked.",
         callout:
           "e-Title Deed RERA/TD/2026/04418, issued to Mixta Nigeria Ltd on 2 Oct 2026, will be revoked and a revocation entry written against it. Verification lookups will return that status from now on.",
-        confirm: "Revoke Title Deed",
+        confirm: "Revoke title deed",
         toast: { title: "Decision overturned", body: "TRX-2024-0887 now reads Overturned · Rejected. e-Title Deed RERA/TD/2026/04418 has been revoked." },
       },
     },
@@ -250,7 +250,7 @@ export const applications: Application[] = [
     },
     summary: [
       {
-        title: "Applicant Information",
+        title: "Applicant information",
         fields: [
           { label: "Entity name", value: "Sahara Estates Development Co" },
           { label: "CAC registration (RC)", value: "RC-482910" },
@@ -258,7 +258,7 @@ export const applications: Application[] = [
         ],
       },
       {
-        title: "Licence Details",
+        title: "Licence details",
         fields: [
           { label: "Credential sought", value: "Developer Licence" },
           { label: "Application reference", value: "LIC-2026-00412" },
@@ -267,7 +267,7 @@ export const applications: Application[] = [
         ],
       },
       {
-        title: "Company Standing",
+        title: "Company standing",
         fields: [
           { label: "CAC status", value: "Active" },
           { label: "Directors verified", value: "3 of 3" },
@@ -282,10 +282,10 @@ export const applications: Application[] = [
       { name: "Directors' NIN Verification", type: "PDF", uploaded: "28 Sep", status: verified },
       { name: "Sector Accreditation Certificate", type: "PDF", uploaded: "29 Sep", status: pending },
     ],
-    checksTitle: "Company Register Check",
+    checksTitle: "Company register check",
     checks: ["CAC registration valid", "Directors match CAC record", "No existing licence conflict", "No outstanding sanctions", "Tax clearance current"],
     decide: {
-      requestLabel: "Request Additional Information",
+      requestLabel: "Request additional information",
       approve: {
         title: "Approve and issue the licence?",
         body: [
@@ -303,7 +303,7 @@ export const applications: Application[] = [
         ],
         label: "What does the applicant need to supply?",
         placeholder: "Name the document or detail that is missing.",
-        confirm: "Send Request",
+        confirm: "Send request",
         toast: { title: "Information requested", body: "LIC-2026-00412 has been sent back to Sahara Estates Development Co." },
       },
       return: {
@@ -314,7 +314,7 @@ export const applications: Application[] = [
         ],
         label: "What needs correcting?",
         placeholder: "Describe what the applicant must change before resubmitting.",
-        confirm: "Return Application",
+        confirm: "Return application",
         toast: { title: "Application returned", body: "LIC-2026-00412 has gone back to Sahara Estates Development Co for correction." },
       },
       reject: {
@@ -323,7 +323,7 @@ export const applications: Application[] = [
         callout: "This decision is terminal, and it is appealable. It carries the same weight as an approval.",
         label: "Why is this application refused?",
         placeholder: "State the eligibility rule the application fails, in terms the applicant can act on.",
-        confirm: "Reject Application",
+        confirm: "Reject application",
         toast: { title: "Application rejected", body: "LIC-2026-00412 — Sahara Estates Development Co has been told the outcome and your reason." },
       },
     },

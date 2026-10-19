@@ -1,36 +1,41 @@
 @import "tailwindcss";
 
 /*
- * Design tokens — copied from the Figma "Foundation" styles so code and
- * design use the same names. Change a colour here and every screen follows.
+ * RERAN FRONTEND FOUNDATIONS — the single source of every colour, text style,
+ * size, corner and shadow in the back office. Design standard Section D0.
+ *
+ *  - Screens use these NAMES, never raw values. `npm run check:design` (run
+ *    before every build) fails the build on a raw hex, a typed size, or a
+ *    hand-made button/input outside components/ui.
+ *  - Tailwind's own palettes, radii and shadows are switched off below, so a
+ *    class like `bg-blue-600` simply doesn't exist here.
+ *  - The live reference for all of this is the /styleguide/ page.
  */
 @theme {
+  /* Tailwind defaults OFF — only the names defined here exist. */
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-brand: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* Foundation / Neutral */
-  --color-n900: #091e42; /* primary text */
-  --color-n400: #505f79; /* secondary text, inactive nav */
-  --color-n40: #dfe2e6; /* dividers, borders */
-  --color-n30: #ebedf0; /* card borders */
-  --color-n20: #f5f6f7; /* page background */
+  /* ── Colours, named by job (D0.1) ── */
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-strong: #091e42; /* headings, body text, table cells, KPI values — N900 */
+  --color-muted: #505f79; /* subtitles, captions, column headers, hints — N400 */
+  --color-link: #006fe8; /* links, link-style actions, reference column — Blue/600 */
+  --color-action: #006fe8; /* primary buttons, current page, ticked boxes, focus */
+  --color-danger: #dc2626; /* the ONE red: destructive buttons, errors, required * */
+  --color-secondary: #404040; /* secondary-button label */
+  --color-page: #f5f6f7; /* back-office workspace backdrop — N20 */
+  --color-signin: #f2f3fa; /* sign-in page backdrop only */
+  --color-card: #ebedf0; /* card / KPI outline — N30 (use as border-card) */
+  --color-control: #dfe2e6; /* inputs, dividers, row lines, secondary buttons — N40 */
 
-  /* Foundation / Blue — the RA accent (buttons, active nav, links) */
-  --color-blue-600: #006fe8;
-  --color-blue-500: #007aff; /* "Contact Support" link on sign-in */
-
-  /* Foundation / Red */
-  --color-red-600: #d33128; /* required-field asterisk, errors */
-
-  /* Backgrounds */
-  --color-bg-blue: #f2f3fa; /* sign-in page background */
-
-  /* Buttons (Figma "_Button base") */
-  --color-btn-border: #dfe2e5; /* secondary button border */
-  --color-btn-text: #404040; /* secondary button text (Neutral/700) */
-  --color-danger: #dc2626; /* Reject / destructive buttons */
-
-  /* Badges (Figma "_Badge base") — background / text pairs */
+  /* Status pairs (fill / text) — badges and callouts only */
   --color-info-bg: #eff6ff;
   --color-info-text: #1d4ed8;
   --color-warning-bg: #fefce8;
@@ -38,13 +43,129 @@
   --color-success-bg: #f0fdf4;
   --color-success-text: #15803d;
   --color-error-bg: #fef2f2;
-  --color-error-text: #b91c1c;
-  --color-neutral-bg: #f5f5f5; /* Figma grey badge ("Cancelled", "Overturned") */
+  --color-error-text: #b91c1c; /* darker than `danger` — it sits on pink */
+  --color-neutral-bg: #f5f5f5;
   --color-neutral-text: #404040;
 
-  /* Inline status text */
-  --color-valid: #258d3f; /* "Valid" register checks, toast tick */
-  --color-age-warning: #b56a00; /* ageing item, banner heading */
+  /* Inline state text in tables */
+  --color-valid: #258d3f; /* "Valid", toast tick */
+  --color-ageing: #b56a00; /* ageing item, warning banner heading */
+
+  /* ── Corners (D0.3) ── */
+  --radius-control: 8px; /* buttons, inputs, dropdowns, callouts, field groups */
+  --radius-card: 12px; /* cards, KPI cards, modals, toast, banners */
+  --radius-signin: 24px; /* sign-in card only */
+  --radius-full: 9999px; /* badges, avatar */
+
+  /* ── Elevation (D0.3) — only things that float get a shadow ── */
+  --shadow-overlay: 0 10px 15px -3px rgb(9 30 66 / 0.1), 0 4px 6px -4px rgb(9 30 66 / 0.1);
+  --shadow-hairline: 0 1px 2px rgb(0 0 0 / 0.05);
+
+  /* ── Fixed sizes (D0.3) — usable as w-*, h-*, min-h-* … ── */
+  --spacing-control-sm: 32px; /* search box, filter dropdowns, pagination buttons */
+  --spacing-control: 36px; /* buttons */
+  --spacing-control-lg: 40px; /* form inputs, period picker */
+  --spacing-control-xl: 44px; /* sign-in primary button */
+  --spacing-row: 48px; /* every table data row */
+  --spacing-topbar: 78px;
+  --spacing-sidebar: 240px;
+  --spacing-panel: 360px; /* right-hand detail panel */
+  --spacing-toast: 380px;
+  --spacing-kpi: 127px; /* KPI card height */
+  --spacing-search: 180px; /* toolbar search box */
+  --spacing-crest: 60px; /* RERA crest box */
+}
+
+/*
+ * ── Text styles (D0.2) — nine styles, nothing in between ──
+ * Each sets size + line height + weight together. Colour is set separately.
+ */
+@utility type-display {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+@utility type-page-title {
+  font-size: 18px;
+  line-height: 27px;
+  font-weight: 500;
+}
+@utility type-section-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+@utility type-group-title {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+}
+@utility type-body {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+}
+@utility type-body-strong {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+}
+@utility type-column-header {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+@utility type-caption {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+}
+@utility type-label {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+}
+@utility type-button {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+/* Sign-in page only (portal style) */
+@utility type-body-lg {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+/* Agency name beside the crest (IBM Plex Sans) */
+@utility type-brand {
+  font-family: var(--font-brand);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+@utility type-brand-lg {
+  font-family: var(--font-brand);
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+@utility type-brand-sub {
+  font-family: var(--font-brand);
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+}
+
+/* Keyboard focus ring, shared by every interactive control (D0.4) */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+  }
 }
 
 html,
@@ -54,8 +175,8 @@ body {
 
 body {
   margin: 0;
-  background: var(--color-n20);
-  color: var(--color-n900);
+  background: var(--color-page);
+  color: var(--color-strong);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
