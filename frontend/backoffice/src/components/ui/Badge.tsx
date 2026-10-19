@@ -2,7 +2,7 @@
  * Status badge (Figma "_Badge base"): small rounded pill.
  * Tone picks the colour pair; the words come from the screen.
  */
-export type BadgeTone = "info" | "warning" | "success" | "error" | "neutral";
+export type BadgeTone = "info" | "warning" | "success" | "error" | "neutral" | "indigo" | "purple" | "orange";
 
 const tones: Record<BadgeTone, string> = {
   info: "bg-info-bg text-info-text",
@@ -10,6 +10,10 @@ const tones: Record<BadgeTone, string> = {
   success: "bg-success-bg text-success-text",
   error: "bg-error-bg text-error-text",
   neutral: "bg-neutral-bg text-neutral-text",
+  // Extended — lifecycle badges only (licensing Review Stage)
+  indigo: "bg-indigo-bg text-indigo-text",
+  purple: "bg-purple-bg text-purple-text",
+  orange: "bg-orange-bg text-orange-text",
 };
 
 export function Badge({ tone, children }: { tone: BadgeTone; children: React.ReactNode }) {

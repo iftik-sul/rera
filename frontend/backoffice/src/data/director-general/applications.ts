@@ -245,11 +245,11 @@ export const featuredApplications: Application[] = [
     queue: "licensing",
     title: "LIC-2026-00412 — Real Estate Licensing Application",
     subtitle: "Stage 3 of 3 — your decision issues the licence.",
-    status: underReview,
+    status: { label: "Under Final Sign-off", tone: "purple" }, // Review Stage badge, in place of the status (status-badges.md §6)
     metaSubtitle: "Sahara Estates Development Co · Company Licensing & Permits",
     meta: [
       { label: "Expected output", value: "Real Estate Developer Licence" },
-      { label: "Review stage", value: "Stage 3 of 3 — Awaiting Final Sign-off" },
+      { label: "Review stage", value: "Stage 3 of 3 — Licensing & Registration Officer" },
     ],
     claim: { held: "Claimed by you", detail: "· since 11:46 today · lapses after 30 minutes of inactivity", mine: true },
     chain: {

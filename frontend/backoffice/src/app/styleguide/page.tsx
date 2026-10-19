@@ -44,6 +44,15 @@ const PAIRS: [BadgeTone, string][] = [
   ["error", "Error"],
   ["neutral", "Neutral"],
 ];
+/** Licensing Review Stage (KB status-badges.md §6) — the only place the extended colours are used. */
+const STAGES: [BadgeTone, string][] = [
+  ["info", "Under Review"],
+  ["indigo", "Under Authorization"],
+  ["purple", "Under Final Sign-off"],
+  ["warning", "Returned to Reviewer"],
+  ["warning", "Returned to Authorizer"],
+  ["orange", "Dissent Recorded"],
+];
 const TYPES: [string, string, string][] = [
   ["type-display", "24 / 32 · Semi Bold", "Sign-in title, KPI value, editor name"],
   ["type-page-title", "18 / 27 · Medium", "Top-bar title, modal title"],
@@ -151,6 +160,14 @@ export default function StyleGuide() {
               </Badge>
             ))}
             <StatusBadge status={{ label: "Rejected", tone: "error", overturned: true }} />
+          </div>
+          <p className="type-group-title text-strong">Licensing review stage — shown in place of the status while an item is in the chain</p>
+          <div className="flex flex-wrap gap-3">
+            {STAGES.map(([t, l]) => (
+              <Badge key={l} tone={t}>
+                {l}
+              </Badge>
+            ))}
           </div>
         </Section>
 

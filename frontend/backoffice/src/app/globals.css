@@ -47,6 +47,15 @@
   --color-neutral-bg: #f5f5f5;
   --color-neutral-text: #404040;
 
+  /* Extended pairs — lifecycle badges only, where the vocabulary names the colour
+     (today: the licensing Review Stage, KB status-badges.md §6) */
+  --color-indigo-bg: #eef2ff;
+  --color-indigo-text: #4338ca;
+  --color-purple-bg: #faf5ff;
+  --color-purple-text: #7e22ce;
+  --color-orange-bg: #fff7ed;
+  --color-orange-text: #9a3412; /* not the legacy amber #c2410c */
+
   /* Inline state text in tables */
   --color-valid: #258d3f; /* "Valid", toast tick */
   --color-ageing: #b56a00; /* ageing item, warning banner heading */
